@@ -30,22 +30,23 @@
             }
         }
     </style>
-    <!-- 点击次数 by xiaoyu08 -->
-    <script>
+    <script>  
+        /*click counter by xiaoyu08*/
         var count = 0;
         var is_first_click = false;
         function click_count() {
             var $ = () => { count++; document.querySelector('button').innerHTML = "点击了" + count + "次"; };
             if (!is_first_click) {
                 setTimeout(() => {
-                    alert("您在60秒内点击了" + count + "次!");
+                    alert("您在10秒内点击了" + count + "次!");
                     is_first_click = !is_first_click;
                     count = 0;
-                }, (60 * 1000));
+                }, (10 * 1000));
             }
             $();
             is_first_click = true;
         }
+
     </script>
 </head>
 <!--imgLinks如只有<a>则说明已被应用
@@ -53,7 +54,7 @@
             
          -->
 
-<body class="c">
+<body>
     <h1>H-555666 Main</h1>
     <script>
         function is_weixn() {
@@ -66,8 +67,8 @@
         }
         if (is_weixn()) { document.write("建议卸载微信或在系统浏览器中浏览该网页") }
     </script>
-    <p>last update:2023.4.20
-        version3
+    <p>last update:2023.4.21
+        version1
     </p>
     <button style="width: 160px;height:40px ;font-size: 20px " onclick="click_count()">English/中文</button>
     <hr>
