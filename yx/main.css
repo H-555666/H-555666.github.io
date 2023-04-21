@@ -1,0 +1,34 @@
+button:active{transform:translate(160px,0px)}
+a:link {color:rgb(27, 0, 100);}     /* 未访问链接*/
+a:visited {color:#b000c0;}  /* 已访问链接 */
+a:hover {color:#ffb3e8;}  /* 鼠标移动到链接上 */
+a:active {color:#d80090;}  /* 鼠标点击时 */
+/*no under line*/
+a:link {text-decoration:none;}
+a:visited {text-decoration:none;}
+a:hover {text-decoration:none;}
+a:active {text-decoration:none;}
+/*提示消息*/
+.tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black;
+}
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 400px;
+    background-color: rgba(0, 0, 0,.5);
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+/*消息定位 */
+    position: absolute;
+    z-index: 1;
+    top: 100%;
+    left: 50%;
+    margin-left: -60px;
+}
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+}
