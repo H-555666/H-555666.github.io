@@ -38,7 +38,7 @@
             var $ = () => { count++; document.querySelector('button').innerHTML = "点击了" + count + "次"; };
             if (!is_first_click) {
                 setTimeout(() => {
-                    alert("您在10秒内点击了" + count + "次!");
+                    alert("you've clicked" + count + "times in 10 seconds!");
                     is_first_click = !is_first_click;
                     count = 0;
                 }, (10 * 1000));
@@ -49,7 +49,8 @@
 
     </script>
 </head>
-<!--imgLinks如只有<a>则说明已被应用
+<!--imgLinks 
+    applied if no img link
             <a href="https://imgse.com/i/p9icbXn"><img src="" alt="p9icbXn.jpg" border="0" /></a>
             
          -->
