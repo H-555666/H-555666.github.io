@@ -9,10 +9,10 @@
     <link rel="shortcut icon" href="https://s1.ax1x.com/2023/04/18/p9icbXn.jpg">
     <style>
         div.c {
-            background: linear-gradient(45deg, #92bcff, #ffbb63, #bb65bb, #ff8ae2, #92bcff);
-            animation: mymove 20s ease infinite;
-            -webkit-animation: mymove 20s ease infinite;
-            -moz-animation: mymove 20s ease infinite;
+            background: linear-gradient(30deg, #92bcff, #ffbb63, #bb65bb, #ff8ae2, #92bcff);
+            animation: mymove 10s ease infinite;
+            -webkit-animation: mymove 10s ease infinite;
+            -moz-animation: mymove 10s ease infinite;
             background-size: 1400% 300%;
         }
 
@@ -35,10 +35,10 @@
         var count = 0;
         var is_first_click = false;
         function click_count() {
-            var $ = () => { count++; document.querySelector('button').innerHTML = "点击了" + count + "次"; };
+            var $ = () => { count++; document.querySelector('button').innerHTML = "slide " + count + " times"; };
             if (!is_first_click) {
                 setTimeout(() => {
-                    alert("you've clicked" + count + "times in 10 seconds!");
+                    alert("you've slide " + count + " times in 10 seconds!");
                     is_first_click = !is_first_click;
                     count = 0;
                 }, (10 * 1000));
@@ -56,7 +56,7 @@
          -->
 
 <body>
-    <h1>H-555666 Main</h1>
+    <h1 style="color:white;" class="arial">H-555666 Main</h1>
     <script>
         function is_weixn() {
             var ua = navigator.userAgent.toLowerCase();
@@ -68,14 +68,20 @@
         }
         if (is_weixn()) { document.write("建议卸载微信或在系统浏览器中浏览该网页") }
     </script>
-    <p>last update:2023.4.21
-        version1
-    </p>
+    <h5 style="color:white;" class="arial">last update:2023.4.21
+        version2
+    </h5>
     <button style="width: 160px;height:40px ;font-size: 20px " onclick="click_count()">English/中文</button>
     <hr>
-    <div class="c">
-        <p>正在寻找敦煌研学页面？</p>
-        <a href="https://h-555666.github.io/yx/">点击以访问！https://h-555666.github.io/yx/</a>
+    <div class="CC c" style="padding:10px;overflow: auto;width: 230px;margin:20px;float:left;">
+        <h3 style="color:black" class="center arial">正在寻找敦煌研学信息？</h3><hr>
+        <a href="https://h-555666.github.io/yx/"> 点击以访问！<br>https://h-555666.github.io/yx/</a>
+    </div>
+    <div class="CC c" style="padding:10px;overflow: auto;width: 200px;margin:20px;float:left;">
+        <h3 style="color:black" class="center arial">Mine shipment simulator</h3>
+        <hr><a href="#MSS" class="l">
+        <p class="center b">comming s∞n</p>
+        </a>
     </div>
 
 </body>
