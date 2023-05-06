@@ -1,4 +1,4 @@
-button:active{transform:translate(160px,0px)}
+button:active{transform:translate(0px,1px)}
 a:link {color:rgb(27, 0, 100);}     /* 未访问链接*/
 a:visited {color:#b000c0;}  /* 已访问链接 */
 a:hover {color:#ffb3e8;}  /* 鼠标移动到链接上 */
