@@ -38,7 +38,7 @@
             var $ = () => { count++; document.querySelector('button').innerHTML = "slide " + count + " times"; };
             if (!is_first_click) {
                 setTimeout(() => {
-                    alert("you've slide " + count + " times in 10 seconds!");
+                    alert("you've slide " + count + " times in 10 seconds! This website mix Chinese and English, please use a translator!");
                     is_first_click = !is_first_click;
                     count = 0;
                 }, (10 * 1000));
