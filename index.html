@@ -8,8 +8,16 @@
     <link rel="stylesheet" type="text/css" href="main.css">
     <link rel="shortcut icon" href="https://s1.ax1x.com/2023/04/18/p9icbXn.jpg">
     <style>
-        div.c {
-            background: linear-gradient(30deg, #92bcff, #ffbb63,#ff8ae2, #92bcff,#ffbb63);
+        div.dun {
+            background: linear-gradient(30deg, #92bcff, #ffbb63, #ff8ae2, #92bcff, #ffbb63);
+            animation: mymove 10s ease infinite;
+            -webkit-animation: mymove 10s ease infinite;
+            -moz-animation: mymove 10s ease infinite;
+            background-size: 1400% 300%;
+        }
+
+        div.rail {
+            background: linear-gradient(30deg, #517aff, #c663ff, #51ceff, #517aff, #c663ff);
             animation: mymove 10s ease infinite;
             -webkit-animation: mymove 10s ease infinite;
             -moz-animation: mymove 10s ease infinite;
@@ -30,7 +38,7 @@
             }
         }
     </style>
-    <script>  
+    <script>
         /*click counter by xiaoyu08*/
         var count = 0;
         var is_first_click = false;
@@ -73,14 +81,24 @@
     </h5>
     <button style="width: 160px;height:40px ;font-size: 20px " onclick="click_count()">English/中文</button>
     <hr>
-    <div class="CC c" style="padding:10px;overflow: auto;width: 230px;margin:20px;float:left;">
-        <h3 style="color:black" class="center arial">正在寻找敦煌研学信息？</h3><hr>
-        <a href="https://h-555666.github.io/yx/"> <p class="center b">点击以访问！<br>https://h-555666.github.io/yx/</p></a>
+    <div class="CC rail" style="padding:10px;overflow: auto;width: 230px;margin:20px;float:left;">
+        <a href="https://h-555666.github.io/HOopenrailway/">
+            <h3 style="color:black" class="center arial">HO openrailway</h3>
+            <hr>
+            <p class="center b">h-555666.github.io/HOopenrailway/</p>
+        </a>
+    </div>
+    <div class="CC dun" style="padding:10px;overflow: auto;width: 230px;margin:20px;float:left;">
+        <h3 style="color:black" class="center arial">正在寻找敦煌研学信息？</h3>
+        <hr>
+        <a href="https://h-555666.github.io/yx/">
+            <p class="center b">点击以访问！<br>https://h-555666.github.io/yx/</p>
+        </a>
     </div>
     <div class="CC " style="background-color: white; padding:10px;overflow: auto;width: 200px;margin:20px;float:left;">
         <h3 style="color:black" class="center arial">Mine shipment simulator</h3>
         <hr><a href="#MSS" class="l">
-        <p class="center b">comming s∞n</p>
+            <p class="center b">comming s∞n</p>
         </a>
     </div>
 
