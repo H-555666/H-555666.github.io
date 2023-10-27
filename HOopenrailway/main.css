@@ -1,0 +1,26 @@
+
+p, h1, h2, h3, h4, h5, h6 {
+    font-family: 'Open Sans', sans-serif;
+    color: #fff;
+  }
+  
+body{background-color:black}
+
+a:link {color:rgb(27, 0, 100);}     /* haven't visited*/
+a:visited {color:#b000c0;}  /* visited */
+a:hover {color:#ffb3e8;}  /* move on */
+a:active {color:#d80090;}  /* clicking */
+/*no under line*/
+a:link {text-decoration:none;}
+a:visited {text-decoration:none;}
+a:hover {text-decoration:none;}
+a:active {text-decoration:none;}
+
+.center{text-align: center;}
+.arial{font-family:Arial,Helvetica,sans-serif;}
+p.b{color:black} 
+p.w{color:rgba(255, 255, 255,0.95)} 
+h3{margin: 10px;}
+
+/*Circle corner*/
+.CC{border-radius: 10px}
