@@ -6,10 +6,10 @@ p, h1, h2, h3, h4, h5, h6 {
   
 body{background-color:black}
 
-a:link {color:rgb(120, 221, 247);}     /* haven't visited*/
-a:visited {color:rgb(192, 116, 255);}  /* visited */
-a:hover {color:rgb(142, 181, 255);}  /* move on */
-a:active {color:rgb(125, 155, 255);}  /* clicking */
+a:link {color:rgb(27, 0, 100);}     /* haven't visited*/
+a:visited {color:#b000c0;}  /* visited */
+a:hover {color:#ffb3e8;}  /* move on */
+a:active {color:#d80090;}  /* clicking */
 /*no under line*/
 a:link {text-decoration:none;}
 a:visited {text-decoration:none;}
