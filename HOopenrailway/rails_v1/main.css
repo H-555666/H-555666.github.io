@@ -24,3 +24,5 @@ h3{margin: 10px;}
 
 /*Circle corner*/
 .CC{border-radius: 10px}
+.CCl{border-top-left-radius:10px;border-bottom-left-radius:10px;}
+.CCr{border-top-right-radius:10px;border-bottom-right-radius:10px;}
