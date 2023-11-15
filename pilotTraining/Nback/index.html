@@ -1,0 +1,276 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>n-back training</title>
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="author" content="CSS5, css5.com.cn" />
+<style>
+body{font-size:62.5%;font-family:"Microsoft YaHei",Arial; overflow-x:hidden; overflow-y:auto;}
+.viewport{ max-width:640px; min-width:300px; margin:0 auto;}
+</style>
+<link rel="stylesheet" type="text/css" href="magic-input.min.css">
+<link rel="stylesheet" type="text/css" href="main.css">
+<script src="main.js"></script>
+<script>
+// 指针
+var point = 0;
+// backn值
+var backN = 2;
+// 类型：1-数字；2-字母
+var dgType = 1;
+// 原始数据
+var arrNum = [];
+// 结果数据
+var arrResult = [];
+// 定时器
+var timer;
+
+// start
+function startTest()
+{
+    // 初始化数组
+    initArr();
+
+    // 初始化组建
+    initComponent();
+
+    // 显示文本
+    var text = arrNum[point++];
+    modifyText(text);
+
+    // 继续按钮打开
+    switchOn("btnNext", true);
+
+    // 开始按钮关闭
+    switchOn("btnStart", false);
+}
+
+// 初始化数组
+function initArr()
+{
+    for(var i = 0; i < 8; i++)
+    {
+        // 数字
+        if(dgType == 1)
+        {
+            // 随机数
+            var n = Math.floor(Math.random() * 10);
+            arrNum[i] = n;
+        }
+        // 字母
+        else
+        {
+            var a = "A".charCodeAt(0);
+            // 随机数
+            var n = Math.floor(Math.random() * 26);
+            var str = String.fromCharCode(n + a);
+            arrNum[i] = str;
+        }
+    }
+    for(var i = 0; i < 5; i++)
+    {
+        arrResult[i] = "";
+    }
+
+    point = 0;
+}
+
+// 初始化组建
+function initComponent()
+{
+    switchOn("idText", false);
+    //switchOn("btnNext", false);
+    switchOn("result", false);
+    document.getElementById("result").innerHTML = "";
+    document.getElementById("idText").value = "";
+}
+
+// 修改文本
+function modifyText(text)
+{
+     $("#shownum").text(text);
+}
+
+
+// 继续
+function next()
+{
+    if(point <= backN)
+    {
+        // 显示下一个文本
+        var text = arrNum[point++];
+        modifyText(text);
+        if(point == backN + 1)
+        {
+            // 显示输入区域
+            switchOn("idText", true);
+        }    
+    }
+    else
+    {
+        var txt = document.getElementById("idText").value;
+        if(txt == "")
+        {
+             return;
+        }
+        // 记录当前结果
+        record();
+
+        // 清空输入框
+        document.getElementById("idText").value = "";
+
+        // 如果已经是最后一个数字
+        if(point >= 8)
+        {
+            // 清除数据
+            modifyText("");
+            // 隐藏输入区域
+            switchOn("idText", false);
+            // 隐藏继续
+            switchOn("btnNext", false);
+            // 开始按钮
+            switchOn("btnStart", true);
+
+            // 显示结果
+            showResult();
+        }
+        else
+        {
+            // 显示下一个文本
+            var text = arrNum[point++];
+            modifyText(text);
+        }
+    }
+}
+
+// 记录结果
+function record()
+{
+    arrResult[point-(backN + 1)] = document.getElementById("idText").value;
+}
+
+// 显示或关闭组件
+function switchOn(componentId, flag)
+{
+    var cId = document.getElementById(componentId);
+    if(cId )
+    {
+        if(flag)
+        {
+            cId.style.display = "block";
+        }
+        else
+        {
+            cId.style.display = "none";
+        }
+    }
+}
+// 显示答案
+function showResult()
+{
+    var txtOrg = "";
+    for(var i = 0; i < 8 - backN; i++)
+    {
+        txtOrg += "<span class='span-text text-normal'>" + arrNum[i] + "</span>";
+    }
+    for(var i = 8 - backN; i < 8; i++)
+    {
+        txtOrg += "<span class='span-text text-gray'>" + arrNum[i] + "</span>";
+    }
+
+    var txtResult = "";
+    for(var i = 0; i < (8 - backN); i++)
+    {
+        var n1 = arrNum[i];
+        var n2 = arrResult[i];
+        if(n1 == n2)
+        {
+            txtResult += "<span class='span-text text-right'>" + arrResult[i] + "</span>";
+        }
+        else
+        {
+            txtResult += "<span class='span-text text-wrong'>" + arrResult[i] + "</span>";
+        }
+    }
+    for(var i = 8 - backN; i < 8; i++)
+    {
+        txtResult += "<span class='span-text text-gray'>" + arrNum[i] + "</span>";
+    }
+
+    // 显示答案区域
+    switchOn("result", true);
+    document.getElementById("result").innerHTML = "<div class='box-text'>" + txtOrg + "</div><div class='box-text'>" + txtResult + "</div>";
+}
+
+$(document).ready(function() {
+　　　// jquery的radio的change事件
+    $('input[type=radio][name=backn]').change(function() {
+        backN = parseInt(this.value);
+        if(backN == 1)
+        {
+            $("#notify").text("The N-value of 1 indicates starting from the second letter or number and repeating the previous letter or number");
+        }
+        else
+        {
+            $("#notify").text("The N-value of 2 indicates starting from the third letter or number and repeating the previous letter or number");
+        }
+    });
+});
+$(document).ready(function() {
+　　　// jquery的radio的change事件
+    $('input[type=radio][name=dgtype]').change(function() {
+        dgType = parseInt(this.value);
+    });
+});
+
+</script>
+</head>
+<body>
+<h1>N-back training for pilots</h1>
+<div class="container">
+  <div class="box">
+    <div class="boxselect">
+        <div class="width-l">Memory form</div>
+        <div class="width-c">
+            <input type="radio" name="dgtype" checked="checked" value="1" class="mgc mgc-success"/>number
+        </div>
+        <div class="width-r">
+            <input type="radio" name="dgtype" value="2" class="mgc mgc-success"/>letters
+        </div>
+    </div>
+    <div class="boxselect">
+        <div class="width-l">N-value</div>
+        <div class="width-c">
+            <input type="radio" name="backn" value="1" class="mgc mgc-success"/>1
+        </div>
+        <div class="width-r">
+            <input type="radio" name="backn" checked="checked" value="2" class="mgc mgc-success"/>2
+        </div>
+    </div>
+    <div id="notify" class="notify">The N-value of 2 indicates starting from the third letter or number and repeating the previous letter or number</div>
+  </div>
+</div>
+<div class="container">    
+  <div class="box2">
+    <div id="shownum" class="shownum color-change"></div>
+    <div id="divInput" class="boxselect">
+        <div class="inputBox">
+            <input id="idText" type="text" maxlength="1" style="display:none"/>
+        </div>
+    </div>
+    <div id="result" style="display:none" class="boxselect"></div>
+  </div>
+</div>
+<div class="cfooter">
+    <button id="btnStart" onclick="startTest()" class="btn">start test</button>
+    <button id="btnNext" onclick="next()" style="display:none" class="btn">continue</button>
+    <div class="boxselect">Translated by H-555666</div>
+</div>
+</body>
+</html>
