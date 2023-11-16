@@ -1,0 +1,202 @@
+body {
+    font-size: 62.5%;
+    color: #7e7e7e;
+    font-family: "Microsoft YaHei",Arial;
+    overflow-x: hidden;
+    overflow-y: auto;
+    margin: 0;
+}
+
+.cfooter {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+
+.logo {
+    background-image: url("logo.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    height: 3em;
+    line-height: 3em;
+    padding-left: 4.5em;
+    font-size: 1.5em;
+    color: #dbb844;
+}
+
+.box {
+    margin: 2em;
+    /*width: 100%;*/
+    padding: 1em 0.5em;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 0.5em;
+    border-color: #eee;
+}
+
+.box2 {
+    display: inline-block;
+}
+
+.mgc {
+    margin-right: 0.5em;
+}
+
+.inputBox {
+    margin: 20px 0;
+    position: relative;
+    font-size: 2em;
+}
+
+.inputBox input {
+    /* position: absolute; */
+    height: 2em;
+    padding: 5px 10px;
+    background-color: transparent;
+    border-radius: 5px;
+    /*color: #fff;*/
+    border: 1px solid rgb(31, 191, 202);
+    font-size: 1em;
+}
+
+.inputBox span {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 0 10px;
+    background-color: rgb(1, 39, 39);
+    transition: .5s;
+    color: rgba(255, 255, 255, 0.575);
+}
+
+.inputBox input:valid+span,
+.inputBox input:focus+span {
+    /* top: -10px; */
+    color: aqua;
+    border-left: 1px solid rgb(10, 223, 223);
+    border-right: 1px solid rgb(6, 226, 226);
+    letter-spacing: .2em;
+    transform: translateY(-15px);
+    font-size: .5em;
+    display: inline-block;
+}
+
+.btn{
+    /* 设置宽度 设置边框锐度 */
+    width: 100%;
+    background-image: linear-gradient(120deg,#f6d365 0%,#fda085 100%);
+    height: 2.5em;
+    border-radius: 0.5em;
+    margin-top: 10px;
+    /* 去除下边框白色 */
+    border: 0px;
+    font-size: 2em;
+    font-family: '微软雅黑';
+}
+/* 当按钮被点击的时候 */
+.btn:hover{
+    background-image:linear-gradient(to right,#dbb844 0%,#ef6c48 100%);
+}
+
+h1 {
+    text-align: center;
+    font-size: 2em;
+    font-weight: bold;
+    margin: 20px 0;
+    /*color: #ffffff;*/
+    letter-spacing: 4px;
+    word-spacing: 4px;
+    color: #2981cc;
+}
+h2 {
+    text-align: center;
+    display: block;
+    font-size: 1.5em;
+    margin-block-start: 0.83em;
+    margin-block-end: 0.83em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+    font-weight: bold;
+}
+.container {
+    margin: 1em 0.5em;
+    text-align: center;
+    font-size: 1em;
+}
+.width-l {
+    width: 20%;
+    text-align: right;
+    display: inline-block;
+}
+.width-c {
+    width: 30%;
+    text-align: left;
+    padding-left: 2em;
+    display: inline-block;
+}
+.width-r {
+    width: 30%;
+    text-align: left;
+    display: inline-block;
+}
+
+.boxselect{
+    margin: 1em 0.5em;
+    font-size: 1.5em;
+}
+.shownum{
+    padding: 0.2em 0.1em;
+    text-align: center;
+    font-size: 4em;
+    color: #e8561e;
+}
+.notify {
+    background-color: #e1e2e3;
+    padding: 0.5em;
+}
+.box-text {
+    margin: 1em 0.5em;
+}
+.span-text {
+    width: 1em;
+    padding: 0.2em;
+    background-color: #e1e1e1;
+    font-size: 2em;
+}
+.text-normal{
+    color: #a0a0a0;
+}
+.text-gray {
+    color: #ffffff;
+}
+.text-right {
+    color: #00ff00;
+}
+.text-wrong {
+    color: #ff0000;
+}
+
+/*变色*/
+@keyframes color-change {
+0% {
+    /*color: red;*/
+}
+50% {
+    color: blue;
+}
+100% {
+    color: green;
+}}
+.color-change {
+    animation: color-change 2s infinite;
+}
+
+.item{
+    margin: 0.5em;
+    font-size: 1.5em;
+    color: #18905e;
+}
+.item2{
+    margin: 0.5em;
+    font-size: 1.5em;
+}

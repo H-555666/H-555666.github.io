@@ -1,0 +1,173 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Noise test</title>
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="author" content="CSS5, css5.com.cn" />
+<style>
+body{font-size:62.5%;font-family:"Microsoft YaHei",Arial; overflow-x:hidden; overflow-y:auto;}
+.viewport{ max-width:640px; min-width:300px; margin:0 auto;}
+</style>
+<link rel="stylesheet" type="text/css" href="magic-input.min.css">
+<link rel="stylesheet" type="text/css" href="main.css">
+<link rel="stylesheet" type="text/css" href="noise1.css">
+<script src="jquery-3.7.1.min.js"></script>
+<script>
+    var strDigital = "0246813579";
+    var strLetter = "aeioubpmfd";
+
+    // 显示位置，0-上面，1-下面
+    var siteUpDown = 0;
+
+    // update的时候就要记录结果值
+    var bRight = false;
+
+    // 结论
+    var bRight = false;
+
+    // 更新数据
+    function update()
+    {
+        // 数字序号
+        var idD = Math.floor(Math.random() * 10);
+        // 字母序号
+        var idL = Math.floor(Math.random() * 10);
+
+        // 拼接
+        var str = strDigital.substr(idD, 1) + strLetter.substr(idL, 1);
+
+        // 显示位置
+        var siteUpDown = Math.floor(Math.random() * 2);
+
+        // 显示位置
+        if(siteUpDown == 0)
+        {
+            $("#blockup").text(str);
+            $("#blockdown").text("");
+
+            // 预置结论
+            if(idD < 5)
+            {
+                bRight = true;
+            }
+            else
+            {
+                bRight = false;
+            }
+        }
+        else
+        {
+            $("#blockup").text("");
+            $("#blockdown").text(str);
+
+            // 预置结论
+            if(idL < 5)
+            {
+                bRight = true;
+            }
+            else
+            {
+                bRight = false;
+            }
+        } 
+    }
+
+    // 
+    
+    // 计算结果
+    function cal(obj)
+    {
+        var success = false;
+
+        var objId = obj.id;
+        if(objId == "btnOK")
+        {
+            // 正确
+            if(bRight)
+            {
+                success = true;
+            }
+            else
+            {
+                success = false;
+            }
+        }
+        else
+        {
+            // 错误
+            if(!bRight)
+            {
+                success = true;
+            }
+            else
+            {
+                success = false;
+            }
+        }
+
+        // 如果成功，重新开始
+        if(success)
+        {
+            update();
+        }
+        else
+        {
+            // 提示错误音
+            beep();
+        }
+    }
+
+    // 错误提示音
+    function beep()
+    {
+        let audio = new Audio('err.mp3');
+        audio.play();
+    }
+
+    // 和数组第几个内容匹配
+    function getSite(arr, content)
+    {
+        var iRet = 0;
+        for(var i = 0; i < arr.length; i++)
+        {
+            var value = arr[i];
+            if(value == content)
+            {
+                iRet = i;
+                break;
+            }
+        }
+
+        return iRet;
+    }
+</script>
+</head>
+<body>
+<div class="title1">Noise test for pilots</div>
+<div class="container">
+    <div class="box">Alphanumeric combinations will appear in a square, if it appears in the upper box and the combination contains even numbers(0,2,4,6,8) or it appears in the box below and the combination contains vowel letters (a,e,i,o,u), click [true]; If none of them meet the requirements, click [false]</div>
+    <div class="rect">
+        <div id="blockup" class="textblock">3u</div>
+    </div>
+    <div class="rect">
+        <div id="blockdown" class="textblock"></div>
+    </div>
+</div>
+<div class="cfooter">
+    <div class="rect">
+        <div class="btnzone">
+            <button id="btnOK" onclick="cal(this)" class="btn">true</button>
+        </div>
+        <div class="btnzone">
+            <button id="btnERR" onclick="cal(this)" class="btn">false</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,51 @@
+.title1 {
+    text-align: center;
+    font-size: 2em;
+    font-weight: bold;
+    letter-spacing: 4px;
+    word-spacing: 4px;
+    margin: 0.5em 0;
+    color: #2981cc;
+}
+.title2 {
+    text-align: center;
+    display: block;
+    font-size: 1.5em;
+    margin: 0.5em 0;
+    font-weight: bold;
+}
+.container {
+    text-align: center;
+    font-size: 1.5em;
+    margin: 0;
+}
+
+.tips {
+    height: 1.5em;
+    text-align: center;
+    padding: 2px;
+}
+
+.rect {
+    text-align: center;
+    margin: 0.5em;
+    clear: both;
+}
+
+.btnzone {
+    display: inline-block;
+    width: 25%;
+}
+    
+
+.textblock {
+    background-color: #f1f2f3;
+    color: green;
+    padding: 2px;
+    width: 8em;
+    height: 2em;
+    line-height: 2em;
+    text-align: center;
+    font-size: 2em;
+    margin :0 auto;
+}

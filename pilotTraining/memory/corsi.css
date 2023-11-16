@@ -1,0 +1,69 @@
+.title1 {
+    text-align: center;
+    font-size: 2em;
+    font-weight: bold;
+    letter-spacing: 4px;
+    word-spacing: 4px;
+    margin: 0.5em 0;
+    color: #2981cc;
+}
+.title2 {
+    text-align: center;
+    display: block;
+    font-size: 1.5em;
+    margin: 0.5em 0;
+    font-weight: bold;
+}
+.container {
+    text-align: center;
+    font-size: 1.5em;
+    margin: 0;
+}
+.boxselect {
+    margin: 0;
+}
+.box {
+    margin: 0.2em;
+}
+.btn {
+    margin-top: 0;
+}
+
+.select-block {
+    display: inline-block;
+    margin-right: 1em;
+}
+
+.grid-line {
+    white-space: nowrap;
+    text-align: center;
+    padding: 2px 0;
+    clear: both;
+}
+.grid-single {
+    float: left;
+    width: 25%;
+    height: 20vw;
+}
+.grid-outer {
+    height: 100%;
+    padding: 2px;
+}
+.grid-inner {
+    width: auto;
+    height: 100%;
+    background-color: #e1e2e3;
+}
+.bgcolor-normal {
+    background-color: #2981cc;
+}
+.bgcolor-hover {
+    background-color: #e9ec1f;
+}
+
+.bgcolor-right {
+    background-color: #00e100;
+}
+.bgcolor-wrong {
+    background-color: #e10000;
+}
