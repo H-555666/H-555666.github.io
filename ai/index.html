@@ -59,7 +59,7 @@
     <div id="modal-overlay">
         <div id="modal-content">
             <h3>安全验证</h3>
-            <p style="font-size: 0.9em; color: #555;">请输入 3 位密码</p>
+            <p style="font-size: 0.9em; color: #00AABB;">请输入 3 位密码</p>
             <!-- 限制只能输入3位 -->
             <input type="password" id="key-suffix" maxlength="3" placeholder="***" autocomplete="off" />
             <br>
@@ -70,13 +70,13 @@
     <script>
         // ================= 配置区 =================
         const API_KEY_PREFIX = "cfut_ArYBq017n4ATROfFMbKahr3NW0ilYowdLrL1zkiD9c421"; 
-        // marked
-        marked.setOptions({ breaks: true });
+
         // worker
         const API_URL = "https://h-555666.pages.dev/";
         
-        // modelname
-        const MODEL_NAME = "google-ai-studio/gemma-4-31b-it";
+        // marked
+        marked.setOptions({ breaks: true });
+
         // ==========================================
 
         let apiKeySuffix = ""; 
@@ -97,7 +97,7 @@
                 // 折叠
                 let formattedContent = content.replace(/<thought>([\s\S]*?)<\/thought>/g, function(match, p1) {
                     // 继续解析折叠框内的 Markdown
-                    return `<details class="thought-box"><summary>🧠 点击查看 AI 思考过程</summary>\n\n${p1}\n\n</details>`;
+                    return `<details class="thought-box"><summary>点击查看 AI 思考过程</summary>\n\n${p1}\n\n</details>`;
                 });
                 // 渲染 Markdown 并写入 HTML
                 msgDiv.innerHTML = marked.parse(formattedContent);
@@ -130,7 +130,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        model: MODEL_NAME,
+                        //model: MODEL_NAME,
                         messages: messagesHistory
                     })
                 });
