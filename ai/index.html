@@ -5,20 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Chat Gateway</title>
     <style>
-        /* 样式保持不变，略微压缩展示 */
-        :root{--primary-color:#0051c3;--bg-color:#f4f4f9;--chat-bg:#ffffff;}
+        :root{--primary-color:#00AABB;--bg-color:#f4f4f9;--chat-bg:#ffffff;}
         body{font-family:sans-serif;margin:0;padding:0;background:var(--bg-color);display:flex;justify-content:center;align-items:center;height:100vh;}
         #chat-container{width:100%;max-width:800px;height:90vh;background:var(--chat-bg);border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.1);display:flex;flex-direction:column;overflow:hidden;}
         #chat-history{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:15px;}
         .message{max-width:80%;padding:12px 16px;border-radius:8px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word;}
         .message.user{align-self:flex-end;background:var(--primary-color);color:white;border-bottom-right-radius:0;}
         .message.assistant{align-self:flex-start;background:#e9ecef;color:#333;border-bottom-left-radius:0;}
-        .message.system{align-self:center;background:transparent;color:#888;font-size:0.9em;}
+        .message.system{align-self:center;background:transparent;color:#55DDEE;font-size:0.9em;}
         #input-area{display:flex;padding:15px;background:#fff;border-top:1px solid #ddd;gap:10px;}
         #user-input{flex:1;padding:12px;border:1px solid #ccc;border-radius:8px;resize:none;outline:none;}
         #user-input:focus{border-color:var(--primary-color);}
         button{padding:0 20px;background:var(--primary-color);color:white;border:none;border-radius:8px;cursor:pointer;}
-        button:hover{background:#003d96;}
+        button:hover{background:#00AABB;}
         button:disabled{background:#ccc;cursor:not-allowed;}
         #modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;justify-content:center;align-items:center;z-index:1000;display:none;}
         #modal-content{background:white;padding:30px;border-radius:12px;width:300px;text-align:center;}
@@ -28,7 +27,7 @@
 <body>
     <div id="chat-container">
         <div id="chat-history">
-            <div class="message system">AI助手已准备就绪。首次提问需验证3位 API Key 后缀。</div>
+            <div class="message system">AI助手已准备就绪。首次提问需验证3位密码。</div>
         </div>
         <div id="input-area">
             <textarea id="user-input" rows="2" placeholder="输入您的问题 (Enter 发送)..."></textarea>
@@ -39,7 +38,7 @@
     <div id="modal-overlay">
         <div id="modal-content">
             <h3>安全验证</h3>
-            <p style="font-size: 0.9em; color: #555;">请输入API Key缺失的最后 3 位</p>
+            <p style="font-size: 0.9em; color: #555;">请输入 3 位密码</p>
             <!-- 限制只能输入3位 -->
             <input type="password" id="key-suffix" maxlength="3" placeholder="***" autocomplete="off" />
             <br>
@@ -51,12 +50,10 @@
         // ================= 配置区 =================
         const API_KEY_PREFIX = "cfut_ArYBq017n4ATROfFMbKahr3NW0ilYowdLrL1zkiD9c421"; 
         
-        // ⚠️ 极其重要：如果你通过下文的 Worker 解决了跨域，这里要改成你的 Worker 域名！
-        // 例如: const API_URL = "https://my-proxy.your-subdomain.workers.dev";
-        // 如果你还没配 Worker，暂时保留原地址，但会有 CORS 报错。
+        // worker
         const API_URL = "https://h-555666.pages.dev/";
         
-        // 修正为 31b-it
+        // modelname
         const MODEL_NAME = "google-ai-studio/gemma-4-31b-it";
         // ==========================================
 
@@ -120,7 +117,7 @@
                 if(chatHistory.lastChild.className.includes('system')) {
                     chatHistory.lastChild.remove();
                 }
-                appendMessage('system', `请求失败: ${error.message} (检查F12是否有CORS跨域报错)`);
+                appendMessage('system', `请求失败: ${error.message} (错误码: CORS)`);
                 
                 // 清空内存，要求重填
                 apiKeySuffix = "";
