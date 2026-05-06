@@ -4,67 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>H-555666 AI</title>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <style>
-        :root{--primary-color:#00AABB;--bg-color:#f4f4f9;--chat-bg:#ffffff;}
-        body{font-family:sans-serif;margin:0;padding:0;background:var(--bg-color);display:flex;justify-content:center;align-items:center;height:100vh;}
-
-        #chat-container {
-            width: 95%;
-            max-width: 1400px;
-            height: 90vh;
-            background: var(--chat-bg);
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        #chat-history{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:15px;}
-        .message{max-width:80%;padding:12px 16px;border-radius:8px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word;}
-        .message.user{align-self:flex-end;background:var(--primary-color);color:white;border-bottom-right-radius:0;}
-        .message.assistant{align-self:flex-start;background:#e9ecef;color:#333;border-bottom-left-radius:0;}
-        .message.system{align-self:center;background:transparent;color:#55DDEE;font-size:0.9em;}
-        #input-area{display:flex;padding:15px;background:#fff;border-top:1px solid #ddd;gap:10px;}
-        #user-input{flex:1;padding:12px;border:1px solid #ccc;border-radius:8px;resize:none;outline:none;}
-        #user-input:focus{border-color:var(--primary-color);}
-        button{padding:0 20px;background:var(--primary-color);color:white;border:none;border-radius:8px;cursor:pointer;}
-        button:hover{background:#00AABB;}
-        button:disabled{background:#ccc;cursor:not-allowed;}
-        #modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;justify-content:center;align-items:center;z-index:1000;display:none;}
-        #modal-content{background:white;padding:30px;border-radius:12px;width:300px;text-align:center;}
-        #modal-content input{width:80%;padding:10px;margin:15px 0;border:1px solid #ccc;border-radius:6px;text-align:center;letter-spacing:5px;font-size:1.2em;}
-        .thought-box {
-            margin-bottom: 10px;
-            padding: 8px 12px;
-            background: #f8f9fa;
-            border-left: 4px solid #55DDEE;
-            border-radius: 4px;
-            font-size: 0.9em;
-            color: #555;
-        }
-        .thought-box summary {
-            cursor: pointer;
-            font-weight: bold;
-            color: #55DDEE;
-            user-select: none;
-        }
-        /* Markdown 基础样式修正 */
-        .message p { margin: 0 0 10px 0; }
-        .message p:last-child { margin: 0; }
-        .message pre { background: #2b2b2b; color: #fff; padding: 10px; border-radius: 6px; overflow-x: auto; }
-        .message code { background: rgba(0,0,0,0.1); padding: 2px 4px; border-radius: 3px; font-family: monospace; }
-        /* Markdown 表格与补充样式 */
-        .message table { border-collapse: collapse; width: 100%; margin: 10px 0; }
-        .message th, .message td { border: 1px solid #ccc; padding: 6px 12px; text-align: left; }
-        .message th { background-color: rgba(0,0,0,0.05); }
-        .message a { word-break: break-all; color: var(--primary-color); }
-        .message img { max-width: 100%; }
-        /* 代码块背景优化 */
-        .message pre { border-radius: 6px; margin: 10px 0; overflow-x: auto; }
-        .message pre code { background: transparent; padding: 0; }
-    </style>
+    
+    <!-- 锁定 marked 版本为稳定支持高亮的 v9.1.2 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@9.1.2/marked.min.js"></script>
     <!-- 代码高亮 Highlight.js -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
     <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/highlight.min.js"></script>
@@ -80,6 +22,72 @@
         };
     </script>
     <script id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root{--primary-color:#00AABB;--bg-color:#f4f4f9;--chat-bg:#ffffff;}
+        body{font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin:0;padding:0;background:var(--bg-color);display:flex;justify-content:center;align-items:center;height:100vh;}
+
+        #chat-container {
+            width: 95%;
+            max-width: 1400px;
+            height: 90vh;
+            background: var(--chat-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #chat-history{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:15px;}
+        .message{max-width:85%;padding:12px 16px;border-radius:8px;line-height:1.6;word-wrap:break-word;}
+        .message.user{align-self:flex-end;background:var(--primary-color);color:white;border-bottom-right-radius:0;}
+        .message.assistant{align-self:flex-start;background:#e9ecef;color:#333;border-bottom-left-radius:0;}
+        .message.system{align-self:center;background:transparent;color:#55DDEE;font-size:0.9em;}
+        
+        #input-area{display:flex;padding:15px;background:#fff;border-top:1px solid #ddd;gap:10px;}
+        #user-input{flex:1;padding:12px;border:1px solid #ccc;border-radius:8px;resize:none;outline:none;font-family: inherit;}
+        #user-input:focus{border-color:var(--primary-color);}
+        button{padding:0 20px;background:var(--primary-color);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:bold;}
+        button:hover{background:#0099AA;}
+        button:disabled{background:#ccc;cursor:not-allowed;}
+        
+        #modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;justify-content:center;align-items:center;z-index:1000;display:none;}
+        #modal-content{background:white;padding:30px;border-radius:12px;width:300px;text-align:center;}
+        #modal-content input{width:80%;padding:10px;margin:15px 0;border:1px solid #ccc;border-radius:6px;text-align:center;letter-spacing:5px;font-size:1.2em;}
+        
+        .thought-box {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-left: 4px solid #55DDEE;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        .thought-box summary { cursor: pointer; font-weight: bold; color: #00AABB; user-select: none; }
+        
+        /* Markdown 核心样式强化 */
+        .message p { margin: 0 0 10px 0; }
+        .message p:last-child { margin: 0; }
+        .message a { word-break: break-all; color: #00AABB; }
+        .message img { max-width: 100%; border-radius: 4px; }
+        
+        /* 嵌套样式修复（引用、列表） */
+        .message blockquote { border-left: 4px solid #ccc; margin: 10px 0; padding-left: 15px; color: #555; background: rgba(0,0,0,0.02); padding-top: 5px; padding-bottom: 5px; }
+        .message ul, .message ol { padding-left: 25px; margin: 10px 0; }
+        
+        /* 表格防止撑破，允许横向滚动 */
+        .message table { border-collapse: collapse; width: max-content; max-width: 100%; display: block; overflow-x: auto; margin: 10px 0; white-space: nowrap; }
+        .message th, .message td { border: 1px solid #ccc; padding: 8px 12px; text-align: left; }
+        .message th { background-color: rgba(0,0,0,0.05); font-weight: bold; }
+        
+        /* 代码块与公式滚动优化 */
+        .message pre { border-radius: 6px; margin: 10px 0; padding: 12px; overflow-x: auto; background: #0d1117; }
+        .message pre code { background: transparent; padding: 0; color: #c9d1d9; }
+        .message code { background: rgba(0,0,0,0.08); padding: 2px 5px; border-radius: 4px; font-family: Consolas, Monaco, monospace; font-size: 0.9em; }
+        mjx-container { max-width: 100%; overflow-x: auto; overflow-y: hidden; }
+    </style>
 </head>
 <body>
     <div id="chat-container">
@@ -87,10 +95,10 @@
             <div class="message system">AI助手已准备就绪。首次提问需验证3位密码。</div>
         </div>
         <div id="input-area">
-            <!-- 上下文开关，默认关闭 -->
+            <!-- 上下文开关 -->
             <div style="display: flex; align-items: center; padding-right: 10px;" title="如果不需要AI分析上下文可以关闭，回答可能会更快">
                 <input type="checkbox" id="context-toggle" style="cursor: pointer;">
-                <label for="context-toggle" style="font-size: 0.85em; color: #55DDEE; cursor: pointer; user-select: none; white-space: nowrap;">
+                <label for="context-toggle" style="font-size: 0.85em; color: #00AABB; cursor: pointer; user-select: none; white-space: nowrap; margin-left: 4px;">
                     上下文
                 </label>
             </div>
@@ -104,7 +112,6 @@
         <div id="modal-content">
             <h3>安全验证</h3>
             <p style="font-size: 0.9em; color: #00AABB;">请输入 3 位密码</p>
-            <!-- 限制只能输入3位 -->
             <input type="password" id="key-suffix" maxlength="3" placeholder="***" autocomplete="off" />
             <br>
             <button id="save-key-btn">确认</button>
@@ -114,11 +121,9 @@
     <script>
         // ================= 配置区 =================
         const API_KEY_PREFIX = "cfut_ArYBq017n4ATROfFMbKahr3NW0ilYowdLrL1zkiD9c421"; 
-
-        // worker
         const API_URL = "https://h-555666.pages.dev/";
         
-        // marked换行与代码高亮
+        // 配置 marked 换行与高亮 (匹配旧版API写法)
         marked.setOptions({
             breaks: true,
             highlight: function(code, lang) {
@@ -128,7 +133,6 @@
                 return hljs.highlightAuto(code).value;
             }
         });
-
         // ==========================================
 
         let apiKeySuffix = ""; 
@@ -141,6 +145,15 @@
         const keySuffixInput = document.getElementById('key-suffix');
         const saveKeyBtn = document.getElementById('save-key-btn');
 
+        // HTML 字符安全转义函数：防止 <T> 等泛型被当做网页标签吃掉
+        function escapeHtml(str) {
+            return str.replace(/&/g, '&amp;')
+                      .replace(/</g, '&lt;')
+                      .replace(/>/g, '&gt;')
+                      .replace(/"/g, '&quot;')
+                      .replace(/'/g, '&#39;');
+        }
+
         function appendMessage(role, content) {
             const msgDiv = document.createElement('div');
             msgDiv.className = `message ${role}`;
@@ -148,22 +161,22 @@
             if (role === 'assistant') {
                 // 1. 处理 <thought> 标签
                 let text = content.replace(/<thought>([\s\S]*?)<\/thought>/g, function(match, p1) {
-                    return `<details class="thought-box"><summary>点击查看 AI 思考过程</summary>\n\n${p1}\n\n</details>`;
+                    return `<details class="thought-box"><summary>🧠 点击查看 AI 思考过程</summary>\n\n${p1}\n\n</details>`;
                 });
 
-                // 2. 提取并保护所有的公式，防止被 marked 当成 Markdown 错误解析
+                // 2. 提取并保护所有的公式 (更换为没有 Markdown 意义的占位符 %%%)
                 let mathBlocks = [];
-                text = text.replace(/(\$\$[\s\S]*?\$\$|\$[^$]*?\$)/g, function(match) {
+                text = text.replace(/(\$\$[\s\S]*?\$\$|\$[^$\n]*?\$)/g, function(match) {
                     mathBlocks.push(match);
-                    return `__MATH_PLACEHOLDER_${mathBlocks.length - 1}__`;
+                    return `%%%MATH_PLACEHOLDER_${mathBlocks.length - 1}%%%`;
                 });
 
-                // 3. 渲染普通的 Markdown（含代码高亮、表格等）
+                // 3. 渲染普通的 Markdown
                 let html = marked.parse(text);
 
-                // 4. 将公式安全地放回 HTML 中
-                html = html.replace(/__MATH_PLACEHOLDER_(\d+)__/g, function(match, i) {
-                    return mathBlocks[i];
+                // 4. 将公式安全地放回 HTML 中，并执行 escapeHtml 防止 < 和 > 破坏页面
+                html = html.replace(/%%%MATH_PLACEHOLDER_(\d+)%%%/g, function(match, i) {
+                    return escapeHtml(mathBlocks[i]);
                 });
 
                 msgDiv.innerHTML = html;
