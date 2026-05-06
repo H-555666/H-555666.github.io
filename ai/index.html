@@ -117,7 +117,7 @@
                 if(chatHistory.lastChild.className.includes('system')) {
                     chatHistory.lastChild.remove();
                 }
-                appendMessage('system', `请求失败: ${error.message} (错误码: CORS)`);
+                appendMessage('system', `请求失败: ${error.message} (密码可能错误！)`);
                 
                 // 清空内存，要求重填
                 apiKeySuffix = "";
