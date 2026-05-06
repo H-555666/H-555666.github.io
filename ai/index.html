@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat Gateway</title>
+    <style>
+        :root {
+            --primary-color: #0051c3;
+            --bg-color: #f4f4f9;
+            --chat-bg: #ffffff;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        #chat-container {
+            width: 100%;
+            max-width: 800px;
+            height: 90vh;
+            background: var(--chat-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #chat-history {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 8px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .message.user {
+            align-self: flex-end;
+            background-color: var(--primary-color);
+            color: white;
+            border-bottom-right-radius: 0;
+        }
+        .message.assistant {
+            align-self: flex-start;
+            background-color: #e9ecef;
+            color: #333;
+            border-bottom-left-radius: 0;
+        }
+        .message.system {
+            align-self: center;
+            background-color: transparent;
+            color: #888;
+            font-size: 0.9em;
+        }
+        #input-area {
+            display: flex;
+            padding: 15px;
+            background: #fff;
+            border-top: 1px solid #ddd;
+            gap: 10px;
+        }
+        #user-input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            resize: none;
+            font-family: inherit;
+            font-size: 1em;
+            outline: none;
+        }
+        #user-input:focus {
+            border-color: var(--primary-color);
+        }
+        button {
+            padding: 0 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background-color: #003d96;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* 弹窗样式 */
+        #modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none; /* 默认隐藏 */
+        }
+        #modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 300px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        #modal-content h3 { margin-top: 0; }
+        #modal-content input {
+            width: 80%;
+            padding: 10px;
+            margin: 15px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1em;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 聊天主界面 -->
+    <div id="chat-container">
+        <div id="chat-history">
+            <div class="message system">AI助手已准备就绪。首次提问时需要验证API Key后缀。</div>
+        </div>
+        <div id="input-area">
+            <textarea id="user-input" rows="2" placeholder="输入您的问题 (按 Shift+Enter 换行，Enter 发送)..."></textarea>
+            <button id="send-btn">发送</button>
+        </div>
+    </div>
+
+    <!-- API Key 补全弹窗 -->
+    <div id="modal-overlay">
+        <div id="modal-content">
+            <h3>安全验证</h3>
+            <p style="font-size: 0.9em; color: #555;">请输入API Key缺失的最后几位</p>
+            <input type="password" id="key-suffix" placeholder="输入后缀" autocomplete="off" />
+            <br>
+            <button id="save-key-btn">确认并发送</button>
+        </div>
+    </div>
+
+    <script>
+        // ================= 配置区 =================
+        // 请在此处替换为你的API Key的前半部分（去掉你需要用户输入的最后几位）
+        const API_KEY_PREFIX = "YOUR_CLOUDFLARE_API_KEY_PREFIX_HERE"; 
+        
+        // Cloudflare AI Gateway 接口地址
+        const API_URL = "https://gateway.ai.cloudflare.com/v1/f2d115ec5a6bbfbfd574c28360acfcd1/gemma-test1/compat/chat/completions";
+        const MODEL_NAME = "google-ai-studio/gemma-4-32b-it";
+        // ==========================================
+
+        // 状态变量（存储在内存中，刷新即销毁）
+        let apiKeySuffix = ""; 
+        let messagesHistory = []; 
+
+        // DOM 元素
+        const chatHistory = document.getElementById('chat-history');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const modalOverlay = document.getElementById('modal-overlay');
+        const keySuffixInput = document.getElementById('key-suffix');
+        const saveKeyBtn = document.getElementById('save-key-btn');
+
+        // 添加消息到UI
+        function appendMessage(role, content) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${role}`;
+            msgDiv.innerText = content; // 使用innerText防止XSS注入
+            chatHistory.appendChild(msgDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight; // 滚动到底部
+        }
+
+        // 发送请求到 Cloudflare AI Gateway
+        async function fetchAIResponse() {
+            const currentMessage = userInput.value.trim();
+            if (!currentMessage) return;
+
+            // 1. 更新UI和上下文
+            appendMessage('user', currentMessage);
+            messagesHistory.push({ role: "user", content: currentMessage });
+            userInput.value = "";
+            
+            // UI变为加载状态
+            sendBtn.disabled = true;
+            appendMessage('system', 'AI 思考中...');
+
+            try {
+                // 拼接完整的 Authorization Header
+                const fullAuthHeader = `Bearer ${API_KEY_PREFIX}${apiKeySuffix}`;
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'cf-aig-authorization': fullAuthHeader,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: MODEL_NAME,
+                        messages: messagesHistory
+                    })
+                });
+
+                // 移除"思考中"的系统提示
+                chatHistory.lastChild.remove(); 
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status} (可能后缀错误或网关拒绝)`);
+                }
+
+                const data = await response.json();
+                const aiReply = data.choices[0].message.content;
+
+                // 2. 将AI回复加入UI和上下文
+                appendMessage('assistant', aiReply);
+                messagesHistory.push({ role: "assistant", content: aiReply });
+
+            } catch (error) {
+                // 如果出错，撤回刚才存入上下文的用户消息，并提示错误
+                messagesHistory.pop(); 
+                if(chatHistory.lastChild.className.includes('system')) {
+                    chatHistory.lastChild.remove();
+                }
+                appendMessage('system', `请求失败: ${error.message}。请刷新页面或重试。`);
+                
+                // 如果是401/403大概率是后缀填错了，清空内存让他重填
+                if(error.message.includes('401') || error.message.includes('403')) {
+                    apiKeySuffix = "";
+                }
+            } finally {
+                sendBtn.disabled = false;
+                userInput.focus();
+            }
+        }
+
+        // 发送按钮点击逻辑
+        function handleSend() {
+            if (!userInput.value.trim()) return;
+
+            // 检查内存中是否有 API Key 后缀
+            if (!apiKeySuffix) {
+                modalOverlay.style.display = 'flex'; // 显示弹窗
+                keySuffixInput.focus();
+            } else {
+                fetchAIResponse(); // 已有后缀，直接发送
+            }
+        }
+
+        // 弹窗确认按钮逻辑
+        saveKeyBtn.addEventListener('click', () => {
+            const inputVal = keySuffixInput.value.trim();
+            if (inputVal) {
+                apiKeySuffix = inputVal;
+                modalOverlay.style.display = 'none';
+                keySuffixInput.value = ''; // 清空DOM里的输入
+                fetchAIResponse(); // 触发发送刚才拦截的消息
+            } else {
+                alert("后缀不能为空！");
+            }
+        });
+
+        // 绑定事件
+        sendBtn.addEventListener('click', handleSend);
+        
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); // 阻止默认换行
+                handleSend();
+            }
+        });
+
+        keySuffixInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                saveKeyBtn.click();
+            }
+        });
+    </script>
+</body>
+</html>
