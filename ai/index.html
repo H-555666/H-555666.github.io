@@ -145,7 +145,11 @@
             }
 
             chatHistory.appendChild(msgDiv);
-            chatHistory.scrollTop = chatHistory.scrollHeight; 
+            
+            // 仅在用户提问或系统提示时滚动到底部，AI回复时不强制滚到底部
+            if (role !== 'assistant') {
+                chatHistory.scrollTop = chatHistory.scrollHeight; 
+            }
         }
 
         // 根据身份设置 UI 限制
