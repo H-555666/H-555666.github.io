@@ -81,7 +81,7 @@
     <div id="modal-overlay">
         <div id="modal-content">
             <h3>安全验证</h3>
-            <p style="font-size: 0.9em; color: #00AABB;">请输入密码，或以访客身份继续</p>
+            <p style="font-size: 0.9em; color: #00AABB;">请输入密码，或以访客身份继续(如果你不知道密码，试试f87!)</p>
             <input type="password" id="key-suffix" maxlength="3" placeholder="***" autocomplete="off" />
             <br>
             <div style="display: flex; justify-content: center; margin-top: 10px;">
@@ -104,8 +104,8 @@
         });
         // ==========================================
 
-        let authMode = ""; // "admin" 或 "guest"
-        let clientToken = ""; // 保存密码后缀或 "guest" 字符
+        let authMode = ""; // "admin" or "guest"
+        let clientToken = ""; 
         let messagesHistory = []; 
 
         const chatHistory = document.getElementById('chat-history');
