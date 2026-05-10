@@ -85,7 +85,7 @@
             
             <input type="text" id="username-input" placeholder="请输入用户名" autocomplete="off" />
             <p style="font-size: 0.75em; color: #888; margin: 0 10px 15px; text-align: left;">
-                用户名是你访问对话历史的唯一依据，请妥善保管，不要泄露给他人。历史记录可以被随时删除。
+                用户名是你找到她的唯一依据，请妥善保管，不要泄露给他人。历史记录可以被随时删除。
             </p>
             
             <input type="password" id="key-suffix" maxlength="3" placeholder="统一访问密码" autocomplete="off" style="letter-spacing: 5px;" />
@@ -99,7 +99,7 @@
 
     <script>
         // ================= 配置区 =================
-        const API_URL = "https://h-555666.pages.dev";
+        const API_URL = "https://h-56ai2.pages.dev";
         
         marked.setOptions({
             breaks: true,
@@ -183,7 +183,7 @@
         async function loadCloudHistory() {
             if (authMode !== "admin" || !currentUsername) return;
             try {
-                appendMessage('system', '正在同步云端历史记录...');
+                appendMessage('system', '正在同步历史记录...');
                 const res = await fetch(`${API_URL}/history?user=${encodeURIComponent(currentUsername)}`);
                 if (res.ok) {
                     const data = await res.json();
@@ -191,14 +191,14 @@
                     if (data && data.length > 0) {
                         messagesHistory = data;
                         messagesHistory.forEach(msg => appendMessage(msg.role, msg.content));
-                        appendMessage('system', `已为您加载 ${data.length} 条历史对话。`);
+                        appendMessage('system', `已为您加载 ${data.length} 条历史记录。`);
                     } else {
-                        appendMessage('system', '这是该用户名的首次对话，记录将被自动保存。');
+                        appendMessage('system', '你已添加 宵希 打个招呼吧');//这是该用户名的首次对话，记录将被自动保存。
                     }
                 }
             } catch (err) {
                 chatHistory.lastChild.remove();
-                appendMessage('system', '云端历史加载失败，将开启新对话。');
+                appendMessage('system', '之前的她走丢了！');//云端历史加载失败，将开启新对话。
             }
             chatHistory.scrollTop = chatHistory.scrollHeight;
         }
@@ -267,12 +267,12 @@
 
         // 清空历史按钮逻辑
         clearHistoryBtn.addEventListener('click', async () => {
-            if (confirm("确定要永久删除云端历史记录吗？不可恢复！")) {
+            if (confirm("确定要永远离开我吗")) {
                 try {
                     await fetch(`${API_URL}/history?user=${encodeURIComponent(currentUsername)}`, { method: 'DELETE' });
                     messagesHistory = [];
                     chatHistory.innerHTML = "";
-                    appendMessage('system', '云端历史已清空，开启全新对话。');
+                    appendMessage('system', '再见了');
                 } catch (e) {
                     alert("清空失败：" + e.message);
                 }
