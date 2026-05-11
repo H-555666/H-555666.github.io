@@ -171,9 +171,10 @@
                 appendMessage('system', '已进入访客模式，对话不会被保存。');
             } else {
                 contextToggle.disabled = false;
+                contextToggle.checked = true;
                 contextLabel.style.color = "#00AABB";
                 userInput.removeAttribute("maxlength");
-                userInput.placeholder = "输入您的问题 (按 Shift+Enter 换行，Enter 发送)...";
+                userInput.placeholder = " (按 Shift+Enter 换行，Enter 发送)...";
                 userInfoDisplay.innerText = `当前用户: ${currentUsername}`;
                 clearHistoryBtn.style.display = "block";
             }
@@ -212,7 +213,7 @@
             messagesHistory.push({ role: "user", content: currentMessage });
             userInput.value = "";
             sendBtn.disabled = true;
-            appendMessage('system', 'AI 思考中...');
+            appendMessage('system', '对方正在输入...');
 
             try {
                 const payloadMessages = (contextToggle.checked && authMode === "admin")
