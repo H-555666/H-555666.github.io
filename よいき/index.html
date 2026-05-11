@@ -91,7 +91,7 @@
             <input type="password" id="key-suffix" maxlength="3" placeholder="统一访问密码" autocomplete="off" style="letter-spacing: 5px;" />
             <br>
             <div style="display: flex; justify-content: center; margin-top: 15px;">
-                <button id="guest-btn">访客模式</button>
+                <!-- <button id="guest-btn">访客模式</button> -->
                 <button id="save-key-btn">确认登录</button>
             </div>
         </div>
@@ -296,13 +296,7 @@
             }
         });
 
-        guestBtn.addEventListener('click', () => {
-            authMode = "guest";
-            clientToken = "guest"; 
-            currentUsername = "";
-            applyAuthLimits();
-            modalOverlay.style.display = 'none';
-        });
+        //guestBtn.addEventListener('click', () => {
 
         sendBtn.addEventListener('click', handleSend);
         userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }});
