@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>H56 磁轴小键盘 Web 上位机配置工具</title>
     <link rel="shortcut icon" href="https://s1.ax1x.com/2023/04/18/p9icbXn.jpg">
-
     <style>
         :root {
             --bg-color: #0d0f12;
@@ -40,7 +39,6 @@
             font-size: 14px;
         }
 
-        /* 固件升级浮动横幅 */
         .fw-update-banner {
             width: 100%;
             max-width: 1100px;
@@ -50,7 +48,7 @@
             padding: 15px 20px;
             border-radius: 12px;
             margin-bottom: 20px;
-            display: none; /* 默认隐藏，有更新时通过JS展示 */
+            display: none; 
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 4px 15px rgba(255, 179, 0, 0.1);
@@ -146,7 +144,6 @@
             background-color: #34c759;
         }
 
-        /* 遥测可视化柱状图 */
         .visualizer-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -220,7 +217,6 @@
             line-height: 1.4;
         }
 
-        /* 组合键映射控制区样式 */
         .combo-panel {
             display: flex;
             flex-direction: column;
@@ -269,7 +265,6 @@
             font-weight: bold;
         }
 
-        /* 滑块控制器 */
         .control-group {
             margin-bottom: 15px;
         }
@@ -355,7 +350,7 @@
 </head>
 <body>
 
-    <h1>RP2040 磁轴键盘上位机 <span style="font-size: 14px; opacity: 0.6;">(支持多键组合 & 固件升级)</span></h1>
+    <h1>RP2040 磁轴键盘上位机 <span style="font-size: 14px; opacity: 0.6;">(V2.1 - 修复同步漏洞)</span></h1>
     <p class="subtitle">通过 Web Serial 调试按键灵敏度并实现 3键无冲突多重映射</p>
 
     <!-- 固件升级提示横幅 -->
@@ -371,7 +366,6 @@
     </div>
 
     <div class="container">
-        <!-- 顶部连接栏 -->
         <div class="panel conn-bar">
             <div class="status">
                 <div id="status-dot" class="status-dot"></div>
@@ -380,7 +374,6 @@
             <button id="connect-btn">选择并连接键盘</button>
         </div>
 
-        <!-- 左侧：参数配置 & 组合键位绑定 -->
         <div class="panel">
             <h2>自定多按键组合映射 (支持最多3个键)</h2>
             <div class="combo-panel">
@@ -449,7 +442,6 @@
                 <input type="checkbox" id="rt-toggle" style="width: 20px; height: 20px;" checked>
             </div>
 
-            <!-- RT 灵敏度 -->
             <div id="rt-sliders">
                 <div class="control-group">
                     <div class="control-label">
@@ -467,7 +459,6 @@
                 </div>
             </div>
 
-            <!-- 静态触发设定 -->
             <div id="static-sliders" style="display: none;">
                 <div class="control-group">
                     <div class="control-label">
@@ -487,7 +478,6 @@
             <button id="apply-settings-btn" style="width: 100%;">应用行程配置</button>
         </div>
 
-        <!-- 右侧：遥测可视化柱状图 & 硬件校准 -->
         <div class="panel">
             <h2>高速实时遥测柱状图</h2>
             <div class="visualizer-grid">
@@ -521,7 +511,6 @@
             </div>
         </div>
 
-        <!-- 底部：日志控制台 -->
         <div class="panel console-panel">
             <h2>原始数据监视器 / 串口日志输出</h2>
             <textarea id="serial-console" readonly placeholder="等待设备连接..."></textarea>
@@ -529,10 +518,8 @@
     </div>
 
     <script>
-        // 定义最新可用固件的版本 (如果本地同一目录下放了 002.uf2，将其设为 2)
         const LATEST_FIRMWARE_VERSION = 2; 
 
-        // 统一按键和功能键码定义
         const KEY_OPTIONS = [
             { name: "无", value: 0 },
             { name: "Ctrl", value: 128 },
@@ -552,20 +539,16 @@
             { name: "右箭头", value: 215 }
         ];
 
-        // 填充 A-Z (ASCII 码)
         for (let i = 65; i <= 90; i++) {
-            KEY_OPTIONS.push({ name: String.fromCharCode(i), value: i + 32 }); // 下位机通常采用小写 ASCII 绑定按键
+            KEY_OPTIONS.push({ name: String.fromCharCode(i), value: i + 32 }); 
         }
-        // 填充 0-9
         for (let i = 48; i <= 57; i++) {
             KEY_OPTIONS.push({ name: String.fromCharCode(i), value: i });
         }
-        // 填充 F1-F12
         for (let i = 1; i <= 12; i++) {
             KEY_OPTIONS.push({ name: `F${i}`, value: 194 + i - 1 });
         }
 
-        // 初始化下拉菜单选项
         function populateKeySelectors() {
             for (let i = 0; i < 4; i++) {
                 for (let k = 0; k < 3; k++) {
@@ -581,14 +564,12 @@
         }
         populateKeySelectors();
 
-        // 动态控制组合键选择框的显示和隐藏
         function updateComboVis(ch) {
             const count = parseInt(document.getElementById(`count-${ch}`).value);
             document.getElementById(`key-${ch}-1`).style.display = (count >= 2) ? 'block' : 'none';
             document.getElementById(`key-${ch}-2`).style.display = (count === 3) ? 'block' : 'none';
         }
 
-        // 串口连接及控制变量
         let port;
         let reader;
         let inputDone;
@@ -604,7 +585,6 @@
         const rtSliders = document.getElementById('rt-sliders');
         const staticSliders = document.getElementById('static-sliders');
         
-        // 滑块数值反馈绑定
         function bindSliderVal(sliderId, valId, isPercent) {
             const slider = document.getElementById(sliderId);
             const valDisp = document.getElementById(valId);
@@ -661,7 +641,9 @@
                 statusText.style.color = '#00ffcc';
 
                 window.settingsSynced = false;
-                await sendCommand("gui"); // 启用高频流
+                
+                // 修改：下发确定性开启指令 `gui on` 而不是 `gui` toggle
+                await sendCommand("gui on"); 
 
                 readLoop();
             } catch (e) {
@@ -673,7 +655,7 @@
 
         async function disconnect() {
             if (reader) {
-                await sendCommand("gui"); 
+                await sendCommand("gui off"); // 修改：下发确定的 `gui off`
                 await reader.cancel();
                 await inputDone.catch(() => {});
                 reader = null;
@@ -714,17 +696,15 @@
             }
         }
 
-        // 获取单个按键码的缩写名
         function getKeyAbbr(val) {
             const found = KEY_OPTIONS.find(o => o.value === val);
             if (!found) return "-";
             if (found.name.includes("(")) {
-                return found.name.split(" ")[0]; // 截取 Enter, Backspace, PrintScreen 等首单词
+                return found.name.split(" ")[0]; 
             }
             return found.name;
         }
 
-        // 格式化输出组合键名
         function formatComboLabel(count, k0, k1, k2) {
             let parts = [];
             if (count >= 1 && k0 > 0) parts.push(getKeyAbbr(k0));
@@ -733,7 +713,6 @@
             return parts.join("+") || "未设定";
         }
 
-        // 解析高频打包的 GUI 包
         function parseLine(line) {
             const consoleElem = document.getElementById('serial-console');
             if (!line.startsWith("GUI:")) {
@@ -743,13 +722,11 @@
             }
 
             const parts = line.substring(4).split(",");
-            // 遥测数据 34 个参数：12个通道遥测 + 16个按键组合配置 + 1路RT开关 + 4路行程配置 + 1路固件版本号
             if (parts.length >= 34) {
                 const raws = [parseInt(parts[0]), parseInt(parts[3]), parseInt(parts[6]), parseInt(parts[9])];
                 const travels = [parseFloat(parts[1]), parseFloat(parts[4]), parseFloat(parts[7]), parseFloat(parts[10])];
                 const states = [parseInt(parts[2]), parseInt(parts[5]), parseInt(parts[8]), parseInt(parts[11])];
                 
-                // 按键组合
                 const kCount = [parseInt(parts[12]), parseInt(parts[16]), parseInt(parts[20]), parseInt(parts[24])];
                 const k0 = [parseInt(parts[13]), parseInt(parts[17]), parseInt(parts[21]), parseInt(parts[25])];
                 const k1 = [parseInt(parts[14]), parseInt(parts[18]), parseInt(parts[22]), parseInt(parts[26])];
@@ -762,7 +739,6 @@
                 const st_r = parseFloat(parts[32]);
                 const board_fw = parseInt(parts[33]);
 
-                // 1. 刷新 4 个通道图形和触发文字
                 for (let i = 0; i < 4; i++) {
                     const bar = document.getElementById(`bar-${i}`);
                     const keyBox = document.getElementById(`key-box-${i}`);
@@ -781,11 +757,9 @@
                         bar.style.backgroundColor = 'var(--accent-blue)';
                     }
 
-                    // 动态更新视觉键帽上的组合映射文本
                     keyBox.innerHTML = `<span>CH${i}</span><span style="font-size:10px; color:#00ffcc; margin-top:4px; font-weight:normal;">${formatComboLabel(kCount[i], k0[i], k1[i], k2[i])}</span>`;
                 }
 
-                // 2. 检查固件版本，启动升级提醒
                 if (!window.settingsSynced) {
                     document.getElementById('board-fw-info').innerText = `| 固件版本: 00${board_fw}`;
                     
@@ -797,7 +771,6 @@
                         document.getElementById('fw-banner').style.display = 'flex';
                     }
 
-                    // 参数同步回滑块及菜单
                     rtToggle.checked = rt_enabled;
                     rtSliders.style.display = rt_enabled ? 'block' : 'none';
                     staticSliders.style.display = rt_enabled ? 'none' : 'block';
@@ -812,7 +785,6 @@
                     document.getElementById('static-rel').value = st_r;
                     document.getElementById('static-rel-val').innerText = `${(st_r * 100).toFixed(0)}%`;
 
-                    // 同步组合按键选择框选项
                     for (let i = 0; i < 4; i++) {
                         document.getElementById(`count-${i}`).value = kCount[i];
                         document.getElementById(`key-${i}-0`).value = k0[i];
@@ -824,10 +796,11 @@
                     window.settingsSynced = true;
                     consoleElem.value += "[Web上位机] 同步配置成功。\n";
                 }
+            } else {
+                console.warn("[Web上位机] 遥测包数据长度不符: ", parts.length);
             }
         }
 
-        // 下发触发设定
         document.getElementById('apply-settings-btn').addEventListener('click', async () => {
             if (!writeStream) { alert("请先连接键盘！"); return; }
             await sendCommand(rtToggle.checked ? "rt on" : "rt off");
@@ -844,15 +817,31 @@
             alert("触发行程配置写入成功！");
         });
 
-        // 烧录自定多键组合映射
+        // 修改：增加未完成同步防呆拦截，拦截 NaN 配置下发，从根本上解决“一直卡在 zxcv”的问题
         document.getElementById('apply-keys-btn').addEventListener('click', async () => {
             if (!writeStream) { alert("请先连接键盘！"); return; }
+            if (!window.settingsSynced) {
+                alert("设备尚未完成首次握手同步，请稍等数秒，直到柱状图能看到动态读数！");
+                return;
+            }
             
             for (let i = 0; i < 4; i++) {
-                const count = parseInt(document.getElementById(`count-${i}`).value);
-                const k0 = parseInt(document.getElementById(`key-${i}-0`).value);
-                const k1 = parseInt(document.getElementById(`key-${i}-1`).value);
-                const k2 = parseInt(document.getElementById(`key-${i}-2`).value);
+                const countVal = document.getElementById(`count-${i}`).value;
+                const k0Val = document.getElementById(`key-${i}-0`).value;
+                const k1Val = document.getElementById(`key-${i}-1`).value;
+                const k2Val = document.getElementById(`key-${i}-2`).value;
+
+                const count = parseInt(countVal);
+                const k0 = parseInt(k0Val);
+                const k1 = parseInt(k1Val) || 0;
+                const k2 = parseInt(k2Val) || 0;
+
+                // 强制校验数据合法性，防止下发破坏性参数
+                if (isNaN(count) || isNaN(k0)) {
+                    alert(`CH ${i} 通道配置中存在空数据，烧录已被安全中止，请重新核对！`);
+                    return;
+                }
+
                 await sendCommand(`combo ${i} ${count} ${k0} ${k1} ${k2}`);
             }
 
@@ -860,7 +849,6 @@
             alert("4路自定组合键映射已全部烧录写入！");
         });
 
-        // 校准
         const calBanner = document.getElementById('cal-banner');
         document.getElementById('cal-start-btn').addEventListener('click', async () => {
             if (!writeStream) return;
@@ -875,7 +863,6 @@
             alert("磁轴极限行程校准保存成功！");
         });
 
-        // 一键升级与进入 BOOTSEL 固件模式
         document.getElementById('fw-flash-btn').addEventListener('click', async () => {
             if (!writeStream) {
                 alert("未建立连接！请先在顶部连接您的键盘。");
