@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RP2040 磁轴键盘 Web 上位机调试工具</title>
+    <style>
+        :root {
+            --bg-color: #0d0f12;
+            --panel-bg: #161a22;
+            --accent-color: #00ffcc;
+            --accent-blue: #3d5afe;
+            --text-color: #e3e8f0;
+            --border-color: #2a313e;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: var(--accent-color);
+            margin-bottom: 5px;
+            font-weight: 400;
+        }
+
+        .subtitle {
+            color: #8a99ad;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .panel h2 {
+            margin-top: 0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        /* 顶部连接栏 */
+        .conn-bar {
+            grid-column: span 2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #ff3b30;
+            box-shadow: 0 0 8px rgba(255, 59, 48, 0.5);
+        }
+
+        .status-dot.connected {
+            background-color: var(--accent-color);
+            box-shadow: 0 0 8px rgba(0, 255, 204, 0.5);
+        }
+
+        button {
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        button.btn-warn {
+            background-color: #ff3b30;
+        }
+
+        button.btn-success {
+            background-color: #34c759;
+        }
+
+        /* 极速遥测通道可视化 */
+        .visualizer-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            height: 280px;
+            align-items: end;
+            padding: 20px 10px;
+            background: #090b0d;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .channel-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            justify-content: flex-end;
+            position: relative;
+        }
+
+        .track-bg {
+            width: 45px;
+            height: 200px;
+            background-color: #1a1e27;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #232a36;
+        }
+
+        .fill-bar {
+            width: 100%;
+            height: 0%;
+            background-color: var(--accent-blue);
+            position: absolute;
+            bottom: 0;
+            transition: height 0.05s ease-out, background-color 0.1s;
+        }
+
+        .key-box {
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #8a99ad;
+            background-color: #12161f;
+        }
+
+        .key-box.pressed {
+            background-color: rgba(0, 255, 204, 0.15);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            box-shadow: inset 0 0 8px rgba(0, 255, 204, 0.3);
+        }
+
+        .channel-info {
+            font-size: 11px;
+            color: #8a99ad;
+            margin-top: 6px;
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        /* 键位映射控制 */
+        .keymap-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .keymap-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .keymap-item label {
+            font-size: 11px;
+            color: #8a99ad;
+        }
+
+        .keymap-item input {
+            background-color: #12161f;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: #fff;
+            padding: 8px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        /* 滑块控制器 */
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #a0aec0;
+        }
+
+        .control-label span.val-disp {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: #1e2430;
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #1a1e26;
+            border-radius: 8px;
+        }
+
+        /* 模拟控制面板终端 */
+        .console-panel {
+            grid-column: span 2;
+            display: flex;
+            flex-direction: column;
+        }
+
+        textarea {
+            background-color: #090b0d;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: #00ff66;
+            font-family: Consolas, Monaco, monospace;
+            padding: 10px;
+            height: 100px;
+            resize: none;
+            font-size: 11px;
+        }
+
+        .cal-running-banner {
+            background: rgba(255, 59, 48, 0.1);
+            border: 1px solid #ff3b30;
+            color: #ff3b30;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: none;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>RP2040 磁轴键盘上位机</h1>
+    <p class="subtitle">通过 Web Serial API 免驱动直连调试并自定义键位</p>
+
+    <div class="container">
+        <!-- 顶部连接栏 -->
+        <div class="panel conn-bar">
+            <div class="status">
+                <div id="status-dot" class="status-dot"></div>
+                <span>设备状态：<span id="status-text" style="color: #ff3b30;">未连接</span></span>
+            </div>
+            <button id="connect-btn">选择并连接键盘</button>
+        </div>
+
+        <!-- 左侧：参数配置 & 键位修改 -->
+        <div class="panel">
+            <h2>触发模式与参数设定</h2>
+            
+            <div class="toggle-container">
+                <label style="font-weight: bold; color: #fff;">启用 Rapid Trigger (RT) 动态触发</label>
+                <input type="checkbox" id="rt-toggle" style="width: 20px; height: 20px;" checked>
+            </div>
+
+            <!-- RT 灵敏度 -->
+            <div id="rt-sliders">
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>按下触发灵敏度 (RT Press)</span>
+                        <span id="rt-press-val" class="val-disp">5.0%</span>
+                    </div>
+                    <input type="range" id="rt-press-sens" min="0.01" max="0.50" step="0.01" value="0.05">
+                </div>
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>松开释放灵敏度 (RT Release)</span>
+                        <span id="rt-release-val" class="val-disp">5.0%</span>
+                    </div>
+                    <input type="range" id="rt-release-sens" min="0.01" max="0.50" step="0.01" value="0.05">
+                </div>
+            </div>
+
+            <!-- 静态触发设定 -->
+            <div id="static-sliders" style="display: none;">
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>静态触发深度 (Static Actuation)</span>
+                        <span id="static-act-val" class="val-disp">40%</span>
+                    </div>
+                    <input type="range" id="static-act" min="0.05" max="0.95" step="0.05" value="0.40">
+                </div>
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>静态释放深度 (Static Release)</span>
+                        <span id="static-rel-val" class="val-disp">35%</span>
+                    </div>
+                    <input type="range" id="static-rel" min="0.05" max="0.95" step="0.05" value="0.35">
+                </div>
+            </div>
+
+            <button id="apply-settings-btn" style="width: 100%; margin-bottom: 25px;">应用触发配置</button>
+
+            <h2>自定义键位映射 (Keymap)</h2>
+            <div class="keymap-grid">
+                <div class="keymap-item">
+                    <label>CH 0 (左一)</label>
+                    <input type="text" id="key-input-0" maxlength="1" value="Z">
+                </div>
+                <div class="keymap-item">
+                    <label>CH 1</label>
+                    <input type="text" id="key-input-1" maxlength="1" value="X">
+                </div>
+                <div class="keymap-item">
+                    <label>CH 2</label>
+                    <input type="text" id="key-input-2" maxlength="1" value="C">
+                </div>
+                <div class="keymap-item">
+                    <label>CH 3 (右一)</label>
+                    <input type="text" id="key-input-3" maxlength="1" value="V">
+                </div>
+            </div>
+            <button id="apply-keys-btn" style="width: 100%;" class="btn-success">烧录并应用新键位</button>
+        </div>
+
+        <!-- 右侧：遥测可视化 & 校准控制 -->
+        <div class="panel">
+            <h2>高速实时遥测柱状图</h2>
+            
+            <div class="visualizer-grid">
+                <div class="channel-column">
+                    <div class="track-bg"><div id="bar-0" class="fill-bar"></div></div>
+                    <div id="key-box-0" class="key-box">Z</div>
+                    <div class="channel-info">CH0<br><span id="val-raw-0">0</span><br><span id="val-travel-0">0%</span></div>
+                </div>
+                <div class="channel-column">
+                    <div class="track-bg"><div id="bar-1" class="fill-bar"></div></div>
+                    <div id="key-box-1" class="key-box">X</div>
+                    <div class="channel-info">CH1<br><span id="val-raw-1">0</span><br><span id="val-travel-1">0%</span></div>
+                </div>
+                <div class="channel-column">
+                    <div class="track-bg"><div id="bar-2" class="fill-bar"></div></div>
+                    <div id="key-box-2" class="key-box">C</div>
+                    <div class="channel-info">CH2<br><span id="val-raw-2">0</span><br><span id="val-travel-2">0%</span></div>
+                </div>
+                <div class="channel-column">
+                    <div class="track-bg"><div id="bar-3" class="fill-bar"></div></div>
+                    <div id="key-box-3" class="key-box">V</div>
+                    <div class="channel-info">CH3<br><span id="val-raw-3">0</span><br><span id="val-travel-3">0%</span></div>
+                </div>
+            </div>
+
+            <h2>硬件零位与全行程校准 (Calibration)</h2>
+            <div id="cal-banner" class="cal-running-banner">● 正在校准：请彻底按下所有磁轴键，再松开！</div>
+            <div style="display: flex; gap: 10px;">
+                <button id="cal-start-btn" style="flex: 1;" class="btn-warn">开始硬件校准</button>
+                <button id="cal-save-btn" style="flex: 1;" class="btn-success">保存并结束校准</button>
+            </div>
+        </div>
+
+        <!-- 底部：日志控制台 -->
+        <div class="panel console-panel">
+            <h2>原始数据监视器 / 串口日志输出</h2>
+            <textarea id="serial-console" readonly placeholder="等待设备连接并启动数据流..."></textarea>
+        </div>
+    </div>
+
+    <script>
+        let port;
+        let reader;
+        let inputDone;
+        let outputStream;
+        let writeStream;
+        let textDecoder;
+
+        window.settingsSynced = false; // 是否已同步硬件端的当前配置
+
+        const connectBtn = document.getElementById('connect-btn');
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+        const rtToggle = document.getElementById('rt-toggle');
+        const rtSliders = document.getElementById('rt-sliders');
+        const staticSliders = document.getElementById('static-sliders');
+        
+        // 滑块数值反馈绑定
+        function bindSliderVal(sliderId, valId, isPercent) {
+            const slider = document.getElementById(sliderId);
+            const valDisp = document.getElementById(valId);
+            slider.addEventListener('input', () => {
+                let v = parseFloat(slider.value);
+                valDisp.innerText = isPercent ? `${(v * 100).toFixed(1)}%` : `${(v * 100).toFixed(0)}%`;
+            });
+        }
+        bindSliderVal('rt-press-sens', 'rt-press-val', true);
+        bindSliderVal('rt-release-sens', 'rt-release-val', true);
+        bindSliderVal('static-act', 'static-act-val', false);
+        bindSliderVal('static-rel', 'static-rel-val', false);
+
+        // 切换 RT 模式与静态模式
+        rtToggle.addEventListener('change', () => {
+            if (rtToggle.checked) {
+                rtSliders.style.display = 'block';
+                staticSliders.style.display = 'none';
+            } else {
+                rtSliders.style.display = 'none';
+                staticSliders.style.display = 'block';
+            }
+        });
+
+        // 串口连接/断开按钮
+        connectBtn.addEventListener('click', async () => {
+            if (port) {
+                await disconnect();
+            } else {
+                await connect();
+            }
+        });
+
+        // 发送串口命令函数
+        async function sendCommand(cmd) {
+            if (writeStream) {
+                const encoder = new TextEncoder();
+                await writeStream.write(encoder.encode(cmd + "\n"));
+            }
+        }
+
+        // Web Serial 连接主逻辑
+        async function connect() {
+            if (!("serial" in navigator)) {
+                alert("当前浏览器不支持 Web Serial API。建议使用最新版 Google Chrome 或 Microsoft Edge 浏览器 [1]！");
+                return;
+            }
+
+            try {
+                port = await navigator.serial.requestPort();
+                await port.open({ baudRate: 115200 });
+
+                // 初始化输出流
+                writeStream = port.writable.getWriter();
+
+                // 初始化输入流
+                textDecoder = new TextDecoderStream();
+                inputDone = port.readable.pipeTo(textDecoder.writable);
+                const inputStream = textDecoder.readable;
+                reader = inputStream.getReader();
+
+                connectBtn.innerText = '断开连接';
+                statusDot.classList.add('connected');
+                statusText.innerText = '已连接';
+                statusText.style.color = '#00ffcc';
+
+                window.settingsSynced = false;
+
+                // 告诉键盘我们已进入网页模式，激活 GUI 数据流
+                await sendCommand("gui");
+
+                readLoop();
+            } catch (e) {
+                console.error(e);
+                alert("连接失败，请确认该串口未被 Arduino 串口监视器等程序占用。");
+                port = null;
+            }
+        }
+
+        // 断开连接逻辑
+        async function disconnect() {
+            if (reader) {
+                await sendCommand("gui"); // 关闭键盘遥测流
+                await reader.cancel();
+                await inputDone.catch(() => {});
+                reader = null;
+                inputDone = null;
+            }
+            if (writeStream) {
+                await writeStream.releaseLock();
+                writeStream = null;
+            }
+            if (port) {
+                await port.close();
+                port = null;
+            }
+            connectBtn.innerText = '选择并连接键盘';
+            statusDot.classList.remove('connected');
+            statusText.innerText = '未连接';
+            statusText.style.color = '#ff3b30';
+            window.settingsSynced = false;
+        }
+
+        // 串口高频读取主循环
+        async function readLoop() {
+            let buffer = "";
+            while (true) {
+                try {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    buffer += value;
+                    let lines = buffer.split("\n");
+                    buffer = lines.pop(); // 保留不完整的一行
+                    for (let line of lines) {
+                        parseLine(line.trim());
+                    }
+                } catch (e) {
+                    console.error("串口读取发生异常: ", e);
+                    break;
+                }
+            }
+        }
+
+        // 解析下位机发来的每一行数据
+        function parseLine(line) {
+            const consoleElem = document.getElementById('serial-console');
+            
+            // 打印普通日志至调试控制台 (排除 GUI 遥测核心信息，防止大量文字渲染拖慢设备)
+            if (!line.startsWith("GUI:")) {
+                consoleElem.value += line + "\n";
+                consoleElem.scrollTop = consoleElem.scrollHeight;
+                return;
+            }
+
+            // 解析 GUI 数据包并快速渲染柱状图
+            const parts = line.substring(4).split(",");
+            if (parts.length >= 21) {
+                const raws = [parseInt(parts[0]), parseInt(parts[3]), parseInt(parts[6]), parseInt(parts[9])];
+                const travels = [parseFloat(parts[1]), parseFloat(parts[4]), parseFloat(parts[7]), parseFloat(parts[10])];
+                const states = [parseInt(parts[2]), parseInt(parts[5]), parseInt(parts[8]), parseInt(parts[11])];
+                const keys = [parseInt(parts[12]), parseInt(parts[13]), parseInt(parts[14]), parseInt(parts[15])];
+                
+                const rt_enabled = parseInt(parts[16]) === 1;
+                const rt_p = parseFloat(parts[17]);
+                const rt_r = parseFloat(parts[18]);
+                const st_p = parseFloat(parts[19]);
+                const st_r = parseFloat(parts[20]);
+
+                // 1. 刷新 4 个通道的数据与图形柱
+                for (let i = 0; i < 4; i++) {
+                    const bar = document.getElementById(`bar-${i}`);
+                    const keyBox = document.getElementById(`key-box-${i}`);
+                    const rawText = document.getElementById(`val-raw-${i}`);
+                    const travelText = document.getElementById(`val-travel-${i}`);
+
+                    // 更新高度百分比
+                    bar.style.height = `${travels[i] * 100}%`;
+                    rawText.innerText = raws[i];
+                    travelText.innerText = `${(travels[i] * 100).toFixed(0)}%`;
+
+                    // 根据物理按键触发状态变色
+                    if (states[i] === 1) {
+                        keyBox.classList.add('pressed');
+                        bar.style.backgroundColor = 'var(--accent-color)';
+                    } else {
+                        keyBox.classList.remove('pressed');
+                        bar.style.backgroundColor = 'var(--accent-blue)';
+                    }
+
+                    // 映射物理 ASCII 字符
+                    keyBox.innerText = String.fromCharCode(keys[i]).toUpperCase();
+                }
+
+                // 2. 硬件数据首次向网页 UI 反向同步 (仅在刚连接时做一次)
+                if (!window.settingsSynced) {
+                    rtToggle.checked = rt_enabled;
+                    rtSliders.style.display = rt_enabled ? 'block' : 'none';
+                    staticSliders.style.display = rt_enabled ? 'none' : 'block';
+
+                    document.getElementById('rt-press-sens').value = rt_p;
+                    document.getElementById('rt-press-val').innerText = `${(rt_p * 100).toFixed(1)}%`;
+                    document.getElementById('rt-release-sens').value = rt_r;
+                    document.getElementById('rt-release-val').innerText = `${(rt_r * 100).toFixed(1)}%`;
+
+                    document.getElementById('static-act').value = st_p;
+                    document.getElementById('static-act-val').innerText = `${(st_p * 100).toFixed(0)}%`;
+                    document.getElementById('static-rel').value = st_r;
+                    document.getElementById('static-rel-val').innerText = `${(st_r * 100).toFixed(0)}%`;
+
+                    // 同步输入框内当前的键位映射
+                    for (let i = 0; i < 4; i++) {
+                        document.getElementById(`key-input-${i}`).value = String.fromCharCode(keys[i]).toUpperCase();
+                    }
+
+                    window.settingsSynced = true;
+                    consoleElem.value += "[Web上位机] 成功同步板载存储的配置。\n";
+                }
+            }
+        }
+
+        // 发送触发参数设定到硬件
+        document.getElementById('apply-settings-btn').addEventListener('click', async () => {
+            if (!writeStream) {
+                alert("请先连接键盘设备！");
+                return;
+            }
+
+            // 发送 RT 开关
+            await sendCommand(rtToggle.checked ? "rt on" : "rt off");
+
+            if (rtToggle.checked) {
+                // 发送 RT 灵敏度
+                const p = document.getElementById('rt-press-sens').value;
+                const r = document.getElementById('rt-release-sens').value;
+                await sendCommand(`sens ${p} ${r}`);
+            } else {
+                // 发送静态行程点
+                const act = document.getElementById('static-act').value;
+                const rel = document.getElementById('static-rel').value;
+                await sendCommand(`static ${act} ${rel}`);
+            }
+            alert("触发配置成功写入键盘芯片！");
+        });
+
+        // 烧录并应用新键位到硬件 (将字符转为 ASCII 并通过指令发送)
+        document.getElementById('apply-keys-btn').addEventListener('click', async () => {
+            if (!writeStream) {
+                alert("请先连接键盘设备！");
+                return;
+            }
+
+            const getAscii = (id, defVal) => {
+                const val = document.getElementById(id).value.trim();
+                return val.length > 0 ? val.charCodeAt(0) : defVal;
+            };
+
+            const k0 = getAscii('key-input-0', 122); // z
+            const k1 = getAscii('key-input-1', 120); // x
+            const k2 = getAscii('key-input-2', 99);  // c
+            const k3 = getAscii('key-input-3', 118); // v
+
+            await sendCommand(`keys ${k0} ${k1} ${k2} ${k3}`);
+            // 重置一次，以便获取写入后的反馈
+            window.settingsSynced = false;
+            alert("键位配置成功修改！");
+        });
+
+        // 校准按钮交互
+        const calBanner = document.getElementById('cal-banner');
+        
+        document.getElementById('cal-start-btn').addEventListener('click', async () => {
+            if (!writeStream) return;
+            await sendCommand("cal");
+            calBanner.style.display = 'block';
+        });
+
+        document.getElementById('cal-save-btn').addEventListener('click', async () => {
+            if (!writeStream) return;
+            await sendCommand("save");
+            calBanner.style.display = 'none';
+            alert("行程零点校准完成，配置已写入芯片！");
+        });
+    </script>
+</body>
+</html>
