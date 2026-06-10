@@ -350,13 +350,14 @@
 </head>
 <body>
 
-    <h1>RP2040 磁轴键盘上位机 <span style="font-size: 14px; opacity: 0.6;">(V2.1 - 修复同步漏洞)</span></h1>
+    <h1>磁轴键盘上位机 <span style="font-size: 14px; opacity: 0.6;">(V2.1 - 修复同步漏洞)</span></h1>
     <p class="subtitle">通过 Web Serial 调试按键灵敏度并实现 3键无冲突多重映射</p>
 
     <!-- 固件升级提示横幅 -->
     <div id="fw-banner" class="fw-update-banner">
         <div class="fw-update-text">
-            <h3>📢 发现键盘有可用的新版本固件！</h3>
+            <!--<h3>📢 发现键盘有可用的新版本固件！</h3>-->
+            <h3>固件升级功能开发中</h3>
             <p>键盘当前固件版本：<span id="cur-fw-ver" style="font-weight: bold;">001</span> | 最新可用版本：<span id="new-fw-ver" style="font-weight: bold;">002</span></p>
         </div>
         <div class="fw-btn-group">
@@ -364,6 +365,8 @@
             <button id="fw-flash-btn" class="btn-warn">2. 执行一键升级</button>
         </div>
     </div>
+
+    
 
     <div class="container">
         <div class="panel conn-bar">
@@ -438,7 +441,7 @@
 
             <h2>触发模式与行程设定</h2>
             <div class="toggle-container">
-                <label style="font-weight: bold; color: #fff;">启用 Rapid Trigger (RT) 动态触发</label>
+                <label style="font-weight: bold; color: #fff;">启用 Rapid Trigger (RT / 动态触发)</label>
                 <input type="checkbox" id="rt-toggle" style="width: 20px; height: 20px;" checked>
             </div>
 
