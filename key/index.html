@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>H56 磁轴小键盘 Web 上位机配置工具</title>
     <link rel="shortcut icon" href="https://s1.ax1x.com/2023/04/18/p9icbXn.jpg">
     <style>
@@ -88,8 +89,9 @@
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 10px;
             color: #fff;
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 500;
+            margin-bottom: 15px;
         }
 
         .conn-bar {
@@ -220,7 +222,7 @@
         .combo-panel {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
             margin-bottom: 20px;
         }
 
@@ -310,6 +312,52 @@
             border-radius: 8px;
         }
 
+        /* WS2812B 特有控制样式 */
+        .color-control-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .preset-colors-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            flex: 1;
+        }
+
+        .preset-color-dot {
+            height: 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.1s;
+        }
+
+        .preset-color-dot:hover {
+            transform: scale(1.1);
+        }
+
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            cursor: pointer;
+            background: none;
+        }
+
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        input[type="color"]::-webkit-color-swatch {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
         .console-panel {
             grid-column: span 2;
             display: flex;
@@ -350,14 +398,13 @@
 </head>
 <body>
 
-    <h1>磁轴键盘上位机 <span style="font-size: 14px; opacity: 0.6;">(V2.1 - 修复同步漏洞)</span></h1>
-    <p class="subtitle">通过 Web Serial 调试按键灵敏度并实现 3键无冲突多重映射</p>
+    <h1>RP2040 磁轴键盘上位机 <span style="font-size: 14px; opacity: 0.6;">(V3.0 - RT死区与WS2812B灯控)</span></h1>
+    <p class="subtitle">通过 Web Serial 调试磁轴行程、防死区触发、以及独立配置 RGB 轴灯</p>
 
     <!-- 固件升级提示横幅 -->
     <div id="fw-banner" class="fw-update-banner">
         <div class="fw-update-text">
-            <!--<h3>📢 发现键盘有可用的新版本固件！</h3>-->
-            <h3>固件升级功能开发中</h3>
+            <h3>📢 发现键盘有可用的新版本固件！</h3>
             <p>键盘当前固件版本：<span id="cur-fw-ver" style="font-weight: bold;">001</span> | 最新可用版本：<span id="new-fw-ver" style="font-weight: bold;">002</span></p>
         </div>
         <div class="fw-btn-group">
@@ -366,9 +413,8 @@
         </div>
     </div>
 
-    
-
     <div class="container">
+        <!-- 串口连接 -->
         <div class="panel conn-bar">
             <div class="status">
                 <div id="status-dot" class="status-dot"></div>
@@ -377,8 +423,67 @@
             <button id="connect-btn">选择并连接键盘</button>
         </div>
 
-        <div class="panel">
-            <h2>自定多按键组合映射 (支持最多3个键)</h2>
+        <!-- 左侧：RT、死区控制、组合键配置 -->
+        <div class="panel" style="display: flex; flex-direction: column; gap: 10px;">
+            <h2>触发模式与死区/行程设定</h2>
+            <div class="toggle-container">
+                <label style="font-weight: bold; color: #fff;">启用 Rapid Trigger (RT) 动态触发</label>
+                <input type="checkbox" id="rt-toggle" style="width: 20px; height: 20px;" checked>
+            </div>
+
+            <!-- RT 特有设置与死区 -->
+            <div id="rt-settings-area">
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>按下触发灵敏度 (RT Press)</span>
+                        <span id="rt-press-val" class="val-disp">5.0%</span>
+                    </div>
+                    <input type="range" id="rt-press-sens" min="0.01" max="0.50" step="0.01" value="0.05">
+                </div>
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>松开释放灵敏度 (RT Release)</span>
+                        <span id="rt-release-val" class="val-disp">5.0%</span>
+                    </div>
+                    <input type="range" id="rt-release-sens" min="0.01" max="0.50" step="0.01" value="0.05">
+                </div>
+                <!-- 顶底端死区设定 -->
+                <div class="control-group" style="border-top: 1px solid var(--border-color); padding-top: 15px;">
+                    <div class="control-label">
+                        <span>顶端不触发死区 (Top Deadzone) <small style="color: #8a99ad;">行程小于此值必不触发</small></span>
+                        <span id="rt-dead-top-val" class="val-disp">10%</span>
+                    </div>
+                    <input type="range" id="rt-dead-top" min="0.00" max="0.40" step="0.01" value="0.10">
+                </div>
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>底端保持触发死区 (Bottom Deadzone) <small style="color: #8a99ad;">行程大于此值强制触发</small></span>
+                        <span id="rt-dead-bot-val" class="val-disp">90%</span>
+                    </div>
+                    <input type="range" id="rt-dead-bot" min="0.60" max="1.00" step="0.01" value="0.90">
+                </div>
+            </div>
+
+            <!-- 静态触发设定 -->
+            <div id="static-sliders" style="display: none;">
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>静态触发深度 (Static Actuation)</span>
+                        <span id="static-act-val" class="val-disp">40%</span>
+                    </div>
+                    <input type="range" id="static-act" min="0.05" max="0.95" step="0.05" value="0.40">
+                </div>
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>静态释放深度 (Static Release)</span>
+                        <span id="static-rel-val" class="val-disp">35%</span>
+                    </div>
+                    <input type="range" id="static-rel" min="0.05" max="0.95" step="0.05" value="0.35">
+                </div>
+            </div>
+            <button id="apply-settings-btn" style="width: 100%;" class="btn-success">应用行程死区配置</button>
+            
+            <h2 style="margin-top: 15px;">自定多按键组合映射</h2>
             <div class="combo-panel">
                 <!-- CH 0 -->
                 <div class="combo-row">
@@ -437,51 +542,11 @@
                     </div>
                 </div>
             </div>
-            <button id="apply-keys-btn" style="width: 100%; margin-bottom: 25px;" class="btn-success">写入并应用组合键</button>
-
-            <h2>触发模式与行程设定</h2>
-            <div class="toggle-container">
-                <label style="font-weight: bold; color: #fff;">启用 Rapid Trigger (RT / 动态触发)</label>
-                <input type="checkbox" id="rt-toggle" style="width: 20px; height: 20px;" checked>
-            </div>
-
-            <div id="rt-sliders">
-                <div class="control-group">
-                    <div class="control-label">
-                        <span>按下触发灵敏度 (RT Press)</span>
-                        <span id="rt-press-val" class="val-disp">5.0%</span>
-                    </div>
-                    <input type="range" id="rt-press-sens" min="0.01" max="0.50" step="0.01" value="0.05">
-                </div>
-                <div class="control-group">
-                    <div class="control-label">
-                        <span>松开释放灵敏度 (RT Release)</span>
-                        <span id="rt-release-val" class="val-disp">5.0%</span>
-                    </div>
-                    <input type="range" id="rt-release-sens" min="0.01" max="0.50" step="0.01" value="0.05">
-                </div>
-            </div>
-
-            <div id="static-sliders" style="display: none;">
-                <div class="control-group">
-                    <div class="control-label">
-                        <span>静态触发深度 (Static Actuation)</span>
-                        <span id="static-act-val" class="val-disp">40%</span>
-                    </div>
-                    <input type="range" id="static-act" min="0.05" max="0.95" step="0.05" value="0.40">
-                </div>
-                <div class="control-group">
-                    <div class="control-label">
-                        <span>静态释放深度 (Static Release)</span>
-                        <span id="static-rel-val" class="val-disp">35%</span>
-                    </div>
-                    <input type="range" id="static-rel" min="0.05" max="0.95" step="0.05" value="0.35">
-                </div>
-            </div>
-            <button id="apply-settings-btn" style="width: 100%;">应用行程配置</button>
+            <button id="apply-keys-btn" style="width: 100%;" class="btn-success">应用按键组合配置</button>
         </div>
 
-        <div class="panel">
+        <!-- 右侧：遥测可视化、RGB灯效、硬件校准 -->
+        <div class="panel" style="display: flex; flex-direction: column; gap: 15px;">
             <h2>高速实时遥测柱状图</h2>
             <div class="visualizer-grid">
                 <div class="channel-column">
@@ -506,11 +571,48 @@
                 </div>
             </div>
 
-            <h2>硬件零位与全行程校准 (Calibration)</h2>
+            <!-- WS2812B RGB 灯效配置区 -->
+            <h2 style="border-top: 1px solid var(--border-color); padding-top: 15px;">WS2812B 轴灯光效管理</h2>
+            <div style="background-color: #12161f; border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 12px;">
+                <div class="toggle-container" style="padding: 0; background: none;">
+                    <span style="font-size: 13px;">灯效工作模式</span>
+                    <select id="led-mode-select" style="flex: 1; max-width: 150px;">
+                        <option value="0">关闭灯效</option>
+                        <option value="1">静态长亮</option>
+                        <option value="2">按下按键点亮</option>
+                        <option value="3">呼吸灯效</option>
+                    </select>
+                </div>
+                
+                <div style="font-size: 13px; color: #a0aec0; margin-bottom: -5px;">调色盘 / 自定颜色</div>
+                <div class="color-control-area">
+                    <input type="color" id="led-color" value="#00ffcc">
+                    <div class="preset-colors-grid">
+                        <div class="preset-color-dot" style="background-color: #ff0055;" onclick="setPickerColor('#ff0055')"></div>
+                        <div class="preset-color-dot" style="background-color: #00ffcc;" onclick="setPickerColor('#00ffcc')"></div>
+                        <div class="preset-color-dot" style="background-color: #3d5afe;" onclick="setPickerColor('#3d5afe')"></div>
+                        <div class="preset-color-dot" style="background-color: #ff9f00;" onclick="setPickerColor('#ff9f00')"></div>
+                        <div class="preset-color-dot" style="background-color: #00ff00;" onclick="setPickerColor('#00ff00')"></div>
+                        <div class="preset-color-dot" style="background-color: #ae00ff;" onclick="setPickerColor('#ae00ff')"></div>
+                        <div class="preset-color-dot" style="background-color: #ffffff;" onclick="setPickerColor('#ffffff')"></div>
+                    </div>
+                </div>
+
+                <div class="control-group" style="margin-top: 10px;">
+                    <div class="control-label">
+                        <span>灯控亮度 (Brightness)</span>
+                        <span id="led-bright-val" class="val-disp">150</span>
+                    </div>
+                    <input type="range" id="led-brightness" min="0" max="255" step="5" value="150">
+                </div>
+                <button id="apply-led-btn" style="width: 100%;">下发灯光配置</button>
+            </div>
+
+            <h2>硬件零位行程校准 (Calibration)</h2>
             <div id="cal-banner" class="cal-running-banner">● 正在校准：请彻底按下所有磁轴键，再完全松开！</div>
             <div style="display: flex; gap: 10px;">
-                <button id="cal-start-btn" style="flex: 1;" class="btn-warn">开始硬件校准</button>
-                <button id="cal-save-btn" style="flex: 1;" class="btn-success">保存并结束校准</button>
+                <button id="cal-start-btn" style="flex: 1;" class="btn-warn">开始校准</button>
+                <button id="cal-save-btn" style="flex: 1;" class="btn-success">保存校准</button>
             </div>
         </div>
 
@@ -573,6 +675,17 @@
             document.getElementById(`key-${ch}-2`).style.display = (count === 3) ? 'block' : 'none';
         }
 
+        function setPickerColor(hex) {
+            document.getElementById('led-color').value = hex;
+        }
+
+        // RGB颜色格式转换辅助
+        const componentToHex = (c) => {
+            const hex = c.toString(16);
+            return hex.length === 1 ? "0" + hex : hex;
+        };
+        const rgbToHex = (r, g, b) => "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+
         let port;
         let reader;
         let inputDone;
@@ -593,22 +706,21 @@
             const valDisp = document.getElementById(valId);
             slider.addEventListener('input', () => {
                 let v = parseFloat(slider.value);
-                valDisp.innerText = isPercent ? `${(v * 100).toFixed(1)}%` : `${(v * 100).toFixed(0)}%`;
+                valDisp.innerText = isPercent ? `${(v * 100).toFixed(0)}%` : `${v}`;
             });
         }
         bindSliderVal('rt-press-sens', 'rt-press-val', true);
         bindSliderVal('rt-release-sens', 'rt-release-val', true);
-        bindSliderVal('static-act', 'static-act-val', false);
-        bindSliderVal('static-rel', 'static-rel-val', false);
+        bindSliderVal('rt-dead-top', 'rt-dead-top-val', true);
+        bindSliderVal('rt-dead-bot', 'rt-dead-bot-val', true);
+        bindSliderVal('static-act', 'static-act-val', true);
+        bindSliderVal('static-rel', 'static-rel-val', true);
+        bindSliderVal('led-brightness', 'led-bright-val', false);
 
         rtToggle.addEventListener('change', () => {
-            if (rtToggle.checked) {
-                rtSliders.style.display = 'block';
-                staticSliders.style.display = 'none';
-            } else {
-                rtSliders.style.display = 'none';
-                staticSliders.style.display = 'block';
-            }
+            const showRt = rtToggle.checked;
+            document.getElementById('rt-settings-area').style.display = showRt ? 'block' : 'none';
+            staticSliders.style.display = showRt ? 'none' : 'block';
         });
 
         connectBtn.addEventListener('click', async () => {
@@ -644,8 +756,6 @@
                 statusText.style.color = '#00ffcc';
 
                 window.settingsSynced = false;
-                
-                // 修改：下发确定性开启指令 `gui on` 而不是 `gui` toggle
                 await sendCommand("gui on"); 
 
                 readLoop();
@@ -658,7 +768,7 @@
 
         async function disconnect() {
             if (reader) {
-                await sendCommand("gui off"); // 修改：下发确定的 `gui off`
+                await sendCommand("gui off"); 
                 await reader.cancel();
                 await inputDone.catch(() => {});
                 reader = null;
@@ -725,7 +835,8 @@
             }
 
             const parts = line.substring(4).split(",");
-            if (parts.length >= 34) {
+            // 升级：遥测包长度扩展至 41 个
+            if (parts.length >= 41) {
                 const raws = [parseInt(parts[0]), parseInt(parts[3]), parseInt(parts[6]), parseInt(parts[9])];
                 const travels = [parseFloat(parts[1]), parseFloat(parts[4]), parseFloat(parts[7]), parseFloat(parts[10])];
                 const states = [parseInt(parts[2]), parseInt(parts[5]), parseInt(parts[8]), parseInt(parts[11])];
@@ -740,7 +851,19 @@
                 const rt_r = parseFloat(parts[30]);
                 const st_p = parseFloat(parts[31]);
                 const st_r = parseFloat(parts[32]);
-                const board_fw = parseInt(parts[33]);
+                
+                // 新增：死区
+                const rt_dead_top = parseFloat(parts[33]);
+                const rt_dead_bot = parseFloat(parts[34]);
+
+                // 新增：LED 灯控
+                const led_mode = parseInt(parts[35]);
+                const led_r = parseInt(parts[36]);
+                const led_g = parseInt(parts[37]);
+                const led_b = parseInt(parts[38]);
+                const led_brightness = parseInt(parts[39]);
+                
+                const board_fw = parseInt(parts[40]);
 
                 for (let i = 0; i < 4; i++) {
                     const bar = document.getElementById(`bar-${i}`);
@@ -775,18 +898,30 @@
                     }
 
                     rtToggle.checked = rt_enabled;
-                    rtSliders.style.display = rt_enabled ? 'block' : 'none';
+                    document.getElementById('rt-settings-area').style.display = rt_enabled ? 'block' : 'none';
                     staticSliders.style.display = rt_enabled ? 'none' : 'block';
 
                     document.getElementById('rt-press-sens').value = rt_p;
-                    document.getElementById('rt-press-val').innerText = `${(rt_p * 100).toFixed(1)}%`;
+                    document.getElementById('rt-press-val').innerText = `${(rt_p * 100).toFixed(0)}%`;
                     document.getElementById('rt-release-sens').value = rt_r;
-                    document.getElementById('rt-release-val').innerText = `${(rt_r * 100).toFixed(1)}%`;
+                    document.getElementById('rt-release-val').innerText = `${(rt_r * 100).toFixed(0)}%`;
+
+                    // 同步死区滑块
+                    document.getElementById('rt-dead-top').value = rt_dead_top;
+                    document.getElementById('rt-dead-top-val').innerText = `${(rt_dead_top * 100).toFixed(0)}%`;
+                    document.getElementById('rt-dead-bot').value = rt_dead_bot;
+                    document.getElementById('rt-dead-bot-val').innerText = `${(rt_dead_bot * 100).toFixed(0)}%`;
 
                     document.getElementById('static-act').value = st_p;
                     document.getElementById('static-act-val').innerText = `${(st_p * 100).toFixed(0)}%`;
                     document.getElementById('static-rel').value = st_r;
                     document.getElementById('static-rel-val').innerText = `${(st_r * 100).toFixed(0)}%`;
+
+                    // 同步 LED 模组
+                    document.getElementById('led-mode-select').value = led_mode;
+                    document.getElementById('led-color').value = rgbToHex(led_r, led_g, led_b);
+                    document.getElementById('led-brightness').value = led_brightness;
+                    document.getElementById('led-bright-val').innerText = led_brightness;
 
                     for (let i = 0; i < 4; i++) {
                         document.getElementById(`count-${i}`).value = kCount[i];
@@ -797,36 +932,58 @@
                     }
 
                     window.settingsSynced = true;
-                    consoleElem.value += "[Web上位机] 同步配置成功。\n";
+                    consoleElem.value += "[Web上位机] 磁轴死区与 RGB 参数握手成功。\n";
                 }
             } else {
                 console.warn("[Web上位机] 遥测包数据长度不符: ", parts.length);
             }
         }
 
+        // 写入磁轴灵敏度与顶底死区
         document.getElementById('apply-settings-btn').addEventListener('click', async () => {
             if (!writeStream) { alert("请先连接键盘！"); return; }
+            if (!window.settingsSynced) { alert("等待设备握手同步..."); return; }
+
             await sendCommand(rtToggle.checked ? "rt on" : "rt off");
 
             if (rtToggle.checked) {
                 const p = document.getElementById('rt-press-sens').value;
                 const r = document.getElementById('rt-release-sens').value;
                 await sendCommand(`sens ${p} ${r}`);
+                
+                // 下发死区参数
+                const dTop = document.getElementById('rt-dead-top').value;
+                const dBot = document.getElementById('rt-dead-bot').value;
+                await sendCommand(`dz ${dTop} ${dBot}`);
             } else {
                 const act = document.getElementById('static-act').value;
                 const rel = document.getElementById('static-rel').value;
                 await sendCommand(`static ${act} ${rel}`);
             }
-            alert("触发行程配置写入成功！");
+            alert("物理行程与死区限制保存成功！");
         });
 
-        // 修改：增加未完成同步防呆拦截，拦截 NaN 配置下发，从根本上解决“一直卡在 zxcv”的问题
+        // 写入 RGB 灯效设置
+        document.getElementById('apply-led-btn').addEventListener('click', async () => {
+            if (!writeStream) { alert("请先连接键盘！"); return; }
+            if (!window.settingsSynced) { alert("等待设备握手同步..."); return; }
+
+            const mode = document.getElementById('led-mode-select').value;
+            const hexColor = document.getElementById('led-color').value;
+            const brightness = document.getElementById('led-brightness').value;
+
+            // 分解 Hex RGB 
+            const r = parseInt(hexColor.substring(1, 3), 16);
+            const g = parseInt(hexColor.substring(3, 5), 16);
+            const b = parseInt(hexColor.substring(5, 7), 16);
+
+            await sendCommand(`led ${mode} ${r} ${g} ${b} ${brightness}`);
+            alert("RGB 灯控数据写入持久化存储！");
+        });
+
         document.getElementById('apply-keys-btn').addEventListener('click', async () => {
             if (!writeStream) { alert("请先连接键盘！"); return; }
-            if (!window.settingsSynced) {
-                alert("设备尚未完成首次握手同步，请稍等数秒，直到柱状图能看到动态读数！");
-                return;
-            }
+            if (!window.settingsSynced) { alert("设备尚未完成同步！"); return; }
             
             for (let i = 0; i < 4; i++) {
                 const countVal = document.getElementById(`count-${i}`).value;
@@ -839,9 +996,8 @@
                 const k1 = parseInt(k1Val) || 0;
                 const k2 = parseInt(k2Val) || 0;
 
-                // 强制校验数据合法性，防止下发破坏性参数
                 if (isNaN(count) || isNaN(k0)) {
-                    alert(`CH ${i} 通道配置中存在空数据，烧录已被安全中止，请重新核对！`);
+                    alert(`CH ${i} 通道配置中存在空数据！`);
                     return;
                 }
 
@@ -849,7 +1005,7 @@
             }
 
             window.settingsSynced = false; 
-            alert("4路自定组合键映射已全部烧录写入！");
+            alert("按键映射全部烧录写入！");
         });
 
         const calBanner = document.getElementById('cal-banner');
@@ -868,24 +1024,22 @@
 
         document.getElementById('fw-flash-btn').addEventListener('click', async () => {
             if (!writeStream) {
-                alert("未建立连接！请先在顶部连接您的键盘。");
+                alert("未连接键盘！");
                 return;
             }
 
             const confirmFlash = confirm(
                 "⚠️【升级警示，请务必确认】\n\n" +
                 "在接下来的刷写升级过程中，切勿拔掉或中断 USB 键盘连接线！\n\n" +
-                "点击确定后，键盘将瞬间重启并自动进入 U盘升级（BOOTSEL）模式：\n" +
+                "点击确定后，键盘将自动重启并进入 U盘升级（BOOTSEL）模式：\n" +
                 "1. 您的电脑会像弹 U盘 一样弹出一个名为 'RPI-RP2' 的空磁盘盘符。\n" +
-                "2. 请在电脑文件管理器中，找到刚刚下载好的 '002.uf2' 升级固件。\n" +
-                "3. 将其直接拖拽拖入该 RPI-RP2 虚拟U盘中即可。\n" +
-                "4. 复制完成后，键盘会自动离线重新上电并加载全新固件！\n\n" +
-                "确认现在引导进入该磁盘更新状态吗？"
+                "2. 请将刚刚下载好的 '002.uf2' 拖入该 RPI-RP2 虚拟U盘中即可。\n" +
+                "3. 复制完成后，键盘会自动离线重新上电并加载全新固件！"
             );
 
             if (confirmFlash) {
                 await sendCommand("bootloader");
-                alert("重置升级指令已下发！设备已进入 RPI-RP2 磁盘模式，请直接在文件管理器中将 UF2 固件拖入其中。如果是第一次，等待键盘自动重启载入即可！");
+                alert("重置升级指令已下发！设备已进入 RPI-RP2 磁盘模式。");
                 await disconnect();
             }
         });
