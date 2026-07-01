@@ -44,7 +44,7 @@
             max-width: 1100px;
             background: rgba(255, 179, 0, 0.15);
             border: 1px solid #ffb300;
-            color: #ffcc00;
+            color: #edff86;
             padding: 15px 20px;
             border-radius: 12px;
             margin-bottom: 20px;
@@ -138,11 +138,11 @@
         }
 
         button.btn-warn {
-            background-color: #ff3b30;
+            background-color: #ff6961;
         }
 
         button.btn-success {
-            background-color: #34c759;
+            background-color: #3aff7f;
         }
 
         .visualizer-grid {
@@ -396,8 +396,8 @@
 </head>
 <body>
 
-    <h1>RP2040 磁轴键盘上位机 <span style="font-size: 14px; opacity: 0.6;">(V3.1 - 彻底修复 RDY 串键)</span></h1>
-    <p class="subtitle">通过 Web Serial 调试磁轴行程、自适应硬件触发、以及独立配置 RGB 轴灯</p>
+    <h1>RP2040 磁轴键盘上位机 <span style="font-size: 14px; opacity: 0.6;">V3.1</span></h1>
+    <p class="subtitle">设置磁轴行程、自适应硬件触发、以及独立配置 RGB 轴灯</p>
 
     <!-- 固件升级提示横幅 -->
     <div id="fw-banner" class="fw-update-banner">
@@ -416,7 +416,7 @@
         <div class="panel conn-bar">
             <div class="status">
                 <div id="status-dot" class="status-dot"></div>
-                <span>设备状态：<span id="status-text" style="color: #ff3b30;">未连接</span> <span id="board-fw-info" style="font-weight: normal; opacity: 0.6; margin-left: 10px;"></span></span>
+                <span>设备状态：<span id="status-text" style="color: #ff7a73;">未连接</span> <span id="board-fw-info" style="font-weight: normal; opacity: 0.6; margin-left: 10px;"></span></span>
             </div>
             <button id="connect-btn">选择并连接键盘</button>
         </div>
@@ -433,9 +433,9 @@
             <!-- 新增：硬件 RDY 下降沿触发开关 -->
             <div class="toggle-container" style="background-color: rgba(255, 59, 48, 0.08); border: 1px dashed rgba(255, 59, 48, 0.25);">
                 <label style="font-weight: bold; color: #ff9f00; font-size: 13px;">
-                    启用极速硬件 RDY 模式
+                    启用 IO8RDY 模式
                     <span style="display: block; font-size: 10px; font-weight: normal; color: #a0aec0; margin-top: 4px;">
-                        ⚠️ 开启前请务必确认 ADS1115 的 ALERT 引脚已物理连接到 RP2040 的 GP8！
+                        ⚠️不建议擅自改动该开关，擅自打开/关闭导致的一切后果自负！
                     </span>
                 </label>
                 <input type="checkbox" id="rdy-toggle" style="width: 20px; height: 20px;">
@@ -598,12 +598,12 @@
                 <div class="color-control-area">
                     <input type="color" id="led-color" value="#00ffcc">
                     <div class="preset-colors-grid">
-                        <div class="preset-color-dot" style="background-color: #ff0055;" onclick="setPickerColor('#ff0055')"></div>
-                        <div class="preset-color-dot" style="background-color: #00ffcc;" onclick="setPickerColor('#00ffcc')"></div>
-                        <div class="preset-color-dot" style="background-color: #3d5afe;" onclick="setPickerColor('#3d5afe')"></div>
-                        <div class="preset-color-dot" style="background-color: #ff9f00;" onclick="setPickerColor('#ff9f00')"></div>
-                        <div class="preset-color-dot" style="background-color: #00ff00;" onclick="setPickerColor('#00ff00')"></div>
-                        <div class="preset-color-dot" style="background-color: #ae00ff;" onclick="setPickerColor('#ae00ff')"></div>
+                        <div class="preset-color-dot" style="background-color: #ff60ad;" onclick="setPickerColor('#ff0055')"></div>
+                        <div class="preset-color-dot" style="background-color: #00f7ff;" onclick="setPickerColor('#00ffcc')"></div>
+                        <div class="preset-color-dot" style="background-color: #5a3dfe;" onclick="setPickerColor('#3d5afe')"></div>
+                        <div class="preset-color-dot" style="background-color: #ff9900;" onclick="setPickerColor('#ff9f00')"></div>
+                        <div class="preset-color-dot" style="background-color: #22ff00;" onclick="setPickerColor('#00ff00')"></div>
+                        <div class="preset-color-dot" style="background-color: #0000ff;" onclick="setPickerColor('#ae00ff')"></div>
                         <div class="preset-color-dot" style="background-color: #ffffff;" onclick="setPickerColor('#ffffff')"></div>
                     </div>
                 </div>
@@ -619,7 +619,7 @@
             </div>
 
             <h2>硬件零位行程校准 (Calibration)</h2>
-            <div id="cal-banner" class="cal-running-banner">● 正在校准：请彻底按下所有磁轴键，再完全松开！</div>
+            <div id="cal-banner" class="cal-running-banner">● 正在校准：请按下所有磁轴键到底，再完全松开（建议重复多次再点击保存校准）</div>
             <div style="display: flex; gap: 10px;">
                 <button id="cal-start-btn" style="flex: 1;" class="btn-warn">开始校准</button>
                 <button id="cal-save-btn" style="flex: 1;" class="btn-success">保存校准</button>
@@ -746,7 +746,7 @@
 
         async function connect() {
             if (!("serial" in navigator)) {
-                alert("当前浏览器不支持 Web Serial API。建议使用 Chrome 或 Edge 浏览器 [1]！");
+                alert("当前浏览器不支持 Web Serial API。建议使用 Chrome 或 Edge 浏览器！");
                 return;
             }
             try {
