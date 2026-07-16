@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en" class="lang-en">
+<head>
+<meta charset="utf-8">
+<title>ADPT - Aviation and Drone Pilot Testing</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
+<meta name="format-detection" content="telephone=no">
+<style>
+*,*::before,*::after{box-sizing:border-box;}
+body{font-size:clamp(10px,1.6vw,16px);font-family:"Microsoft YaHei",Arial,sans-serif;background:#0a0a0f;color:#d0d0d8;overflow-x:hidden;overflow-y:auto;margin:0;padding:0;}
+.viewport{max-width:min(700px,90vw);min-width:280px;margin:0 auto;padding:clamp(12px,2vw,20px) clamp(8px,1.5vw,16px);}
+h1{font-size:clamp(1.5rem,3vw,2.2rem);text-align:center;color:#88ccff;margin:10px 0 4px;letter-spacing:2px;}
+h2{font-size:clamp(0.85rem,1.6vw,1.1rem);text-align:center;color:#6688aa;font-weight:normal;margin:0 0 20px;}
+.subtitle{text-align:center;color:#556;font-size:0.9rem;margin:0 0 24px;}
+.section-title{font-size:clamp(0.85rem,1.2vw,1rem);color:#88aacc;border-bottom:1px solid #223;padding-bottom:6px;margin:24px 0 10px;}
+.test-card{display:flex;align-items:center;background:#111118;border:1px solid #1e1e2e;border-radius:8px;padding:clamp(10px,1.5vw,14px) clamp(10px,1.5vw,16px);margin:8px 0;cursor:pointer;transition:border-color 0.2s,background 0.2s;text-decoration:none;color:inherit;}
+.test-card:hover{border-color:#4488aa;background:#151522;}
+.test-icon{font-size:clamp(1.5rem,2.5vw,2rem);min-width:48px;text-align:center;margin-right:clamp(8px,1.5vw,14px);}
+.test-info{flex:1;}
+.test-name{font-size:clamp(0.8rem,1.3vw,0.95rem);color:#ccddff;font-weight:bold;margin-bottom:2px;}
+.test-desc{font-size:clamp(0.68rem,1vw,0.76rem);color:#778899;line-height:1.4;}
+.test-duration{font-size:clamp(0.6rem,0.9vw,0.68rem);color:#556;}
+.all-btn{display:block;width:100%;background:linear-gradient(135deg,#1a3a5c,#2a8a5c);border:1px solid #3388bb;border-radius:8px;color:#ccddff;font-size:clamp(0.9rem,1.2vw,1.05rem);padding:clamp(12px,1.5vw,16px);text-align:center;cursor:pointer;margin:12px 0;text-decoration:none;box-sizing:border-box;transition:background 0.2s;}
+.all-btn:hover{background:linear-gradient(135deg,#224466,#3377aa);}
+.result-row{display:flex;justify-content:space-between;align-items:center;background:#0e0e18;border:1px solid #1a1a2a;border-radius:6px;padding:10px 14px;margin:5px 0;font-size:0.82rem;}
+.result-test{color:#aaccdd;}
+.result-score{color:#88cc88;font-weight:bold;}
+.result-time{color:#556;font-size:0.68rem;}
+.no-results{text-align:center;color:#445;font-size:0.82rem;padding:16px;}
+.back-link{display:inline-block;margin-top:20px;color:#667;font-size:0.82rem;text-decoration:none;}
+.back-link:hover{color:#99a;}
+.clear-btn{background:none;border:1px solid #333;color:#555;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:0.68rem;float:right;margin-top:4px;}
+.clear-btn:hover{border-color:#644;color:#844;}
+.cn-toggle{position:fixed;top:6px;right:10px;z-index:20;font-size:0.68rem;background:#0e0e18;border:1px solid #334;color:#556;padding:3px 8px;border-radius:3px;cursor:pointer;}
+.cn-line{display:none;}
+html.lang-cn .cn-line{display:inline;}
+html.lang-cn .en-line{display:none;}
+</style>
+</head>
+<body>
+<button class="cn-toggle" id="cn-toggle" onclick="toggleCN()">CN/EN</button>
+<div class="viewport">
+<h1>ADPT</h1>
+<h2 class="en-line">Aviation and Drone Pilot Testing</h2>
+<h2 class="cn-line">飞行能力综合测试系统</h2>
+<p class="subtitle en-line">Five core cognitive aptitude assessments for pilot selection</p>
+<p class="subtitle cn-line">五项核心认知能力评估测试</p>
+<div class="section-title"><span class="en-line">Individual Tests</span><span class="cn-line">单项测试</span></div>
+<a class="test-card" href="fast/"><div class="test-icon">&#x1F3AE;</div><div class="test-info"><div class="test-name en-line">1. FAST Multitasking</div><div class="test-name cn-line">1. FAST 多任务并行测试</div><div class="test-desc en-line">Target tracking + instrument monitoring + mental math under cognitive load</div><div class="test-desc cn-line">目标追踪 + 仪表监控 + 心算应答</div><div class="test-duration en-line">~2 min</div><div class="test-duration cn-line">约2分钟</div></div></a>
+<a class="test-card" href="spatial/"><div class="test-icon">&#x1F6F0;</div><div class="test-info"><div class="test-name en-line">2. Spatial Orientation and Instrument Reading</div><div class="test-name cn-line">2. 空间定向与仪表识读</div><div class="test-desc en-line">Match attitude and heading indicators to correct 3D aircraft pose</div><div class="test-desc cn-line">根据仪表读数匹配正确的3D飞行姿态</div><div class="test-duration en-line">~2.5 min</div><div class="test-duration cn-line">约2.5分钟</div></div></a>
+<a class="test-card" href="perceptual/"><div class="test-icon">&#x1F50D;</div><div class="test-info"><div class="test-name en-line">3. Perceptual Speed and Accuracy</div><div class="test-name cn-line">3. 知觉速度与准确度</div><div class="test-desc en-line">Digit pair matching + rapid anomalous-gauge scanning</div><div class="test-desc cn-line">数字对校 + 异常仪表快速扫视</div><div class="test-duration en-line">~2 min</div><div class="test-duration cn-line">约2分钟</div></div></a>
+<a class="test-card" href="cognitive/"><div class="test-icon">&#x1F9E0;</div><div class="test-info"><div class="test-name en-line">4. Cognitive Reasoning and Aviation Math</div><div class="test-name cn-line">4. 认知推理与飞行数学</div><div class="test-desc en-line">Speed-distance-time calculations + matrix reasoning puzzles</div><div class="test-desc cn-line">速度-距离-时间心算 + 抽象矩阵推理</div><div class="test-duration en-line">~3 min</div><div class="test-duration cn-line">约3分钟</div></div></a>
+<a class="test-card" href="dexterity/"><div class="test-icon">&#x1F3AF;</div><div class="test-info"><div class="test-name en-line">5. Dexterity and Lag Control</div><div class="test-name cn-line">5. 手眼协调与滞后控制</div><div class="test-desc en-line">Curve tracking with simulated inertia and control delay</div><div class="test-desc cn-line">带有惯性与延迟的曲线追踪</div><div class="test-duration en-line">~2 min</div><div class="test-duration cn-line">约2分钟</div></div></a>
+<a class="all-btn" href="all-practice/"><span class="en-line">Continuous All Practice (~12 min)</span><span class="cn-line">连续全部练习（约12分钟）</span></a>
+<div class="section-title"><span class="en-line">Recent Results</span><span class="cn-line">历史成绩</span><button class="clear-btn en-line" onclick="clearResults()">Clear</button><button class="clear-btn cn-line" onclick="clearResults()">清除</button></div>
+<div id="results-container"><div class="no-results en-line">No records yet. Results appear here after completing a test.</div><div class="no-results cn-line">暂无记录，完成测试后自动保存</div></div>
+<a class="back-link" href="../"><span class="en-line">Back to Training Center</span><span class="cn-line">返回训练中心</span></a>
+</div>
+<script>
+(function(){var ua=navigator.userAgent.toLowerCase();if(ua.indexOf('micromessenger')>=0||ua.indexOf('safari')>=0&&ua.indexOf('chrome')<0){document.documentElement.classList.add('lang-cn');}})();
+function toggleCN(){document.documentElement.classList.toggle('lang-cn');}
+var testNames={fast:'FAST Multitasking',spatial:'Spatial Orientation',perceptual:'Perceptual Speed',cognitive:'Cognitive Reasoning',dexterity:'Dexterity and Lag'};
+var testKeys=['fast','spatial','perceptual','cognitive','dexterity'];
+function loadResults(){var all=[];testKeys.forEach(function(k){var raw=localStorage.getItem('adpt_'+k);if(raw){try{var arr=JSON.parse(raw);arr.forEach(function(r){r.test=k;r.label=testNames[k];all.push(r);});}catch(e){}}});all.sort(function(a,b){return(b.ts||0)-(a.ts||0);});var container=document.getElementById('results-container');if(all.length===0){container.innerHTML='<div class="no-results en-line">No records yet.</div><div class="no-results cn-line">暂无记录</div>';return;}var html='';all.forEach(function(r){var d=new Date(r.ts);var ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');html+='<div class="result-row"><span class="result-test">'+r.label+'</span><span class="result-score">'+r.score+'</span><span class="result-time">'+ds+'</span></div>';});container.innerHTML=html;}
+function clearResults(){if(confirm('Clear all saved results?')){testKeys.forEach(function(k){localStorage.removeItem('adpt_'+k);});loadResults();}}
+loadResults();
+</script>
+</body>
+</html>

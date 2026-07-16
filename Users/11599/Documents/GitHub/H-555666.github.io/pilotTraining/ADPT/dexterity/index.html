@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dexterity &amp; Lag Control — ADPT</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
+<meta name="format-detection" content="telephone=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<style>
+body{font-size:62.5%;font-family:"Microsoft YaHei",Arial;background:#080810;color:#ccc;margin:0;padding:0;overflow-x:hidden;user-select:none;-webkit-user-select:none;touch-action:none;}
+#wrap{max-width:800px;margin:0 auto;padding:10px;}
+h1{font-size:1.3rem;color:#88ccff;text-align:center;margin:6px 0;}
+#screen-intro,#screen-play,#screen-result{display:none;}
+#screen-intro.active,#screen-play.active,#screen-result.active{display:block;}
+.intro-text{font-size:0.82rem;color:#8899aa;line-height:1.6;margin:12px 0;text-align:center;}
+.btn{display:block;width:100%;max-width:300px;margin:16px auto;padding:12px;border-radius:8px;font-size:1rem;text-align:center;cursor:pointer;border:none;color:#dde;box-sizing:border-box;}
+.btn-start{background:linear-gradient(135deg,#1a5a3c,#2a8a5c);}
+.btn-back{background:#1a1a2e;border:1px solid #334;color:#667;font-size:0.82rem;padding:8px;max-width:300px;text-decoration:none;}
+.btn-back:hover{color:#99a;}
+#timer-bar{width:100%;height:4px;background:#1a1a2e;border-radius:2px;margin:6px 0;overflow:hidden;}
+#timer-fill{height:100%;background:linear-gradient(90deg,#2a8a5c,#88cc44);width:100%;transition:width 0.3s;}
+.stat-row{display:flex;justify-content:center;gap:30px;font-size:0.78rem;color:#667;margin:4px 0;}
+.stat-row span{color:#88aacc;}
+#game-canvas{display:block;margin:0 auto;border:1px solid #1a1a2e;border-radius:6px;background:#0a0a14;touch-action:none;width:100%;height:auto;}
+.result-summary{text-align:center;font-size:0.9rem;color:#aac;line-height:2;}
+.result-summary .big{font-size:1.8rem;color:#88ccff;font-weight:bold;}
+</style>
+</head>
+<body>
+<div id="wrap">
+<h1>Dexterity &amp; Lag Control</h1>
+<div id="screen-intro" class="active">
+<p class="intro-text">
+A target ring moves along a curved path. <strong>Control your cursor</strong> (blue cross) using <strong>Arrow keys</strong> or <strong>WASD</strong> to stay inside the ring.<br>
+<span style="color:#ffaa44;">Warning:</span> The cursor has simulated <strong>inertia and control lag</strong> — it won't respond instantly! Anticipate and make small corrections.
+</p>
+<button class="btn btn-start" onclick="startTest()">Start Test</button>
+<a class="btn btn-back" href="../" style="display:block;text-decoration:none;">Back to ADPT</a>
+</div>
+<div id="screen-play">
+<div id="timer-bar"><div id="timer-fill"></div></div>
+<div class="stat-row">Score: <span id="live-score">0</span></div>
+<canvas id="game-canvas" width="640" height="480"></canvas>
+</div>
+<div id="screen-result">
+<div class="result-summary" id="result-text"></div>
+<button class="btn btn-start" onclick="startTest()">Retry</button>
+<a class="btn btn-back" href="../" style="display:block;text-decoration:none;">Back to ADPT</a>
+</div>
+</div>
+
+<script>
+var TEST_DURATION=120;
+var canvas,ctx,rect;
+var path=[];
+var targetT=0,targetSpeed=80; // progress along path (pixels/sec)
+var cursor={x:320,y:240,vx:0,vy:0};
+var keys={};
+var insideCount=0,totalSamples=0;
+var testStart=0,testRunning=false,animId=null,lastTime=0;
+
+function showScreen(id){
+    ['screen-intro','screen-play','screen-result'].forEach(function(s){
+        document.getElementById(s).classList.remove('active');
+    });
+    document.getElementById(id).classList.add('active');
+}
+
+function generatePath(){
+    // Generate a smooth closed-loop path using a series of sine/cosine-based points
+    path=[];
+    var cx=320,cy=240,rx=240,ry=180;
+    var numPts=300;
+    for(var i=0;i<numPts;i++){
+        var t=i/numPts*Math.PI*2;
+        // Lissajous-like curve with distortion
+        var x=cx+rx*Math.cos(t)*0.8+rx*0.2*Math.cos(3*t+1.2);
+        var y=cy+ry*Math.sin(t)*0.8+ry*0.2*Math.sin(2*t+0.7);
+        path.push({x:x,y:y});
+    }
+    // compute path length and cumulative distances
+    var totalLen=0;
+    path[0].dist=0;
+    for(var i=1;i<path.length;i++){
+        var dx=path[i].x-path[i-1].x,dy=path[i].y-path[i-1].y;
+        totalLen+=Math.sqrt(dx*dx+dy*dy);
+        path[i].dist=totalLen;
+    }
+    path.totalLen=totalLen;
+    targetSpeed=totalLen/TEST_DURATION; // complete one full loop in TEST_DURATION
+}
+
+function getPathPoint(t){
+    // t is distance along path (0 to totalLen)
+    t=((t%path.totalLen)+path.totalLen)%path.totalLen;
+    var idx=0;
+    for(var i=1;i<path.length;i++){
+        if(path[i].dist>=t){idx=i-1;break;}
+    }
+    if(idx>=path.length-1)idx=path.length-2;
+    var segLen=path[idx+1].dist-path[idx].dist;
+    var frac=segLen>0?(t-path[idx].dist)/segLen:0;
+    frac=Math.max(0,Math.min(1,frac));
+    return {
+        x:path[idx].x+(path[idx+1].x-path[idx].x)*frac,
+        y:path[idx].y+(path[idx+1].y-path[idx].y)*frac
+    };
+}
+
+function startTest(){
+    canvas=document.getElementById('game-canvas');
+    ctx=canvas.getContext('2d');
+    rect=canvas.getBoundingClientRect();
+    generatePath();
+    targetT=0;
+    cursor={x:path[0].x,y:path[0].y,vx:0,vy:0};
+    keys={};
+    insideCount=0;totalSamples=0;
+    testStart=performance.now();testRunning=true;lastTime=performance.now();
+    showScreen('screen-play');
+    if(animId)cancelAnimationFrame(animId);
+    loop(performance.now());
+}
+
+function loop(now){
+    if(!testRunning)return;
+    animId=requestAnimationFrame(loop);
+    var dt=(now-lastTime)/1000;
+    if(dt<=0||dt>0.2)dt=0.016;
+    lastTime=now;
+    var elapsed=now-testStart;
+    var remaining=Math.max(0,TEST_DURATION*1000-elapsed);
+    document.getElementById('timer-fill').style.width=(remaining/(TEST_DURATION*1000)*100).toFixed(1)+'%';
+    if(elapsed>TEST_DURATION*1000){endTest();return;}
+
+    // Move target along path
+    targetT+=targetSpeed*dt;
+    var targetPos=getPathPoint(targetT);
+
+    // Apply user input as force (simulated inertia + lag)
+    var ax=0,ay=0;
+    if(keys['ArrowLeft']||keys['KeyA']||keys['a'])ax=-600;
+    if(keys['ArrowRight']||keys['KeyD']||keys['d'])ax=600;
+    if(keys['ArrowUp']||keys['KeyW']||keys['w'])ay=-600;
+    if(keys['ArrowDown']||keys['KeyS']||keys['s'])ay=600;
+
+    // Inertia: force affects acceleration with a time constant
+    var inertiaFactor=0.92; // closer to 1 = more inertia/slide
+    cursor.vx=cursor.vx*inertiaFactor+ax*dt*(1-inertiaFactor);
+    cursor.vy=cursor.vy*inertiaFactor+ay*dt*(1-inertiaFactor);
+
+    // Control lag: dampen velocity changes
+    var lagDamping=0.85;
+    cursor.vx*=lagDamping;
+    cursor.vy*=lagDamping;
+
+    cursor.x+=cursor.vx*dt;
+    cursor.y+=cursor.vy*dt;
+
+    // Keep cursor in bounds
+    cursor.x=Math.max(10,Math.min(630,cursor.x));
+    cursor.y=Math.max(10,Math.min(470,cursor.y));
+
+    // Check if cursor is inside target ring
+    var dx=cursor.x-targetPos.x,dy=cursor.y-targetPos.y;
+    var dist=Math.sqrt(dx*dx+dy*dy);
+    totalSamples++;
+    if(dist<22)insideCount++;
+
+    document.getElementById('live-score').textContent=Math.round(insideCount/totalSamples*100)+'%';
+
+    draw(targetPos);
+}
+
+function draw(targetPos){
+    ctx.clearRect(0,0,640,480);
+
+    // Draw path trail
+    ctx.strokeStyle='#1a2a3a';ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(path[0].x,path[0].y);
+    for(var i=1;i<path.length;i++){ctx.lineTo(path[i].x,path[i].y);}
+    ctx.closePath();ctx.stroke();
+
+    // Draw target ring
+    ctx.strokeStyle='rgba(136,204,68,0.7)';ctx.lineWidth=3;
+    ctx.beginPath();ctx.arc(targetPos.x,targetPos.y,22,0,Math.PI*2);ctx.stroke();
+    ctx.strokeStyle='rgba(136,204,68,0.4)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.arc(targetPos.x,targetPos.y,20,0,Math.PI*2);ctx.stroke();
+
+    // Draw cursor (crosshair)
+    var inside=Math.sqrt((cursor.x-targetPos.x)*(cursor.x-targetPos.x)+(cursor.y-targetPos.y)*(cursor.y-targetPos.y))<22;
+    var cursorColor=inside?'rgba(100,180,255,0.9)':'rgba(100,180,255,0.5)';
+    ctx.strokeStyle=cursorColor;ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(cursor.x-12,cursor.y);ctx.lineTo(cursor.x+12,cursor.y);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cursor.x,cursor.y-12);ctx.lineTo(cursor.x,cursor.y+12);ctx.stroke();
+    ctx.fillStyle=cursorColor;
+    ctx.beginPath();ctx.arc(cursor.x,cursor.y,4,0,Math.PI*2);ctx.fill();
+
+    // Velocity indicator
+    if(Math.abs(cursor.vx)>5||Math.abs(cursor.vy)>5){
+        ctx.strokeStyle='rgba(100,180,255,0.3)';ctx.lineWidth=1;
+        ctx.beginPath();ctx.moveTo(cursor.x,cursor.y);
+        ctx.lineTo(cursor.x+cursor.vx*0.3,cursor.y+cursor.vy*0.3);ctx.stroke();
+    }
+}
+
+function endTest(){
+    testRunning=false;
+    if(animId)cancelAnimationFrame(animId);
+    var score=totalSamples>0?Math.round(insideCount/totalSamples*100):0;
+    var html='<div class="big">Score: '+score+'%</div>';
+    html+='Time in target ring: '+insideCount+' / '+totalSamples+' frames';
+    document.getElementById('result-text').innerHTML=html;
+    showScreen('screen-result');
+    var raw=localStorage.getItem('adpt_dexterity');
+    var arr=raw?JSON.parse(raw):[];
+    arr.unshift({score:score,ts:Date.now()});
+    if(arr.length>20)arr=arr.slice(0,20);
+    localStorage.setItem('adpt_dexterity',JSON.stringify(arr));
+}
+
+document.addEventListener('keydown',function(e){keys[e.code]=true;});
+document.addEventListener('keyup',function(e){keys[e.code]=false;});
+
+// Touch support
+var touchActive=false;
+canvas.addEventListener('touchstart',function(e){e.preventDefault();touchActive=true;updateTouch(e);});
+canvas.addEventListener('touchmove',function(e){e.preventDefault();updateTouch(e);});
+canvas.addEventListener('touchend',function(e){touchActive=false;});
+function updateTouch(e){
+    if(!touchActive)return;
+    var touch=e.touches[0];
+    var rx=(touch.clientX-rect.left)/rect.width*640;
+    var ry=(touch.clientY-rect.top)/rect.height*480;
+    // Direct position for touch (less lag)
+    cursor.x+=(rx-cursor.x)*0.3;
+    cursor.y+=(ry-cursor.y)*0.3;
+}
+showScreen('screen-intro');
+</script>
+</body>
+</html>

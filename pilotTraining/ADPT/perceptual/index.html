@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en" class="lang-en">
+<head>
+<meta charset="utf-8">
+<title>Perceptual Speed - ADPT</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
+<meta name="format-detection" content="telephone=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<style>
+*,*::before,*::after{box-sizing:border-box;}
+body{font-size:clamp(10px,1.6vw,16px);font-family:"Microsoft YaHei",Arial,sans-serif;background:#080810;color:#ccc;margin:0;padding:0;overflow-x:hidden;user-select:none;-webkit-user-select:none;}
+#wrap{max-width:90vw;width:100%;margin:0 auto;padding:clamp(6px,1vw,12px);}
+h1{font-size:clamp(1rem,2.2vw,1.5rem);color:#88ccff;text-align:center;margin:6px 0;}
+#screen-intro,#screen-play,#screen-result{display:none;}
+#screen-intro.active,#screen-play.active,#screen-result.active{display:block;}
+.intro-text{font-size:clamp(0.7rem,1.2vw,0.88rem);color:#8899aa;line-height:1.6;margin:8px 0;text-align:center;}
+.intro-text strong{color:#aaccdd;}
+.btn{display:block;width:100%;max-width:min(300px,50vw);margin:12px auto;padding:clamp(8px,1.4vw,14px);border-radius:8px;font-size:clamp(0.8rem,1.3vw,1rem);text-align:center;cursor:pointer;border:none;color:#dde;box-sizing:border-box;}
+.btn-start{background:linear-gradient(135deg,#1a5a3c,#2a8a5c);}
+.btn-back{background:#1a1a2e;border:1px solid #334;color:#667;font-size:clamp(0.7rem,1.1vw,0.82rem);padding:8px;max-width:min(300px,50vw);text-decoration:none;display:block;margin:8px auto;}
+.btn-back:hover{color:#99a;}
+#timer-bar{width:100%;height:3px;background:#1a1a2e;border-radius:2px;margin:4px 0;overflow:hidden;}
+#timer-fill{height:100%;background:linear-gradient(90deg,#2a8a5c,#88cc44);width:100%;transition:width 0.2s;}
+.duration-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:10px 0;}
+.dur-btn{padding:6px 12px;border-radius:4px;border:1px solid #334;background:#0e0e18;color:#889;font-size:0.78rem;cursor:pointer;transition:all 0.15s;}
+.dur-btn.sel{border-color:#4488aa;color:#88ccff;background:#111a24;}
+.cn-toggle{position:fixed;top:6px;right:10px;z-index:20;font-size:0.68rem;background:#0e0e18;border:1px solid #334;color:#556;padding:3px 8px;border-radius:3px;cursor:pointer;}
+.cn-line{display:none;}
+html.lang-cn .cn-line{display:inline;}
+html.lang-cn .en-line{display:none;}
+#digit-pair{display:flex;justify-content:center;align-items:center;gap:clamp(10px,2vw,20px);margin:16px 0;flex-wrap:wrap;}
+.digit-str{font-size:clamp(1.2rem,2.5vw,1.8rem);font-family:"Courier New",monospace;color:#ccddff;letter-spacing:3px;padding:clamp(8px,1.5vw,14px) clamp(12px,2vw,20px);background:#0a0a18;border:2px solid #1e1e2e;border-radius:8px;word-break:break-all;}
+.digit-label{text-align:center;font-size:0.7rem;color:#556;margin-top:3px;}
+#digit-buttons{display:flex;gap:clamp(16px,3vw,40px);justify-content:center;flex-wrap:wrap;}
+.match-btn{padding:clamp(8px,1.5vw,14px) clamp(20px,4vw,40px);border-radius:8px;font-size:clamp(0.9rem,1.5vw,1.1rem);cursor:pointer;border:2px solid;min-width:clamp(80px,15vw,120px);text-align:center;}
+.match-btn.match{border-color:#33aa44;color:#33aa44;background:#0a1a0a;}
+.match-btn.no{border-color:#aa3333;color:#aa3333;background:#1a0a0a;}
+.match-btn:active{opacity:0.7;}
+.question-counter{text-align:center;font-size:0.75rem;color:#556;margin:3px 0;}
+.phase-label{text-align:center;font-size:0.8rem;color:#88aacc;margin:6px 0;}
+#gauge-grid{display:grid;gap:clamp(6px,1vw,12px);justify-content:center;margin:10px auto;max-width:min(500px,85vw);}
+#gauge-grid.col3{grid-template-columns:repeat(3,minmax(60px,1fr));}
+#gauge-grid.col4{grid-template-columns:repeat(4,minmax(55px,1fr));}
+.gauge-cell{aspect-ratio:1;cursor:pointer;position:relative;max-width:100px;}
+.gauge-cell canvas{width:100%;height:100%;display:block;}
+.result-summary{text-align:center;font-size:0.88rem;color:#aac;line-height:2;}
+.result-summary .big{font-size:clamp(1.3rem,2.5vw,1.8rem);color:#88ccff;font-weight:bold;}
+.feedback{text-align:center;font-size:1.1rem;height:24px;line-height:24px;margin:6px 0;}
+</style>
+</head>
+<body>
+<button class="cn-toggle" id="cn-toggle" onclick="toggleCN()">CN/EN</button>
+<div id="wrap">
+<h1>Perceptual Speed <span class="en-line">and</span> Accuracy</h1>
+<div id="screen-intro" class="active">
+<p class="intro-text">
+<span class="en-line"><strong>Part 1 - Digit Matching:</strong> Two number/letter strings flash for 2 sec. Are they identical? Press <strong>Match</strong> or <strong>No</strong> quickly. (10 rounds)</span>
+<span class="cn-line"><strong>第一部分 - 数字对校：</strong>两组数字/字母快速闪现2秒。判断它们是否一致，快速按下 <strong>匹配</strong> 或 <strong>不一致</strong>。（10轮）</span><br>
+<span class="en-line"><strong>Part 2 - Gauge Scan:</strong> A grid of dials appears. Find the <strong>red-zone</strong> gauge(s) and click them within 3 sec. (10 rounds)</span>
+<span class="cn-line"><strong>第二部分 - 仪表扫视：</strong>仪表盘网格中找出进入<strong>红区</strong>的仪表并点击。（10轮，每题3秒）</span>
+</p>
+<div class="duration-row">
+<span style="color:#667;font-size:0.75rem;">Duration:</span>
+<button class="dur-btn sel" data-dur="2">2 min</button>
+<button class="dur-btn" data-dur="1">1 min</button>
+<button class="dur-btn" data-dur="3">3 min</button>
+<button class="dur-btn" data-dur="5">5 min</button>
+</div>
+<button class="btn btn-start" onclick="startTest()">Start Test</button>
+<a class="btn btn-back" href="../" style="display:block;text-decoration:none;" id="back-btn">Back to ADPT</a>
+</div>
+<div id="screen-play">
+<div id="timer-bar"><div id="timer-fill"></div></div>
+<div class="question-counter" id="q-counter"></div>
+<div class="phase-label" id="phase-label"></div>
+<div class="feedback" id="feedback"></div>
+<div id="digit-view" style="display:none;">
+<div id="digit-pair"><div><div class="digit-str" id="digit1"></div><div class="digit-label">A</div></div><div><div class="digit-str" id="digit2"></div><div class="digit-label">B</div></div></div>
+<div id="digit-buttons"><div class="match-btn match" id="btn-match" onclick="answerDigit(true)">MATCH</div><div class="match-btn no" id="btn-no" onclick="answerDigit(false)">NO</div></div>
+</div>
+<div id="gauge-view" style="display:none;"><div id="gauge-grid" class="col3"></div></div>
+</div>
+<div id="screen-result">
+<div class="result-summary" id="result-text"></div>
+<button class="btn btn-start" onclick="startTest()">Retry</button>
+<a class="btn btn-back" href="../" style="display:block;text-decoration:none;" id="back-btn2">Back to ADPT</a>
+</div>
+</div>
+<script>
+var ALL_MODE=window.location.search.indexOf('all=1')>=0;
+if(ALL_MODE){document.getElementById('back-btn').style.display='none';document.getElementById('back-btn2').style.display='none';document.getElementById('back-btn2').textContent='Continue';document.getElementById('back-btn2').style.display='block';document.getElementById('back-btn2').href='../all-practice/?continue=1';}
+(function(){var ua=navigator.userAgent.toLowerCase();if(ua.indexOf('micromessenger')>=0||ua.indexOf('safari')>=0&&ua.indexOf('chrome')<0){document.documentElement.classList.add('lang-cn');}})();
+function toggleCN(){var h=document.documentElement;h.classList.toggle('lang-cn');}
+var testDuration=120;var durs={1:60,2:120,3:180,5:300};
+document.querySelectorAll('.dur-btn').forEach(function(b){b.onclick=function(){document.querySelectorAll('.dur-btn').forEach(function(x){x.classList.remove('sel');});b.classList.add('sel');testDuration=durs[parseInt(b.dataset.dur)];};});
+var TOTAL_PER_PHASE=10,DIGIT_TIME=2000,GAUGE_TIME=3000;
+var phase=0,round=0,answered=false,deadline=0;
+var digitCorrect=0,gaugeCorrect=0,gaugeTotal=0;
+var digitMatch=false;
+var gaugeFaults=[];
+var testRunning=false,animId=null;
+function showScreen(id){['screen-intro','screen-play','screen-result'].forEach(function(s){document.getElementById(s).classList.remove('active');});document.getElementById(id).classList.add('active');}
+function startTest(){
+    phase=0;round=0;digitCorrect=0;gaugeCorrect=0;gaugeTotal=0;
+    testRunning=true;showScreen('screen-play');
+    document.getElementById('phase-label').textContent='Part 1: Digit Matching';
+    document.getElementById('digit-view').style.display='block';document.getElementById('gauge-view').style.display='none';
+    document.getElementById('feedback').textContent='';
+    nextDigitQuestion();
+    }
+function nextDigitQuestion(){
+    if(round>=TOTAL_PER_PHASE){startGaugePhase();return;}
+    round++;answered=false;
+    document.getElementById('q-counter').textContent='Part 1: '+round+' / '+TOTAL_PER_PHASE;
+    var len=8+Math.floor(Math.random()*4);
+    var chars='0123456789ABCDEFGH';
+    var str='';for(var i=0;i<len;i++)str+=chars[Math.floor(Math.random()*chars.length)];
+    digitMatch=Math.random()<0.5;
+    var str2;if(digitMatch){str2=str;}else{str2=str.split('');var pos=Math.floor(Math.random()*len);var c;do{c=chars[Math.floor(Math.random()*chars.length)];}while(c===str2[pos]);str2[pos]=c;str2=str2.join('');}
+    document.getElementById('digit1').textContent=str;document.getElementById('digit2').textContent=str2;
+    document.getElementById('feedback').textContent='';
+    deadline=performance.now()+DIGIT_TIME;
+    if(animId)cancelAnimationFrame(animId);animId=requestAnimationFrame(timerLoop);
+    }
+function answerDigit(userMatch){
+    if(answered||phase!==0)return;answered=true;
+    if(userMatch===digitMatch){digitCorrect++;document.getElementById('feedback').textContent='OK';document.getElementById('feedback').style.color='#88cc44';}else{document.getElementById('feedback').textContent='X';document.getElementById('feedback').style.color='#ff4444';}
+    setTimeout(nextDigitQuestion,600);
+    }
+function startGaugePhase(){
+    phase=1;round=0;gaugeCorrect=0;gaugeTotal=0;
+    document.getElementById('phase-label').textContent='Part 2: Gauge Scanning';
+    document.getElementById('digit-view').style.display='none';document.getElementById('gauge-view').style.display='block';
+    document.getElementById('feedback').textContent='';
+    nextGaugeQuestion();
+    }
+function nextGaugeQuestion(){
+    if(round>=TOTAL_PER_PHASE){endTest();return;}
+    round++;answered=false;gaugeFaults=[];
+    document.getElementById('q-counter').textContent='Part 2: '+round+' / '+TOTAL_PER_PHASE;
+    var grid=document.getElementById('gauge-grid');
+    var size=(round<=5)?3:4;grid.className=(size===3)?'col3':'col4';grid.innerHTML='';
+    var numFaults=1+(Math.random()<0.3?1:0);var total=size*size;
+    var allIdx=[];for(var i=0;i<total;i++)allIdx.push(i);
+    for(var i=allIdx.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=allIdx[i];allIdx[i]=allIdx[j];allIdx[j]=tmp;}
+    var faultIdx=new Set(allIdx.slice(0,numFaults));
+    for(var i=0;i<total;i++){
+        var cell=document.createElement('div');cell.className='gauge-cell';
+        var c=document.createElement('canvas');c.width=c.height=80;cell.appendChild(c);
+        var isFault=faultIdx.has(i);
+        drawGauge(c.getContext('2d'),40,40,32,isFault);
+        if(isFault){cell.dataset.fault='1';gaugeFaults.push(cell);}
+        cell.addEventListener('click',function(){
+            if(answered||phase!==1)return;
+            if(this.dataset.fault==='1'&&!this.dataset.clicked){this.dataset.clicked='1';gaugeCorrect++;}
+            if(gaugeCorrect>=gaugeFaults.length){answered=true;document.getElementById('feedback').textContent='OK';document.getElementById('feedback').style.color='#88cc44';setTimeout(nextGaugeQuestion,600);}
+        });
+        grid.appendChild(cell);
+        }
+    gaugeTotal+=numFaults;document.getElementById('feedback').textContent='';
+    deadline=performance.now()+GAUGE_TIME;
+    if(animId)cancelAnimationFrame(animId);animId=requestAnimationFrame(timerLoop);
+    }
+function drawGauge(ctx,cx,cy,r,isFault){
+    ctx.clearRect(0,0,80,80);
+    ctx.fillStyle='#0a0a18';ctx.strokeStyle='#334';ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.strokeStyle='#33aa44';ctx.lineWidth=4;ctx.beginPath();ctx.arc(cx,cy,r-4,-Math.PI/3,Math.PI/3);ctx.stroke();
+    ctx.strokeStyle='#ff4444';ctx.lineWidth=4;ctx.beginPath();ctx.arc(cx,cy,r-4,Math.PI/3,Math.PI/3+0.35);ctx.stroke();
+    ctx.beginPath();ctx.arc(cx,cy,r-4,-Math.PI/3-0.35,-Math.PI/3);ctx.stroke();
+    var angle=isFault?(Math.PI/3+0.17+Math.random()*0.08):(Math.random()-0.5)*Math.PI*0.5;
+    ctx.strokeStyle=isFault?'#ff4444':'#aaccff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.sin(angle)*(r-8),cy-Math.cos(angle)*(r-8));ctx.stroke();
+    ctx.fillStyle=isFault?'#ff4444':'#aaccff';ctx.beginPath();ctx.arc(cx,cy,3,0,Math.PI*2);ctx.fill();
+    }
+function timerLoop(now){
+    if(!testRunning)return;animId=requestAnimationFrame(timerLoop);
+    var rem=Math.max(0,deadline-now);
+    var timeLimit=phase===0?DIGIT_TIME:GAUGE_TIME;
+    var pct=(rem/timeLimit*100).toFixed(1);document.getElementById('timer-fill').style.width=pct+'%';
+    if(rem<=0&&!answered){answered=true;document.getElementById('feedback').textContent='TIME';document.getElementById('feedback').style.color='#ffaa00';if(phase===0)setTimeout(nextDigitQuestion,500);else setTimeout(nextGaugeQuestion,500);}
+    }
+document.addEventListener('keydown',function(e){
+    if(!testRunning||answered)return;
+    if(phase===0){if(e.key==='y'||e.key==='Y'||e.key==='ArrowRight')answerDigit(true);if(e.key==='n'||e.key==='N'||e.key==='ArrowLeft')answerDigit(false);}
+    });
+function endTest(){
+    testRunning=false;if(animId)cancelAnimationFrame(animId);
+    var digitPct=Math.round(digitCorrect/TOTAL_PER_PHASE*100);
+    var gaugePct=gaugeTotal>0?Math.round(gaugeCorrect/gaugeTotal*100):0;
+    var totalScore=Math.round(digitPct*0.5+gaugePct*0.5);
+    var html='<div class="big">Score: '+totalScore+'%</div>';
+    html+='Digit Matching: '+digitCorrect+'/'+TOTAL_PER_PHASE+' ('+digitPct+'%)<br>';
+    html+='Gauge Scanning: '+gaugeCorrect+'/'+gaugeTotal+' faults found ('+gaugePct+'%)';
+    document.getElementById('result-text').innerHTML=html;showScreen('screen-result');
+    var raw=localStorage.getItem('adpt_perceptual');var arr=raw?JSON.parse(raw):[];arr.unshift({score:totalScore,ts:Date.now()});if(arr.length>20)arr=arr.slice(0,20);localStorage.setItem('adpt_perceptual',JSON.stringify(arr));
+    if(ALL_MODE){var seq=JSON.parse(sessionStorage.getItem('adpt_all_seq')||'[]'),results=JSON.parse(sessionStorage.getItem('adpt_all_results')||'[]'),idx=parseInt(sessionStorage.getItem('adpt_all_idx')||'0');results.push({id:'perceptual',score:totalScore});sessionStorage.setItem('adpt_all_results',JSON.stringify(results));sessionStorage.setItem('adpt_all_idx',String(idx+1));window.location.href='../all-practice/?continue=1';}
+    }
+showScreen('screen-intro');
+</script>
+</body>
+</html>

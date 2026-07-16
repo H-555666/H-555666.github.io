@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>All Practice - ADPT</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
+<meta name="format-detection" content="telephone=no">
+<style>
+body{font-size:62.5%;font-family:"Microsoft YaHei",Arial;background:#080810;color:#ccc;margin:0;padding:0;}
+.wrap{max-width:600px;margin:0 auto;padding:30px 16px;}
+h1{font-size:1.5rem;color:#88ccff;text-align:center;margin:0 0 6px;}
+h2{font-size:1rem;color:#667;text-align:center;font-weight:normal;margin:0 0 24px;}
+.btn{display:block;width:100%;max-width:300px;margin:16px auto;padding:14px;border-radius:8px;font-size:1rem;text-align:center;cursor:pointer;border:none;color:#dde;box-sizing:border-box;}
+.btn-start{background:linear-gradient(135deg,#1a5a3c,#2a8a5c);}
+.btn-exit{background:#1a1a2e;border:1px solid #334;color:#667;text-decoration:none;}
+.result-big{font-size:1.8rem;color:#88ccff;font-weight:bold;text-align:center;}
+.result-detail{text-align:center;font-size:0.85rem;color:#aac;line-height:2;margin:12px 0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>ADPT All Practice</h1>
+<div id="screen-start">
+<h2>Complete all 5 tests in sequence (~12 minutes)</h2>
+<button class="btn btn-start" onclick="startAll()">Start All Tests</button>
+<a class="btn btn-exit" href="../" style="display:block;">Back to ADPT</a>
+</div>
+<div id="screen-results" style="display:none;">
+<div id="result-content"></div>
+<button class="btn btn-start" onclick="startAll()">Retry All</button>
+<a class="btn btn-exit" href="../" style="display:block;">Back to ADPT</a>
+</div>
+</div>
+<script>
+var testOrder=['fast','spatial','perceptual','cognitive','dexterity'];
+var tNames={fast:'FAST Multitasking',spatial:'Spatial Orientation',perceptual:'Perceptual Speed',cognitive:'Cognitive Reasoning',dexterity:'Dexterity and Lag'};
+var tUrls={fast:'../fast/',spatial:'../spatial/',perceptual:'../perceptual/',cognitive:'../cognitive/',dexterity:'../dexterity/'};
+if(window.location.search.indexOf('done=1')>=0){ showResults(); }
+else if(window.location.search.indexOf('continue=1')>=0){ continueNext(); }
+function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t; } return a; }
+function startAll(){
+    testOrder=shuffle(testOrder.slice());
+    sessionStorage.setItem('adpt_all_seq',JSON.stringify(testOrder));
+    sessionStorage.setItem('adpt_all_results',JSON.stringify([]));
+    sessionStorage.setItem('adpt_all_idx','0');
+    window.location.href=tUrls[testOrder[0]]+'?all=1';
+    }
+function continueNext(){
+    var seq=JSON.parse(sessionStorage.getItem('adpt_all_seq')||'[]');
+    var idx=parseInt(sessionStorage.getItem('adpt_all_idx')||'0');
+    if(idx>=seq.length){ window.location.href='./?done=1'; }
+    else { window.location.href=tUrls[seq[idx]]+'?all=1'; }
+    }
+function showResults(){
+    var seq=JSON.parse(sessionStorage.getItem('adpt_all_seq')||'[]');
+    var results=JSON.parse(sessionStorage.getItem('adpt_all_results')||'[]');
+    var total=0,count=0,html='<div class="result-big">All Tests Complete!</div><div class="result-detail">';
+    results.forEach(function(r){ html+=tNames[r.id]+': <strong>'+r.score+'%</strong><br>'; total+=r.score;count++; });
+    var avg=count>0?Math.round(total/count):0;
+    html+='<br><span style="color:#88ccff;font-size:1.2rem;">Average: '+avg+'%</span></div>';
+    document.getElementById('result-content').innerHTML=html;
+    document.getElementById('screen-start').style.display='none';
+    document.getElementById('screen-results').style.display='block';
+    var raw=localStorage.getItem('adpt_allpractice');
+    var arr=raw?JSON.parse(raw):[];
+    arr.unshift({score:avg,ts:Date.now()});
+    if(arr.length>20)arr=arr.slice(0,20);
+    localStorage.setItem('adpt_allpractice',JSON.stringify(arr));
+    }
+</script>
+</body>
+</html>

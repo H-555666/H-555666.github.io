@@ -1,12 +1,48 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pilot Training Center</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
+<link rel="stylesheet" type="text/css" href="../main.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;}
+body{padding:0;margin:0;font-size:clamp(10px,1.6vw,16px);font-family:"Microsoft YaHei",Arial,sans-serif;overflow-x:hidden;overflow-y:auto;}
+.viewport{max-width:min(700px,90vw);min-width:280px;margin:0 auto;padding:clamp(16px,2.5vw,30px) clamp(10px,1.5vw,16px);}
+h1{font-size:clamp(1.8rem,3.5vw,2.5rem);text-align:center;color:#88ccff;margin:0 0 4px;letter-spacing:2px;}
+.subhead{font-size:clamp(0.85rem,1.4vw,1rem);text-align:center;color:#6688aa;margin:0 0 30px;font-weight:normal;}
+.section-title{font-size:clamp(0.85rem,1.3vw,1rem);color:#88aacc;border-bottom:1px solid #223;padding-bottom:6px;margin:28px 0 12px;}
+.card{display:flex;align-items:center;background:#111118;border:1px solid #1e1e2e;border-radius:8px;padding:clamp(10px,1.5vw,14px) clamp(10px,1.5vw,16px);margin:8px 0;text-decoration:none;color:inherit;transition:border-color 0.2s,background 0.2s;}
+.card:hover{border-color:#4488aa;background:#151522;}
+.card-icon{font-size:clamp(1.5rem,2.5vw,2rem);min-width:48px;text-align:center;margin-right:clamp(8px,1.5vw,14px);}
+.card-info{flex:1;}
+.card-name{font-size:clamp(0.8rem,1.3vw,0.95rem);color:#ccddff;font-weight:bold;margin-bottom:2px;}
+.card-desc{font-size:clamp(0.68rem,1vw,0.76rem);color:#778899;line-height:1.4;}
+.highlight{background:linear-gradient(135deg,#1a1a3e,#0a0a18);border-color:#2a3a5a;}
+.highlight:hover{border-color:#4488bb;background:linear-gradient(135deg,#1e1e48,#0e0e1e);}
+.sep{height:1px;background:#121220;margin:20px 0;border:none;}
+.back-link{display:inline-block;margin-top:16px;color:#667;font-size:0.82rem;text-decoration:none;}
+.back-link:hover{color:#99a;}
+</style>
+</head>
 <body>
-    <a href="/pilotTraining/memory/">memory</a>
-    <hr>
-    <a href="/pilotTraining/Nback/">N-back</a>
-    <hr>
-    <a href="/pilotTraining/noise/">noise</a>
+<div class="viewport">
+<h1>Pilot Training Center</h1>
+<p class="subhead">Cognitive Assessment and Testing Suite</p>
+<div class="section-title">New: ADPT Test Suite</div>
+<a class="card highlight" href="ADPT/"><div class="card-icon">&#x2708;</div><div class="card-info"><div class="card-name">ADPT — Aviation and Drone Pilot Testing</div><div class="card-desc">Five core cognitive aptitude assessments: multitasking, spatial orientation, perceptual speed, cognitive reasoning, and dexterity with lag control. All-practice mode included.</div></div></a>
+<div class="section-title">Individual ADPT Tests</div>
+<a class="card" href="ADPT/fast/"><div class="card-icon">&#x1F3AE;</div><div class="card-info"><div class="card-name">FAST Multitasking</div><div class="card-desc">Target tracking + instrument monitoring + mental math under cognitive load</div></div></a>
+<a class="card" href="ADPT/spatial/"><div class="card-icon">&#x1F6F0;</div><div class="card-info"><div class="card-name">Spatial Orientation and Instrument Reading</div><div class="card-desc">Match attitude and heading indicators to correct 3D aircraft pose</div></div></a>
+<a class="card" href="ADPT/perceptual/"><div class="card-icon">&#x1F50D;</div><div class="card-info"><div class="card-name">Perceptual Speed and Accuracy</div><div class="card-desc">Digit pair matching + rapid anomalous-gauge scanning</div></div></a>
+<a class="card" href="ADPT/cognitive/"><div class="card-icon">&#x1F9E0;</div><div class="card-info"><div class="card-name">Cognitive Reasoning and Aviation Math</div><div class="card-desc">Speed-distance-time calculations + matrix reasoning puzzles</div></div></a>
+<a class="card" href="ADPT/dexterity/"><div class="card-icon">&#x1F3AF;</div><div class="card-info"><div class="card-name">Dexterity and Lag Control</div><div class="card-desc">Curve tracking with simulated inertia and control delay</div></div></a>
+<hr class="sep">
+<div class="section-title">Legacy Projects (Preserved)</div>
+<a class="card" href="memory/"><div class="card-icon">&#x1F9E9;</div><div class="card-info"><div class="card-name">Memory (Corsi Block)</div><div class="card-desc">Visual-spatial working memory assessment</div></div></a>
+<a class="card" href="Nback/"><div class="card-icon">&#x1F504;</div><div class="card-info"><div class="card-name">N-Back Test</div><div class="card-desc">Working memory and fluid intelligence</div></div></a>
+<a class="card" href="noise/"><div class="card-icon">&#x1F509;</div><div class="card-info"><div class="card-name">Noise Test</div><div class="card-desc">Auditory discrimination under noise conditions</div></div></a>
+<a class="back-link" href="../">Back to Home</a>
+</div>
 </body>
-
 </html>

@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cognitive Reasoning — ADPT</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
+<meta name="format-detection" content="telephone=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<style>
+body{font-size:62.5%;font-family:"Microsoft YaHei",Arial;background:#080810;color:#ccc;margin:0;padding:0;overflow-x:hidden;user-select:none;-webkit-user-select:none;}
+#wrap{max-width:700px;margin:0 auto;padding:10px;}
+h1{font-size:1.3rem;color:#88ccff;text-align:center;margin:6px 0;}
+#screen-intro,#screen-play,#screen-result{display:none;}
+#screen-intro.active,#screen-play.active,#screen-result.active{display:block;}
+.intro-text{font-size:0.82rem;color:#8899aa;line-height:1.6;margin:12px 0;text-align:center;}
+.btn{display:block;width:100%;max-width:300px;margin:16px auto;padding:12px;border-radius:8px;font-size:1rem;text-align:center;cursor:pointer;border:none;color:#dde;box-sizing:border-box;}
+.btn-start{background:linear-gradient(135deg,#1a5a3c,#2a8a5c);}
+.btn-back{background:#1a1a2e;border:1px solid #334;color:#667;font-size:0.82rem;padding:8px;max-width:300px;text-decoration:none;}
+.btn-back:hover{color:#99a;}
+#timer-bar{width:100%;height:4px;background:#1a1a2e;border-radius:2px;margin:6px 0;overflow:hidden;}
+#timer-fill{height:100%;background:linear-gradient(90deg,#2a8a5c,#88cc44);width:100%;transition:width 0.3s;}
+.question-counter{text-align:center;font-size:0.78rem;color:#556;margin:4px 0;}
+.phase-label{text-align:center;font-size:0.85rem;color:#88aacc;margin:8px 0;}
+.feedback{text-align:center;font-size:1.2rem;height:28px;line-height:28px;margin:8px 0;}
+
+#sdt-question{text-align:center;font-size:1.05rem;color:#ccddff;margin:20px 0;line-height:1.8;padding:16px;background:#0a0a18;border:1px solid #1a1a2e;border-radius:8px;}
+#sdt-input{display:block;width:200px;margin:12px auto;padding:10px;text-align:center;font-size:1.1rem;background:#0a0a18;border:2px solid #334;border-radius:6px;color:#ccddff;font-family:"Courier New",monospace;outline:none;}
+#sdt-input:focus{border-color:#4488aa;}
+.sdt-unit{text-align:center;font-size:0.8rem;color:#667;margin-bottom:12px;}
+.sdt-submit{display:block;margin:8px auto;padding:8px 30px;background:#1a3a5c;color:#aaccdd;border:1px solid #338;border-radius:6px;font-size:0.9rem;cursor:pointer;}
+
+#matrix-area{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;margin:12px 0;}
+#matrix-canvas{border:1px solid #1a1a2e;border-radius:4px;background:#0a0a14;}
+#matrix-options{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;max-width:500px;}
+#matrix-options canvas{cursor:pointer;border:2px solid transparent;border-radius:4px;}
+#matrix-options canvas:hover{border-color:#4488aa;}
+#matrix-options canvas.selected{border-color:#88ccff;}
+
+.result-summary{text-align:center;font-size:0.9rem;color:#aac;line-height:2;}
+.result-summary .big{font-size:1.8rem;color:#88ccff;font-weight:bold;}
+</style>
+</head>
+<body>
+<div id="wrap">
+<h1>Cognitive Reasoning &amp; Aviation Math</h1>
+<div id="screen-intro" class="active">
+<p class="intro-text">
+<strong>Part 1 — Aviation Math (SDT):</strong> Speed, distance, time, and fuel calculations in aviation contexts.<br>
+<strong>Part 2 — Matrix Reasoning:</strong> Complete the 3&times;3 pattern by selecting the missing tile.
+</p>
+<button class="btn btn-start" onclick="startTest()">Start Test</button>
+<a class="btn btn-back" href="../" style="display:block;text-decoration:none;">Back to ADPT</a>
+</div>
+<div id="screen-play">
+<div id="timer-bar"><div id="timer-fill"></div></div>
+<div class="question-counter" id="q-counter"></div>
+<div class="phase-label" id="phase-label">Part 1: Aviation Math</div>
+<div class="feedback" id="feedback"></div>
+<div id="sdt-view">
+<div id="sdt-question"></div>
+<div class="sdt-unit" id="sdt-unit"></div>
+<input type="number" id="sdt-input" placeholder="Your answer" step="any">
+<button class="sdt-submit" onclick="submitSDT()">Submit</button>
+</div>
+<div id="matrix-view" style="display:none;">
+<div id="matrix-area">
+<canvas id="matrix-canvas" width="260" height="260"></canvas>
+<div id="matrix-options"></div>
+</div>
+</div>
+</div>
+<div id="screen-result">
+<div class="result-summary" id="result-text"></div>
+<button class="btn btn-start" onclick="startTest()">Retry</button>
+<a class="btn btn-back" href="../" style="display:block;text-decoration:none;">Back to ADPT</a>
+</div>
+</div>
+
+<script>
+var TOTAL_SDT=8,TOTAL_MATRIX=8;
+var QUESTION_TIME=15000;
+var phase=0; // 0=SDT, 1=matrix
+var round=0,sdtCorrect=0,matrixCorrect=0;
+var answered=false,deadline=0;
+var testRunning=false,animId=null;
+var sdtAnswer=0;
+var matrixAnswer=0;
+
+function showScreen(id){
+    ['screen-intro','screen-play','screen-result'].forEach(function(s){
+        document.getElementById(s).classList.remove('active');
+    });
+    document.getElementById(id).classList.add('active');
+}
+
+function startTest(){
+    phase=0;round=0;sdtCorrect=0;matrixCorrect=0;
+    testRunning=true;
+    showScreen('screen-play');
+    document.getElementById('sdt-view').style.display='block';
+    document.getElementById('matrix-view').style.display='none';
+    document.getElementById('phase-label').textContent='Part 1: Aviation Math';
+    document.getElementById('feedback').textContent='';
+    nextSDT();
+}
+
+// ---- SDT Questions ----
+function nextSDT(){
+    if(round>=TOTAL_SDT){startMatrixPhase();return;}
+    round++;
+    answered=false;
+    document.getElementById('q-counter').textContent='SDT: '+round+' / '+TOTAL_SDT;
+    document.getElementById('feedback').textContent='';
+    document.getElementById('sdt-input').value='';
+    document.getElementById('sdt-input').focus();
+
+    var types=[
+        // [speed, distance, time_hours, template_index]
+        // 0: "At X kts, how far in Y min?" answer: X*Y/60
+        // 1: "At X kts, how long to fly Y NM?" answer: Y/X*60 min
+        // 2: "Burning X gal/hr, Y gal left, how long?" answer: Y/X hours
+    ];
+
+    var speeds=[90,120,150,180,200,240];
+    var speed=speeds[Math.floor(Math.random()*speeds.length)];
+    var t=Math.floor(Math.random()*3);
+    var question,answer,unit;
+
+    if(t===0){
+        var min=[15,20,30,40,45,60][Math.floor(Math.random()*6)];
+        question='An aircraft flies at <strong>'+speed+' kts</strong>. How far does it travel in <strong>'+min+' minutes</strong>?';
+        answer=Math.round(speed*min/60);
+        unit='Distance (NM)';
+    }else if(t===1){
+        var dist=speed*[0.25,0.5,0.75,1,1.5,2][Math.floor(Math.random()*6)];
+        question='At <strong>'+speed+' kts</strong>, how many <strong>minutes</strong> to fly <strong>'+dist+' NM</strong>?';
+        answer=Math.round(dist/speed*60);
+        unit='Time (minutes)';
+    }else{
+        var fuelRate=Math.floor(Math.random()*10)+6;
+        var fuelRem=fuelRate*[1.5,2,2.5,3,3.5,4][Math.floor(Math.random()*6)];
+        question='Fuel burn: <strong>'+fuelRate+' gal/hr</strong>. With <strong>'+fuelRem+' gallons</strong> remaining, how many <strong>hours</strong> of flight time?';
+        answer=Math.round(fuelRem/fuelRate*10)/10;
+        unit='Time (hours)';
+    }
+    sdtAnswer=answer;
+    document.getElementById('sdt-question').innerHTML=question;
+    document.getElementById('sdt-unit').textContent=unit;
+    deadline=performance.now()+QUESTION_TIME;
+    if(animId)cancelAnimationFrame(animId);
+    animId=requestAnimationFrame(timerLoop);
+}
+
+function submitSDT(){
+    if(answered||phase!==0)return;
+    answered=true;
+    var val=parseFloat(document.getElementById('sdt-input').value);
+    var correct=!isNaN(val)&&Math.abs(val-sdtAnswer)<0.15;
+    if(correct){sdtCorrect++;document.getElementById('feedback').textContent='Correct!';document.getElementById('feedback').style.color='#88cc44';}
+    else{document.getElementById('feedback').textContent='Answer: '+sdtAnswer;document.getElementById('feedback').style.color='#ff6644';}
+    setTimeout(nextSDT,900);
+}
+
+document.getElementById('sdt-input').addEventListener('keydown',function(e){
+    if(e.key==='Enter')submitSDT();
+});
+
+// ---- Matrix Reasoning ----
+function startMatrixPhase(){
+    phase=1;round=0;matrixCorrect=0;
+    document.getElementById('sdt-view').style.display='none';
+    document.getElementById('matrix-view').style.display='block';
+    document.getElementById('phase-label').textContent='Part 2: Matrix Reasoning';
+    document.getElementById('feedback').textContent='';
+    nextMatrix();
+}
+
+function nextMatrix(){
+    if(round>=TOTAL_MATRIX){endTest();return;}
+    round++;
+    answered=false;
+    document.getElementById('q-counter').textContent='Matrix: '+round+' / '+TOTAL_MATRIX;
+    document.getElementById('feedback').textContent='';
+    drawMatrixPuzzle();
+    deadline=performance.now()+QUESTION_TIME;
+    if(animId)cancelAnimationFrame(animId);
+    animId=requestAnimationFrame(timerLoop);
+}
+
+function drawMatrixPuzzle(){
+    var types=[
+        'orientation','shapeCount','fillPattern','shapeType'
+    ];
+    var type=types[Math.floor(Math.random()*types.length)];
+
+    // Draw 3x3 grid (missing last cell) on matrix-canvas
+    var c=document.getElementById('matrix-canvas');
+    var ctx=c.getContext('2d');
+    var w=c.width,h=c.height;
+    ctx.clearRect(0,0,w,h);
+    var cellW=w/3,cellH=h/3;
+
+    ctx.strokeStyle='#334';ctx.lineWidth=1;
+    for(var i=0;i<4;i++){ctx.beginPath();ctx.moveTo(i*cellW,0);ctx.lineTo(i*cellW,h);ctx.stroke();}
+    for(var i=0;i<4;i++){ctx.beginPath();ctx.moveTo(0,i*cellH);ctx.lineTo(w,i*cellH);ctx.stroke();}
+
+    var cells=[];
+    for(var r=0;r<3;r++)for(var co=0;co<3;co++){
+        if(r===2&&co===2)continue; // last cell is the answer
+        cells.push({row:r,col:co});
+    }
+
+    matrixAnswer=Math.floor(Math.random()*4); // 0-3 index of correct option
+
+    if(type==='orientation'){
+        // Pattern: rotation of a shape; each row rotates clockwise
+        var baseAngle=Math.random()*Math.PI*2;
+        for(var i=0;i<8;i++){
+            var angle=baseAngle+i*Math.PI/4;
+            var cx=(cells[i].col+0.5)*cellW,cy=(cells[i].row+0.5)*cellH;
+            drawArrow(ctx,cx,cy,14,angle,'#aaccdd');
+        }
+        // answer: angle = baseAngle + 8*PI/4 = baseAngle + 2PI = baseAngle
+        var ansAngle=baseAngle+8*Math.PI/4;
+        // options: correct, +45deg off, +90deg off, +135deg off
+        drawOptions(ctx,cellW,cellH,'orientation',ansAngle);
+
+    }else if(type==='shapeCount'){
+        // Pattern: increasing number of dots per cell (row/col progression)
+        for(var i=0;i<8;i++){
+            var cx=(cells[i].col+0.5)*cellW,cy=(cells[i].row+0.5)*cellH;
+            var count=cells[i].row+cells[i].col+1;
+            drawDots(ctx,cx,cy,count,'#aaccdd');
+        }
+        var ansCount=2+2+1; // row2+col2+1=5
+        drawOptions(ctx,cellW,cellH,'shapeCount',ansCount);
+
+    }else if(type==='fillPattern'){
+        // Pattern: alternating fill (stripes/solid)
+        for(var i=0;i<8;i++){
+            var cx=(cells[i].col+0.5)*cellW,cy=(cells[i].row+0.5)*cellH;
+            var pat=(cells[i].row+cells[i].col)%3;
+            drawPattern(ctx,cx,cy,14,pat);
+        }
+        var ansPat=(2+2)%3;
+        drawOptions(ctx,cellW,cellH,'fillPattern',ansPat);
+
+    }else{
+        // shapeType: circle->square->triangle cycle
+        var shapes=['circle','square','triangle'];
+        for(var i=0;i<8;i++){
+            var cx=(cells[i].col+0.5)*cellW,cy=(cells[i].row+0.5)*cellH;
+            var idx=(cells[i].row+cells[i].col)%3;
+            drawSimpleShape(ctx,cx,cy,13,shapes[idx]);
+        }
+        var ansIdx=(2+2)%3;
+        drawOptions(ctx,cellW,cellH,'shapeType',ansIdx);
+    }
+
+    // Mark the ? cell
+    var qx=2.5*cellW,qy=2.5*cellH;
+    ctx.fillStyle='#445';ctx.font='14px Arial';ctx.textAlign='center';
+    ctx.fillText('?',qx,qy+5);
+}
+
+function drawArrow(ctx,cx,cy,size,angle,color){
+    ctx.save();ctx.translate(cx,cy);ctx.rotate(angle);
+    ctx.strokeStyle=color;ctx.lineWidth=2.5;
+    ctx.beginPath();ctx.moveTo(size,0);ctx.lineTo(-size*0.5,-size*0.5);ctx.lineTo(-size*0.2,0);ctx.lineTo(-size*0.5,size*0.5);ctx.closePath();ctx.stroke();
+    ctx.restore();
+}
+
+function drawDots(ctx,cx,cy,count,color){
+    ctx.fillStyle=color;
+    var positions=[];
+    if(count<=3){for(var i=0;i<count;i++)positions.push([cx+(i-1)*10,cy]);}
+    else if(count<=5){for(var i=0;i<count;i++)positions.push([cx+(i-2)*8,cy+(i%2===0?-7:7)]);}
+    else{for(var i=0;i<Math.min(count,7);i++){positions.push([cx+(i%3-1)*10,cy+(Math.floor(i/3)-1)*10]);}}
+    positions.forEach(function(p){ctx.beginPath();ctx.arc(p[0],p[1],3,0,Math.PI*2);ctx.fill();});
+}
+
+function drawPattern(ctx,cx,cy,size,pat){
+    ctx.fillStyle='#aaccdd';
+    if(pat===0){ctx.fillRect(cx-size,cy-size,size*2,size*2);}
+    else if(pat===1){
+        ctx.strokeStyle='#aaccdd';ctx.lineWidth=2;
+        ctx.strokeRect(cx-size,cy-size,size*2,size*2);
+    }else{
+        ctx.fillRect(cx-size,cy-size,size*2,size*2);
+        ctx.fillStyle='#0a0a14';
+        for(var i=0;i<4;i++){ctx.fillRect(cx-size+i*7,cy-size,3,size*2);}
+    }
+}
+
+function drawSimpleShape(ctx,cx,cy,size,shape){
+    ctx.strokeStyle='#aaccdd';ctx.lineWidth=2.5;
+    ctx.beginPath();
+    if(shape==='circle'){ctx.arc(cx,cy,size,0,Math.PI*2);}
+    else if(shape==='square'){ctx.rect(cx-size,cy-size,size*2,size*2);}
+    else{ctx.moveTo(cx,cy-size);ctx.lineTo(cx+size,cy+size);ctx.lineTo(cx-size,cy+size);ctx.closePath();}
+    ctx.stroke();
+}
+
+function drawOptions(ctx,cellW,cellH,type,correctVal){
+    var optsDiv=document.getElementById('matrix-options');
+    optsDiv.innerHTML='';
+    var values=[correctVal];
+    if(type==='orientation'){
+        values.push(correctVal+Math.PI/4,correctVal+Math.PI/2,correctVal-Math.PI/4);
+    }else if(type==='shapeCount'){
+        var offsets=[1,-1,2].sort(function(){return Math.random()-0.5;});
+        offsets.forEach(function(o){values.push(Math.max(1,Math.min(7,correctVal+o)));});
+    }else if(type==='fillPattern'){
+        values.push((correctVal+1)%3,(correctVal+2)%3,(correctVal+2)%3);
+    }else{
+        values.push((correctVal+1)%3,(correctVal+2)%3,(correctVal+1)%3);
+    }
+    // dedupe and ensure 4
+    var seen=new Set();var finalVals=[];
+    for(var i=0;i<values.length;i++){
+        var key=type==='orientation'?values[i].toFixed(3):String(values[i]);
+        if(!seen.has(key)){seen.add(key);finalVals.push(values[i]);}
+    }
+    while(finalVals.length<4){finalVals.push(finalVals[0]);}
+
+    // shuffle
+    var correctPos=Math.floor(Math.random()*4);
+    var shuffled=[];
+    for(var i=0;i<4;i++){
+        var idx=(correctPos+i)%4;
+        shuffled.push({val:finalVals[i],isCorrect:(i===0)});
+    }
+
+    shuffled.forEach(function(opt,si){
+        var oc=document.createElement('canvas');
+        oc.width=cellW;oc.height=cellH;
+        var octx=oc.getContext('2d');
+        octx.fillStyle='#0a0a14';octx.fillRect(0,0,cellW,cellH);
+        var cx=cellW/2,cy=cellH/2;
+        if(type==='orientation')drawArrow(octx,cx,cy,14,opt.val,'#aaccdd');
+        else if(type==='shapeCount')drawDots(octx,cx,cy,opt.val,'#aaccdd');
+        else if(type==='fillPattern')drawPattern(octx,cx,cy,14,opt.val);
+        else drawSimpleShape(octx,cx,cy,13,['circle','square','triangle'][opt.val]);
+        opt.canvas=oc;
+        opt.idx=si;
+        oc.addEventListener('click',function(){
+            if(answered)return;
+            answered=true;
+            var opts=document.querySelectorAll('#matrix-options canvas');
+            opts.forEach(function(c){c.classList.remove('selected');});
+            oc.classList.add('selected');
+            if(opt.isCorrect){matrixCorrect++;document.getElementById('feedback').textContent='Correct!';document.getElementById('feedback').style.color='#88cc44';}
+            else{document.getElementById('feedback').textContent='Missed';document.getElementById('feedback').style.color='#ff6644';}
+            setTimeout(nextMatrix,800);
+        });
+        optsDiv.appendChild(oc);
+    });
+    window._matrixData={correctPos:correctPos,shuffled:shuffled};
+}
+
+// ---- Timer ----
+function timerLoop(now){
+    if(!testRunning)return;
+    animId=requestAnimationFrame(timerLoop);
+    var rem=Math.max(0,deadline-now);
+    var pct=(rem/QUESTION_TIME*100).toFixed(1);
+    document.getElementById('timer-fill').style.width=pct+'%';
+    if(rem<=0&&!answered){
+        answered=true;
+        document.getElementById('feedback').textContent='TIME';
+        document.getElementById('feedback').style.color='#ffaa00';
+        if(phase===0)setTimeout(nextSDT,500);
+        else setTimeout(nextMatrix,500);
+    }
+}
+
+function endTest(){
+    testRunning=false;
+    if(animId)cancelAnimationFrame(animId);
+    var sdtPct=Math.round(sdtCorrect/TOTAL_SDT*100);
+    var matrixPct=Math.round(matrixCorrect/TOTAL_MATRIX*100);
+    var totalScore=Math.round(sdtPct*0.5+matrixPct*0.5);
+    var html='<div class="big">Score: '+totalScore+'%</div>';
+    html+='Aviation Math: '+sdtCorrect+'/'+TOTAL_SDT+' ('+sdtPct+'%)<br>';
+    html+='Matrix Reasoning: '+matrixCorrect+'/'+TOTAL_MATRIX+' ('+matrixPct+'%)';
+    document.getElementById('result-text').innerHTML=html;
+    showScreen('screen-result');
+    var raw=localStorage.getItem('adpt_cognitive');
+    var arr=raw?JSON.parse(raw):[];
+    arr.unshift({score:totalScore,ts:Date.now()});
+    if(arr.length>20)arr=arr.slice(0,20);
+    localStorage.setItem('adpt_cognitive',JSON.stringify(arr));
+}
+
+showScreen('screen-intro');
+</script>
+</body>
+</html>

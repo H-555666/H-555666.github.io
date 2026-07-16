@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en" class="lang-en">
+<head>
+<meta charset="utf-8">
+<title>Cognitive Reasoning - ADPT</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
+<meta name="format-detection" content="telephone=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<style>
+*,*::before,*::after{box-sizing:border-box;}
+body{font-size:clamp(10px,1.6vw,16px);font-family:"Microsoft YaHei",Arial,sans-serif;background:#080810;color:#ccc;margin:0;padding:0;overflow-x:hidden;user-select:none;-webkit-user-select:none;}
+#wrap{max-width:90vw;width:100%;margin:0 auto;padding:clamp(6px,1vw,12px);}
+h1{font-size:clamp(1rem,2.2vw,1.5rem);color:#88ccff;text-align:center;margin:6px 0;}
+#screen-intro,#screen-play,#screen-result{display:none;}
+#screen-intro.active,#screen-play.active,#screen-result.active{display:block;}
+.intro-text{font-size:clamp(0.7rem,1.2vw,0.88rem);color:#8899aa;line-height:1.6;margin:8px 0;text-align:center;}
+.intro-text strong{color:#aaccdd;}
+.btn{display:block;width:100%;max-width:min(300px,50vw);margin:12px auto;padding:clamp(8px,1.4vw,14px);border-radius:8px;font-size:clamp(0.8rem,1.3vw,1rem);text-align:center;cursor:pointer;border:none;color:#dde;box-sizing:border-box;}
+.btn-start{background:linear-gradient(135deg,#1a5a3c,#2a8a5c);}
+.btn-back{background:#1a1a2e;border:1px solid #334;color:#667;font-size:clamp(0.7rem,1.1vw,0.82rem);padding:8px;max-width:min(300px,50vw);text-decoration:none;display:block;margin:8px auto;}
+.btn-back:hover{color:#99a;}
+#timer-bar{width:100%;height:3px;background:#1a1a2e;border-radius:2px;margin:4px 0;overflow:hidden;}
+#timer-fill{height:100%;background:linear-gradient(90deg,#2a8a5c,#88cc44);width:100%;transition:width 0.2s;}
+.duration-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:10px 0;}
+.dur-btn{padding:6px 12px;border-radius:4px;border:1px solid #334;background:#0e0e18;color:#889;font-size:0.78rem;cursor:pointer;transition:all 0.15s;}
+.dur-btn.sel{border-color:#4488aa;color:#88ccff;background:#111a24;}
+.cn-toggle{position:fixed;top:6px;right:10px;z-index:20;font-size:0.68rem;background:#0e0e18;border:1px solid #334;color:#556;padding:3px 8px;border-radius:3px;cursor:pointer;}
+.cn-line{display:none;}
+html.lang-cn .cn-line{display:inline;}
+html.lang-cn .en-line{display:none;}
+.question-counter{text-align:center;font-size:0.75rem;color:#556;margin:3px 0;}
+.phase-label{text-align:center;font-size:0.8rem;color:#88aacc;margin:6px 0;}
+.feedback{text-align:center;font-size:1.1rem;height:24px;line-height:24px;margin:6px 0;}
+#sdt-question{text-align:center;font-size:clamp(0.85rem,1.4vw,1.05rem);color:#ccddff;margin:12px 0;line-height:1.8;padding:clamp(10px,1.5vw,16px);background:#0a0a18;border:1px solid #1a1a2e;border-radius:8px;}
+#sdt-input{display:block;width:min(200px,40vw);margin:10px auto;padding:10px;text-align:center;font-size:1.1rem;background:#0a0a18;border:2px solid #334;border-radius:6px;color:#ccddff;font-family:"Courier New",monospace;outline:none;}
+#sdt-input:focus{border-color:#4488aa;}
+.sdt-unit{text-align:center;font-size:0.78rem;color:#667;margin-bottom:10px;}
+.sdt-submit{display:block;margin:6px auto;padding:8px 30px;background:#1a3a5c;color:#aaccdd;border:1px solid #338;border-radius:6px;font-size:0.9rem;cursor:pointer;}
+#matrix-area{display:flex;flex-wrap:wrap;gap:clamp(8px,1.5vw,16px);justify-content:center;margin:10px 0;}
+#matrix-canvas{border:1px solid #1a1a2e;border-radius:4px;background:#0a0a14;width:min(260px,45vw);height:auto;aspect-ratio:1;}
+#matrix-options{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(4px,1vw,10px);max-width:min(500px,85vw);}
+#matrix-options canvas{width:100%;cursor:pointer;border:2px solid transparent;border-radius:4px;aspect-ratio:1;}
+#matrix-options canvas:hover{border-color:#4488aa;}
+#matrix-options canvas.selected{border-color:#88ccff;}
+.result-summary{text-align:center;font-size:0.88rem;color:#aac;line-height:2;}
+.result-summary .big{font-size:clamp(1.3rem,2.5vw,1.8rem);color:#88ccff;font-weight:bold;}
+</style>
+</head>
+<body>
+<button class="cn-toggle" id="cn-toggle" onclick="toggleCN()">CN/EN</button>
+<div id="wrap">
+<h1>Cognitive Reasoning <span class="en-line">and</span> Aviation Math</h1>
+<div id="screen-intro" class="active">
+<p class="intro-text">
+<span class="en-line"><strong>Part 1 - Aviation Math (SDT):</strong> Speed, distance, time, and fuel calculations in aviation contexts.</span>
+<span class="cn-line"><strong>第一部分 - 飞行数学：</strong>速度-距离-时间及燃油计算题。</span><br>
+<span class="en-line"><strong>Part 2 - Matrix Reasoning:</strong> Complete the 3x3 pattern by selecting the missing tile.</span>
+<span class="cn-line"><strong>第二部分 - 矩阵推理：</strong>完成3x3图形规律，选出缺失的一块。</span>
+</p>
+<div class="duration-row">
+<span style="color:#667;font-size:0.75rem;">Duration:</span>
+<button class="dur-btn sel" data-dur="3">3 min</button>
+<button class="dur-btn" data-dur="2">2 min</button>
+<button class="dur-btn" data-dur="5">5 min</button>
+</div>
+<button class="btn btn-start" onclick="startTest()">Start Test</button>
+<a class="btn btn-back" href="../" style="display:block;text-decoration:none;" id="back-btn">Back to ADPT</a>
+</div>
+<div id="screen-play">
+<div id="timer-bar"><div id="timer-fill"></div></div>
+<div class="question-counter" id="q-counter"></div>
+<div class="phase-label" id="phase-label"></div>
+<div class="feedback" id="feedback"></div>
+<div id="sdt-view">
+<div id="sdt-question"></div><div class="sdt-unit" id="sdt-unit"></div>
+<input type="number" id="sdt-input" placeholder="Your answer" step="any">
+<button class="sdt-submit" onclick="submitSDT()">Submit</button>
+</div>
+<div id="matrix-view" style="display:none;">
+<div id="matrix-area"><canvas id="matrix-canvas"></canvas><div id="matrix-options"></div></div>
+</div>
+</div>
+<div id="screen-result">
+<div class="result-summary" id="result-text"></div>
+<button class="btn btn-start" onclick="startTest()">Retry</button>
+<a class="btn btn-back" href="../" style="display:block;text-decoration:none;" id="back-btn2">Back to ADPT</a>
+</div>
+</div>
+<script>
+var ALL_MODE=window.location.search.indexOf('all=1')>=0;
+if(ALL_MODE){document.getElementById('back-btn').style.display='none';document.getElementById('back-btn2').style.display='none';document.getElementById('back-btn2').textContent='Continue';document.getElementById('back-btn2').style.display='block';document.getElementById('back-btn2').href='../all-practice/?continue=1';}
+(function(){var ua=navigator.userAgent.toLowerCase();if(ua.indexOf('micromessenger')>=0||ua.indexOf('safari')>=0&&ua.indexOf('chrome')<0){document.documentElement.classList.add('lang-cn');}})();
+function toggleCN(){document.documentElement.classList.toggle('lang-cn');}
+var testDurMin=3;var durs={2:120,3:180,5:300};
+document.querySelectorAll('.dur-btn').forEach(function(b){b.onclick=function(){document.querySelectorAll('.dur-btn').forEach(function(x){x.classList.remove('sel');});b.classList.add('sel');testDurMin=parseInt(b.dataset.dur);};});
+var TOTAL_SDT=8,TOTAL_MATRIX=8,QUESTION_TIME=15000;
+var phase=0,round=0,sdtCorrect=0,matrixCorrect=0;
+var answered=false,deadline=0;
+var testRunning=false,animId=null;
+var sdtAnswer=0;
+function showScreen(id){['screen-intro','screen-play','screen-result'].forEach(function(s){document.getElementById(s).classList.remove('active');});document.getElementById(id).classList.add('active');}
+function startTest(){
+    phase=0;round=0;sdtCorrect=0;matrixCorrect=0;
+    testRunning=true;showScreen('screen-play');
+    document.getElementById('sdt-view').style.display='block';document.getElementById('matrix-view').style.display='none';
+    document.getElementById('phase-label').textContent='Part 1: Aviation Math';
+    document.getElementById('feedback').textContent='';
+    nextSDT();
+    }
+function nextSDT(){
+    if(round>=TOTAL_SDT){startMatrixPhase();return;}
+    round++;answered=false;
+    document.getElementById('q-counter').textContent='SDT: '+round+' / '+TOTAL_SDT;
+    document.getElementById('feedback').textContent='';document.getElementById('sdt-input').value='';
+    document.getElementById('sdt-input').focus();
+    var speeds=[90,120,150,180,200,240];var speed=speeds[Math.floor(Math.random()*speeds.length)];
+    var t=Math.floor(Math.random()*3);var question,answer,unit;
+    if(t===0){var min=[15,20,30,40,45,60][Math.floor(Math.random()*6)];question='An aircraft flies at <strong>'+speed+' kts</strong>. How far does it travel in <strong>'+min+' minutes</strong>?';answer=Math.round(speed*min/60);unit='Distance (NM)';}
+    else if(t===1){var dist=speed*[0.25,0.5,0.75,1,1.5,2][Math.floor(Math.random()*6)];question='At <strong>'+speed+' kts</strong>, how many <strong>minutes</strong> to fly <strong>'+dist+' NM</strong>?';answer=Math.round(dist/speed*60);unit='Time (minutes)';}
+    else{var fuelRate=Math.floor(Math.random()*10)+6;var fuelRem=fuelRate*[1.5,2,2.5,3,3.5,4][Math.floor(Math.random()*6)];question='Fuel burn: <strong>'+fuelRate+' gal/hr</strong>. With <strong>'+fuelRem+' gallons</strong> remaining, how many <strong>hours</strong> of flight time?';answer=Math.round(fuelRem/fuelRate*10)/10;unit='Time (hours)';}
+    sdtAnswer=answer;
+    document.getElementById('sdt-question').innerHTML=question;document.getElementById('sdt-unit').textContent=unit;
+    deadline=performance.now()+QUESTION_TIME;
+    if(animId)cancelAnimationFrame(animId);animId=requestAnimationFrame(timerLoop);
+    }
+function submitSDT(){if(answered||phase!==0)return;answered=true;var val=parseFloat(document.getElementById('sdt-input').value);var correct=!isNaN(val)&&Math.abs(val-sdtAnswer)<0.15;if(correct){sdtCorrect++;document.getElementById('feedback').textContent='Correct!';document.getElementById('feedback').style.color='#88cc44';}else{document.getElementById('feedback').textContent='Answer: '+sdtAnswer;document.getElementById('feedback').style.color='#ff6644';}setTimeout(nextSDT,900);}
+document.getElementById('sdt-input').addEventListener('keydown',function(e){if(e.key==='Enter')submitSDT();});
+function startMatrixPhase(){phase=1;round=0;matrixCorrect=0;document.getElementById('sdt-view').style.display='none';document.getElementById('matrix-view').style.display='block';document.getElementById('phase-label').textContent='Part 2: Matrix Reasoning';document.getElementById('feedback').textContent='';nextMatrix();}
+function nextMatrix(){
+    if(round>=TOTAL_MATRIX){endTest();return;}
+    round++;answered=false;document.getElementById('q-counter').textContent='Matrix: '+round+' / '+TOTAL_MATRIX;document.getElementById('feedback').textContent='';
+    drawMatrixPuzzle();
+    deadline=performance.now()+QUESTION_TIME;if(animId)cancelAnimationFrame(animId);animId=requestAnimationFrame(timerLoop);
+    }
+function drawMatrixPuzzle(){
+    var types=['orientation','shapeCount','fillPattern','shapeType'];
+    var type=types[Math.floor(Math.random()*types.length)];
+    var c=document.getElementById('matrix-canvas');var ctx=c.getContext('2d');
+    var size=min(c.parentElement.clientWidth,c.parentElement.clientHeight);c.width=c.height=size;
+    ctx.clearRect(0,0,size,size);var cellW=size/3,cellH=size/3;
+    ctx.strokeStyle='#334';ctx.lineWidth=1;for(var i=0;i<4;i++){ctx.beginPath();ctx.moveTo(i*cellW,0);ctx.lineTo(i*cellW,size);ctx.stroke();ctx.beginPath();ctx.moveTo(0,i*cellH);ctx.lineTo(size,i*cellH);ctx.stroke();}
+    var cells=[];for(var r=0;r<3;r++)for(var co=0;co<3;co++){if(r===2&&co===2)continue;cells.push({row:r,col:co});}
+    if(type==='orientation'){
+        var baseAngle=Math.random()*Math.PI*2;
+        for(var i=0;i<8;i++){var angle=baseAngle+i*Math.PI/4;var cx=(cells[i].col+0.5)*cellW,cy2=(cells[i].row+0.5)*cellH;drawArrow(ctx,cx,cy2,cellW*0.16,angle,'#aaccdd');}
+        var ansAngle=baseAngle+8*Math.PI/4;drawOptions(ctx,cellW,cellH,'orientation',ansAngle);
+        }
+    else if(type==='shapeCount'){
+        for(var i=0;i<8;i++){var cx=(cells[i].col+0.5)*cellW,cy2=(cells[i].row+0.5)*cellH;drawDots(ctx,cx,cy2,cells[i].row+cells[i].col+1,'#aaccdd');}
+        drawOptions(ctx,cellW,cellH,'shapeCount',5);
+        }
+    else if(type==='fillPattern'){
+        for(var i=0;i<8;i++){var cx=(cells[i].col+0.5)*cellW,cy2=(cells[i].row+0.5)*cellH;drawPattern(ctx,cx,cy2,cellW*0.16,(cells[i].row+cells[i].col)%3);}
+        drawOptions(ctx,cellW,cellH,'fillPattern',1);
+        }
+    else{
+        var shapes=['circle','square','triangle'];
+        for(var i=0;i<8;i++){var cx=(cells[i].col+0.5)*cellW,cy2=(cells[i].row+0.5)*cellH;drawSimpleShape(ctx,cx,cy2,cellW*0.15,shapes[(cells[i].row+cells[i].col)%3]);}
+        drawOptions(ctx,cellW,cellH,'shapeType',1);
+        }
+    var qx=2.5*cellW,qy=2.5*cellH;ctx.fillStyle='#445';ctx.font=(cellW*0.2)+'px Arial';ctx.textAlign='center';ctx.fillText('?',qx,qy+5);
+    }
+function drawArrow(ctx,cx,cy,size,angle,color){ctx.save();ctx.translate(cx,cy);ctx.rotate(angle);ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(size,0);ctx.lineTo(-size*0.5,-size*0.5);ctx.lineTo(-size*0.2,0);ctx.lineTo(-size*0.5,size*0.5);ctx.closePath();ctx.stroke();ctx.restore();}
+function drawDots(ctx,cx,cy,count,color){ctx.fillStyle=color;var positions=[];if(count<=3)for(var i=0;i<count;i++)positions.push([cx+(i-1)*10,cy]);else if(count<=5)for(var i=0;i<count;i++)positions.push([cx+(i-2)*8,cy+(i%2===0?-7:7)]);else for(var i=0;i<Math.min(count,7);i++)positions.push([cx+(i%3-1)*10,cy+(Math.floor(i/3)-1)*10]);positions.forEach(function(p){ctx.beginPath();ctx.arc(p[0],p[1],3,0,Math.PI*2);ctx.fill();});}
+function drawPattern(ctx,cx,cy,size,pat){ctx.fillStyle='#aaccdd';if(pat===0)ctx.fillRect(cx-size,cy-size,size*2,size*2);else if(pat===1){ctx.strokeStyle='#aaccdd';ctx.lineWidth=2;ctx.strokeRect(cx-size,cy-size,size*2,size*2);}else{ctx.fillRect(cx-size,cy-size,size*2,size*2);ctx.fillStyle='#0a0a14';for(var i=0;i<4;i++)ctx.fillRect(cx-size+i*7,cy-size,3,size*2);}}
+function drawSimpleShape(ctx,cx,cy,size,shape){ctx.strokeStyle='#aaccdd';ctx.lineWidth=2.5;ctx.beginPath();if(shape==='circle')ctx.arc(cx,cy,size,0,Math.PI*2);else if(shape==='square')ctx.rect(cx-size,cy-size,size*2,size*2);else{ctx.moveTo(cx,cy-size);ctx.lineTo(cx+size,cy+size);ctx.lineTo(cx-size,cy+size);ctx.closePath();}ctx.stroke();}
+function drawOptions(ctx,cellW,cellH,type,correctVal){
+    var optsDiv=document.getElementById('matrix-options');optsDiv.innerHTML='';
+    var values=[correctVal];
+    if(type==='orientation'){values.push(correctVal+Math.PI/4,correctVal+Math.PI/2,correctVal-Math.PI/4);}
+    else if(type==='shapeCount'){values.push(Math.max(1,correctVal-1),Math.max(1,correctVal+1),Math.max(1,correctVal-2));}
+    else if(type==='fillPattern'){values.push((correctVal+1)%3,(correctVal+2)%3,(correctVal+2)%3);}
+    else{values.push((correctVal+1)%3,(correctVal+2)%3,(correctVal+1)%3);}
+    var seen=new Set();var finalVals=[];for(var i=0;i<values.length;i++){var key=type==='orientation'?values[i].toFixed(3):String(values[i]);if(!seen.has(key)){seen.add(key);finalVals.push(values[i]);}}
+    while(finalVals.length<4)finalVals.push(finalVals[0]);
+    var correctPos=Math.floor(Math.random()*4);var shuffled=[];
+    for(var i=0;i<4;i++){var idx=(correctPos+i)%4;shuffled.push({val:finalVals[i],isCorrect:(i===0)});}
+    shuffled.forEach(function(opt,si){
+        var oc=document.createElement('canvas');oc.width=oc.height=cellW;
+        var octx=oc.getContext('2d');octx.fillStyle='#0a0a14';octx.fillRect(0,0,cellW,cellW);
+        var cx=cellW/2,cy2=cellW/2;
+        if(type==='orientation')drawArrow(octx,cx,cy2,cellW*0.16,opt.val,'#aaccdd');
+        else if(type==='shapeCount')drawDots(octx,cx,cy2,opt.val,'#aaccdd');
+        else if(type==='fillPattern')drawPattern(octx,cx,cy2,cellW*0.16,opt.val);
+        else drawSimpleShape(octx,cx,cy2,cellW*0.15,['circle','square','triangle'][opt.val]);
+        opt.canvas=oc;opt.idx=si;
+        oc.addEventListener('click',function(){
+            if(answered)return;answered=true;
+            document.querySelectorAll('#matrix-options canvas').forEach(function(c2){c2.classList.remove('selected');});
+            oc.classList.add('selected');
+            if(opt.isCorrect){matrixCorrect++;document.getElementById('feedback').textContent='Correct!';document.getElementById('feedback').style.color='#88cc44';}
+            else{document.getElementById('feedback').textContent='Missed';document.getElementById('feedback').style.color='#ff6644';}
+            setTimeout(nextMatrix,800);
+            });
+        optsDiv.appendChild(oc);
+        });
+    }
+function timerLoop(now){
+    if(!testRunning)return;animId=requestAnimationFrame(timerLoop);
+    var rem=Math.max(0,deadline-now);var pct=(rem/QUESTION_TIME*100).toFixed(1);
+    document.getElementById('timer-fill').style.width=pct+'%';
+    if(rem<=0&&!answered){answered=true;document.getElementById('feedback').textContent='TIME';document.getElementById('feedback').style.color='#ffaa00';if(phase===0)setTimeout(nextSDT,500);else setTimeout(nextMatrix,500);}
+    }
+function endTest(){
+    testRunning=false;if(animId)cancelAnimationFrame(animId);
+    var sdtPct=Math.round(sdtCorrect/TOTAL_SDT*100),matrixPct=Math.round(matrixCorrect/TOTAL_MATRIX*100),totalScore=Math.round(sdtPct*0.5+matrixPct*0.5);
+    var html='<div class="big">Score: '+totalScore+'%</div>';html+='Aviation Math: '+sdtCorrect+'/'+TOTAL_SDT+' ('+sdtPct+'%)<br>';html+='Matrix Reasoning: '+matrixCorrect+'/'+TOTAL_MATRIX+' ('+matrixPct+'%)';
+    document.getElementById('result-text').innerHTML=html;showScreen('screen-result');
+    var raw=localStorage.getItem('adpt_cognitive');var arr=raw?JSON.parse(raw):[];arr.unshift({score:totalScore,ts:Date.now()});if(arr.length>20)arr=arr.slice(0,20);localStorage.setItem('adpt_cognitive',JSON.stringify(arr));
+    if(ALL_MODE){var seq=JSON.parse(sessionStorage.getItem('adpt_all_seq')||'[]'),results=JSON.parse(sessionStorage.getItem('adpt_all_results')||'[]'),idx=parseInt(sessionStorage.getItem('adpt_all_idx')||'0');results.push({id:'cognitive',score:totalScore});sessionStorage.setItem('adpt_all_results',JSON.stringify(results));sessionStorage.setItem('adpt_all_idx',String(idx+1));window.location.href='../all-practice/?continue=1';}
+    }
+showScreen('screen-intro');
+</script>
+</body>
+</html>
