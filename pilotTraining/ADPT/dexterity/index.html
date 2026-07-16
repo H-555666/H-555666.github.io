@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en" class="lang-en">
 <head>
 <meta charset="utf-8">
@@ -16,11 +16,11 @@ h1{font-size:clamp(1rem,2vw,1.4rem);color:#88ccff;text-align:center;margin:4px 0
 #screen-intro.active,#screen-play.active,#screen-result.active{display:block;}
 .intro-text{font-size:clamp(0.7rem,1.2vw,0.85rem);color:#8899aa;line-height:1.6;margin:6px 0;text-align:center;}
 .intro-text strong{color:#aaccdd;}
-.btn{display:block;width:100%;max-width:min(300px,50vw);margin:10px auto;padding:clamp(8px,1.4vw,14px);border-radius:8px;font-size:clamp(0.8rem,1.3vw,1rem);text-align:center;cursor:pointer;border:none;color:#dde;box-sizing:border-box;}
+.btn{display:block;width:100%;max-width:Math.min(300px,50vw);margin:10px auto;padding:clamp(8px,1.4vw,14px);border-radius:8px;font-size:clamp(0.8rem,1.3vw,1rem);text-align:center;cursor:pointer;border:none;color:#dde;box-sizing:border-box;}
 .btn-start{background:linear-gradient(135deg,#1a5a3c,#2a8a5c);}
-.btn-back{background:#1a1a2e;border:1px solid #334;color:#667;font-size:clamp(0.7rem,1.1vw,0.82rem);padding:8px;max-width:min(300px,50vw);text-decoration:none;display:block;margin:8px auto;}
+.btn-back{background:#1a1a2e;border:1px solid #334;color:#667;font-size:clamp(0.7rem,1.1vw,0.82rem);padding:8px;max-width:Math.min(300px,50vw);text-decoration:none;display:block;margin:8px auto;}
 .btn-back:hover{color:#99a;}
-#timer-bar{width:100%;height:3px;background:#1a1a2e;border-radius:2px;margin:4px 0;overflow:hidden;}
+#timer-bar{display:none;width:100%;height:3px;background:#1a1a2e;border-radius:2px;margin:4px 0;overflow:hidden;}
 #timer-fill{height:100%;background:linear-gradient(90deg,#2a8a5c,#88cc44);width:100%;transition:width 0.2s;}
 .duration-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:10px 0;}
 .dur-btn{padding:6px 12px;border-radius:4px;border:1px solid #334;background:#0e0e18;color:#889;font-size:0.78rem;cursor:pointer;transition:all 0.15s;}
@@ -31,7 +31,7 @@ html.lang-cn .cn-line{display:inline;}
 html.lang-cn .en-line{display:none;}
 .stat-row{display:flex;justify-content:center;gap:clamp(12px,2vw,30px);font-size:0.75rem;color:#667;margin:3px 0;}
 .stat-row span{color:#88aacc;}
-#game-canvas{display:block;margin:0 auto;border:1px solid #1a1a2e;border-radius:6px;background:#0a0a14;touch-action:none;width:100%;max-width:min(640px,90vw);height:auto;aspect-ratio:4/3;}
+#game-canvas{display:block;margin:0 auto;border:1px solid #1a1a2e;border-radius:6px;background:#0a0a14;touch-action:none;width:100%;max-width:Math.min(640px,90vw);height:auto;aspect-ratio:4/3;}
 .result-summary{text-align:center;font-size:0.88rem;color:#aac;line-height:2;}
 .result-summary .big{font-size:clamp(1.3rem,2.5vw,1.8rem);color:#88ccff;font-weight:bold;}
 </style>
@@ -48,6 +48,7 @@ html.lang-cn .en-line{display:none;}
 <span class="cn-line"><span style="color:#ffaa44;">注意：</span>光标具有模拟的<strong>惯性和控制延迟</strong>——不会立即响应！</span>
 </p>
 <div class="duration-row">
+<label style="font-size:0.7rem;color:#667;display:flex;align-items:center;gap:3px;margin-left:4px;"><input type="checkbox" id="show-timer" onchange="toggleTimer()"> Show timer</label>
 <span style="color:#667;font-size:0.75rem;">Duration:</span>
 <button class="dur-btn sel" data-dur="2">2 min</button>
 <button class="dur-btn" data-dur="1">1 min</button>
@@ -65,7 +66,7 @@ html.lang-cn .en-line{display:none;}
 </div>
 <div id="screen-result">
 <div class="result-summary" id="result-text"></div>
-<button class="btn btn-start" onclick="startTest()">Retry</button>
+<button class="btn btn-start" onclick="goIntro()">Retry</button>
 <a class="btn btn-back" href="../" style="display:block;text-decoration:none;" id="back-btn2">Back to ADPT</a>
 </div>
 </div>
@@ -73,7 +74,7 @@ html.lang-cn .en-line{display:none;}
 var ALL_MODE=window.location.search.indexOf('all=1')>=0;
 if(ALL_MODE){document.getElementById('back-btn').style.display='none';document.getElementById('back-btn2').style.display='none';document.getElementById('back-btn2').textContent='Continue';document.getElementById('back-btn2').style.display='block';document.getElementById('back-btn2').href='../all-practice/?continue=1';}
 (function(){var ua=navigator.userAgent.toLowerCase();if(ua.indexOf('micromessenger')>=0||ua.indexOf('safari')>=0&&ua.indexOf('chrome')<0){document.documentElement.classList.add('lang-cn');}})();
-function toggleCN(){document.documentElement.classList.toggle('lang-cn');}
+function toggleTimer(){document.getElementById('timer-bar').style.display=document.getElementById('show-timer').checked?'block':'none';} function toggleCN(){document.documentElement.classList.toggle('lang-cn');}
 var testDur=120;var durs={0.5:30,1:60,2:120,3:180,5:300};
 document.querySelectorAll('.dur-btn').forEach(function(b){b.onclick=function(){document.querySelectorAll('.dur-btn').forEach(function(x){x.classList.remove('sel');});b.classList.add('sel');testDur=durs[parseFloat(b.dataset.dur)];};});
 var canvas,ctx,rect;
@@ -83,7 +84,7 @@ var cursor={x:320,y:240,vx:0,vy:0};
 var keys={};
 var insideCount=0,totalSamples=0;
 var testStart=0,testRunning=false,animId=null,lastTime=0;
-function showScreen(id){['screen-intro','screen-play','screen-result'].forEach(function(s){document.getElementById(s).classList.remove('active');});document.getElementById(id).classList.add('active');}
+function goIntro(){testRunning=false;if(animId)cancelAnimationFrame(animId);showScreen("screen-intro");} function showScreen(id){['screen-intro','screen-play','screen-result'].forEach(function(s){document.getElementById(s).classList.remove('active');});document.getElementById(id).classList.add('active');}
 function generatePath(cw,ch){
     path=[];var cx=cw/2,cy=ch/2,rx=cw*0.38,ry=ch*0.38;
     var numPts=300;
@@ -102,19 +103,19 @@ function getPathPoint(t){
     t=((t%path.totalLen)+path.totalLen)%path.totalLen;var idx=0;
     for(var i=1;i<path.length;i++){if(path[i].dist>=t){idx=i-1;break;}}
     if(idx>=path.length-1)idx=path.length-2;
-    var segLen=path[idx+1].dist-path[idx].dist;var frac=segLen>0?(t-path[idx].dist)/segLen:0;frac=Math.max(0,Math.min(1,frac));
+    var segLen=path[idx+1].dist-path[idx].dist;var frac=segLen>0?(t-path[idx].dist)/segLen:0;frac=Math.max(0,Math.Math.min(1,frac));
     return{x:path[idx].x+(path[idx+1].x-path[idx].x)*frac,y:path[idx].y+(path[idx+1].y-path[idx].y)*frac};
     }
 function startTest(){
     canvas=document.getElementById('game-canvas');
-    var w=Math.min(640,canvas.parentElement.clientWidth||640);canvas.width=w;canvas.height=w*0.75;
+    var w=Math.Math.min(640,canvas.parentElement.clientWidth||640);canvas.width=w;canvas.height=w*0.75;
     ctx=canvas.getContext('2d');rect=canvas.getBoundingClientRect();
     generatePath(canvas.width,canvas.height);
     targetT=0;
     cursor={x:path[0].x,y:path[0].y,vx:0,vy:0};
     keys={};insideCount=0;totalSamples=0;
     testStart=performance.now();testRunning=true;lastTime=performance.now();
-    showScreen('screen-play');if(animId)cancelAnimationFrame(animId);loop(performance.now());
+    showScreen('screen-play');if(document.getElementById('show-timer').checked)document.getElementById('timer-bar').style.display='block';if(animId)cancelAnimationFrame(animId);loop(performance.now());
     }
 function loop(now){
     if(!testRunning)return;animId=requestAnimationFrame(loop);
@@ -129,7 +130,7 @@ function loop(now){
     var inertiaFactor=0.92;cursor.vx=cursor.vx*inertiaFactor+ax*dt*(1-inertiaFactor);cursor.vy=cursor.vy*inertiaFactor+ay*dt*(1-inertiaFactor);
     var lagDamping=0.85;cursor.vx*=lagDamping;cursor.vy*=lagDamping;
     cursor.x+=cursor.vx*dt;cursor.y+=cursor.vy*dt;
-    cursor.x=Math.max(10,Math.min(canvas.width-10,cursor.x));cursor.y=Math.max(10,Math.min(canvas.height-10,cursor.y));
+    cursor.x=Math.max(10,Math.Math.min(canvas.width-10,cursor.x));cursor.y=Math.max(10,Math.Math.min(canvas.height-10,cursor.y));
     var dx=cursor.x-targetPos.x,dy=cursor.y-targetPos.y;var dist=Math.sqrt(dx*dx+dy*dy);totalSamples++;if(dist<22)insideCount++;
     document.getElementById('live-score').textContent=Math.round(insideCount/totalSamples*100)+'%';
     draw(targetPos);
@@ -156,7 +157,6 @@ function endTest(){
 document.addEventListener('keydown',function(e){keys[e.code]=true;});document.addEventListener('keyup',function(e){keys[e.code]=false;});
 var touchActive=false;canvas.addEventListener('touchstart',function(e){e.preventDefault();touchActive=true;updateTouch(e);});canvas.addEventListener('touchmove',function(e){e.preventDefault();updateTouch(e);});canvas.addEventListener('touchend',function(){touchActive=false;});
 function updateTouch(e){if(!touchActive)return;var touch=e.touches[0];var rx=(touch.clientX-rect.left)/rect.width*canvas.width,ry=(touch.clientY-rect.top)/rect.height*canvas.height;cursor.x+=(rx-cursor.x)*0.3;cursor.y+=(ry-cursor.y)*0.3;}
-showScreen('screen-intro');
-</script>
+showScreen('screen-intro');</script>
 </body>
 </html>

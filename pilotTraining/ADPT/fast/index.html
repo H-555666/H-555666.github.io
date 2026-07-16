@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en" class="lang-en">
 <head>
 <meta charset="utf-8">
@@ -17,12 +17,12 @@ h1{font-size:clamp(1rem,2.2vw,1.5rem);color:#88ccff;text-align:center;margin:6px
 .intro-text{font-size:clamp(0.7rem,1.2vw,0.88rem);color:#8899aa;line-height:1.6;margin:8px 0;text-align:center;}
 .intro-text strong{color:#aaccdd;}
 .key-hint{display:inline-block;background:#1a1a2e;border:1px solid #334;border-radius:4px;padding:2px 8px;margin:1px;font-size:0.78rem;color:#aac;}
-.btn{display:block;width:100%;max-width:min(300px,50vw);margin:12px auto;padding:clamp(8px,1.4vw,14px);border-radius:8px;font-size:clamp(0.8rem,1.3vw,1rem);text-align:center;cursor:pointer;border:none;color:#dde;box-sizing:border-box;}
+.btn{display:block;width:100%;max-width:Math.min(300px,50vw);margin:12px auto;padding:clamp(8px,1.4vw,14px);border-radius:8px;font-size:clamp(0.8rem,1.3vw,1rem);text-align:center;cursor:pointer;border:none;color:#dde;box-sizing:border-box;}
 .btn-start{background:linear-gradient(135deg,#1a5a3c,#2a8a5c);}
-.btn-back{background:#1a1a2e;border:1px solid #334;color:#667;font-size:clamp(0.7rem,1.1vw,0.82rem);padding:8px;max-width:min(300px,50vw);text-decoration:none;display:block;margin:8px auto;}
+.btn-back{background:#1a1a2e;border:1px solid #334;color:#667;font-size:clamp(0.7rem,1.1vw,0.82rem);padding:8px;max-width:Math.min(300px,50vw);text-decoration:none;display:block;margin:8px auto;}
 .btn-back:hover{color:#99a;}
-#game-canvas{display:block;margin:0 auto;border:1px solid #1a1a2e;border-radius:6px;background:#0a0a14;touch-action:none;width:100%;max-width:min(640px,90vw);height:auto;aspect-ratio:6/5;}
-#timer-bar{width:100%;height:3px;background:#1a1a2e;border-radius:2px;margin:4px 0;overflow:hidden;}
+#game-canvas{display:block;margin:0 auto;border:1px solid #1a1a2e;border-radius:6px;background:#0a0a14;touch-action:none;width:100%;max-width:Math.min(640px,90vw);height:auto;aspect-ratio:6/5;}
+#timer-bar{display:none;width:100%;height:3px;background:#1a1a2e;border-radius:2px;margin:4px 0;overflow:hidden;}
 #timer-fill{height:100%;background:linear-gradient(90deg,#2a8a5c,#88cc44);width:100%;transition:width 0.2s;}
 #math-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10;justify-content:center;align-items:center;flex-direction:column;}
 #math-overlay.active{display:flex;}
@@ -57,6 +57,7 @@ html.lang-cn .en-line{display:none;}
 <span class="cn-line"><strong>心算：</strong>定期弹出数学题。使用<span class="key-hint">1</span><span class="key-hint">2</span><span class="key-hint">3</span><span class="key-hint">4</span>键作答（每题5秒）。</span>
 </p>
 <div class="duration-row">
+<label style="font-size:0.7rem;color:#667;display:flex;align-items:center;gap:3px;margin-left:4px;"><input type="checkbox" id="show-timer" onchange="toggleTimer()"> Show timer</label>
 <span style="color:#667;font-size:0.75rem;">Duration:</span>
 <button class="dur-btn sel" data-dur="2">2 min</button>
 <button class="dur-btn" data-dur="1">1 min</button>
@@ -73,7 +74,7 @@ html.lang-cn .en-line{display:none;}
 </div>
 <div id="screen-result">
 <div class="result-summary" id="result-text"></div>
-<button class="btn btn-start" onclick="startTest()">Retry</button>
+<button class="btn btn-start" onclick="goIntro()">Retry</button>
 <a class="btn btn-back" href="../" style="display:block;text-decoration:none;" id="back-btn2">Back to ADPT</a>
 </div>
 </div>
@@ -83,7 +84,7 @@ html.lang-cn .en-line{display:none;}
 var ALL_MODE=window.location.search.indexOf('all=1')>=0;
 if(ALL_MODE){document.getElementById('back-btn').style.display='none';document.getElementById('back-btn2').style.display='none';document.getElementById('back-btn2').textContent='Continue';document.getElementById('back-btn2').style.display='block';document.getElementById('back-btn2').href='../all-practice/?continue=1';}
 (function(){var ua=navigator.userAgent.toLowerCase();if(ua.indexOf('micromessenger')>=0||ua.indexOf('safari')>=0&&ua.indexOf('chrome')<0){document.documentElement.classList.add('lang-cn');}})();
-function toggleCN(){document.documentElement.classList.toggle('lang-cn');}
+function toggleTimer(){document.getElementById('timer-bar').style.display=document.getElementById('show-timer').checked?'block':'none';} function toggleCN(){document.documentElement.classList.toggle('lang-cn');}
 var testDur=120;var durs={0.5:30,1:60,2:120,3:180,5:300};
 document.querySelectorAll('.dur-btn').forEach(function(b){b.onclick=function(){document.querySelectorAll('.dur-btn').forEach(function(x){x.classList.remove('sel');});b.classList.add('sel');testDur=durs[parseFloat(b.dataset.dur)];};});
 var MATH_TIME=5;
@@ -97,10 +98,10 @@ var nextMathTime=0,nextGaugeDrift=0;
 var testStart=0,testRunning=false,animId=null;
 var keys={};
 var lastTime=0;
-function showScreen(id){['screen-intro','screen-play','screen-result'].forEach(function(s){document.getElementById(s).classList.remove('active');});document.getElementById(id).classList.add('active');}
+function goIntro(){testRunning=false;if(animId)cancelAnimationFrame(animId);showScreen("screen-intro");} function showScreen(id){['screen-intro','screen-play','screen-result'].forEach(function(s){document.getElementById(s).classList.remove('active');});document.getElementById(id).classList.add('active');}
 function startTest(){
     canvas=document.getElementById('game-canvas');
-    var w=Math.min(640,canvas.parentElement.clientWidth||640);canvas.width=w;canvas.height=Math.round(w*5/6);
+    var w=Math.Math.min(640,canvas.parentElement.clientWidth||640);canvas.width=w;canvas.height=Math.round(w*5/6);
     ctx=canvas.getContext('2d');rect=canvas.getBoundingClientRect();
     target={x:canvas.width/2,y:canvas.height*0.38,vx:0,vy:0};
     trackingErr=0;trackingSamples=0;
@@ -110,7 +111,7 @@ function startTest(){
     nextGaugeDrift=performance.now()+5000+Math.random()*8000;
     testStart=performance.now();testRunning=true;
     keys={};lastTime=performance.now();
-    showScreen('screen-play');
+    showScreen("screen-play");if(document.getElementById("show-timer").checked)document.getElementById("timer-bar").style.display="block";
     document.getElementById('math-overlay').classList.remove('active');
     document.getElementById('instrument-hint').style.display='none';
     if(animId)cancelAnimationFrame(animId);
@@ -145,10 +146,10 @@ function updateGauge(now,dt){
     if(!gaugeFaultActive){
         gaugeAngle+=gaugeSpeed*dt;if(gaugeAngle>Math.PI*0.5)gaugeAngle=Math.PI*0.5;if(gaugeAngle<-Math.PI*0.5)gaugeAngle=-Math.PI*0.5;
         gaugeSpeed+=(Math.random()-0.5)*0.8*dt;gaugeSpeed*=0.98;
-        gaugeIsInRed=(gaugeAngle>Math.PI*0.4||gaugeAngle<-Math.PI*0.4);
+        gaugeIsInRed=(gaugeAngle>Math.PI/3||gaugeAngle<-Math.PI/3);
         if(now>nextGaugeDrift){gaugeFaultActive=true;gaugeFaultTotal++;gaugeFaultStart=now;gaugeIsInRed=true;document.getElementById('instrument-hint').style.display='block';}
         }
-    else{gaugeAngle+=2.5*dt;gaugeIsInRed=(gaugeAngle>Math.PI*0.4||gaugeAngle<-Math.PI*0.4);}
+    else{gaugeAngle=Math.PI/3+0.25+(Math.random()-0.5)*0.05;gaugeIsInRed=true;}
     }
 function updateMathTrigger(now){
     if(!mathActive&&now>nextMathTime){spawnMathQuestion();nextMathTime=now+10000+Math.random()*8000;}
@@ -201,14 +202,14 @@ function draw(cw,ch){
     ctx.strokeStyle='#335';ctx.lineWidth=1;
     ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,ch-120);ctx.stroke();
     ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(cw,cy);ctx.stroke();
-    ctx.strokeStyle='#558';ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,Math.min(60,cw*0.1),0,Math.PI*2);ctx.stroke();
+    ctx.strokeStyle='#558';ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,Math.Math.min(60,cw*0.1),0,Math.PI*2);ctx.stroke();
     ctx.fillStyle='rgba(255,80,60,0.9)';ctx.beginPath();ctx.arc(target.x,target.y,14,0,Math.PI*2);ctx.fill();
     ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(target.x,target.y,14,0,Math.PI*2);ctx.stroke();
-    var gx=cw-20,gy=ch-60,gr=Math.max(35,Math.min(45,cw*0.07));
+    var gx=cw-20,gy=ch-60,gr=Math.max(35,Math.Math.min(45,cw*0.07));
     ctx.fillStyle='#0a0a18';ctx.strokeStyle='#334';ctx.lineWidth=2;ctx.beginPath();ctx.arc(gx,gy,gr,0,Math.PI*2);ctx.fill();ctx.stroke();
-    ctx.strokeStyle='#33aa44';ctx.lineWidth=5;ctx.beginPath();ctx.arc(gx,gy,gr-6,-Math.PI*0.55,Math.PI*0.55);ctx.stroke();
-    ctx.strokeStyle='#ff4444';ctx.beginPath();ctx.arc(gx,gy,gr-6,Math.PI*0.45,Math.PI*0.55);ctx.stroke();
-    ctx.beginPath();ctx.arc(gx,gy,gr-6,-Math.PI*0.55,-Math.PI*0.45);ctx.stroke();
+    ctx.strokeStyle='#33aa44';ctx.lineWidth=5;ctx.beginPath();ctx.arc(gx,gy,gr-6,-Math.PI/3,Math.PI/3);ctx.stroke();
+    ctx.strokeStyle='#ff4444';ctx.beginPath();ctx.arc(gx,gy,gr-6,Math.PI/3,Math.PI/3+0.35);ctx.stroke();
+    ctx.beginPath();ctx.arc(gx,gy,gr-6,-Math.PI/3-0.35,-Math.PI/3);ctx.stroke();
     var needleLen=gr-10;var nColor=gaugeIsInRed&&gaugeFaultActive?'#ff4444':'#aaccff';
     ctx.strokeStyle=nColor;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(gx,gy);ctx.lineTo(gx+Math.sin(gaugeAngle)*needleLen,gy-Math.cos(gaugeAngle)*needleLen);ctx.stroke();
     ctx.fillStyle=nColor;ctx.beginPath();ctx.arc(gx,gy,5,0,Math.PI*2);ctx.fill();
@@ -221,8 +222,7 @@ document.addEventListener('keydown',function(e){
     });
 document.addEventListener('keyup',function(e){keys[e.code]=false;});
 canvas=document.getElementById('game-canvas');canvas.addEventListener('touchstart',function(e){e.preventDefault();});
-canvas.addEventListener('touchmove',function(e){e.preventDefault();var touch=e.touches[0];var r=canvas.getBoundingClientRect();var rx=(touch.clientX-r.left)/r.width*canvas.width;var ry=(touch.clientY-r.top)/r.height*canvas.height;target.x=Math.max(20,Math.min(canvas.width-20,rx));target.y=Math.max(20,Math.min(canvas.height-120,ry));});
-showScreen('screen-intro');
-</script>
+canvas.addEventListener('touchmove',function(e){e.preventDefault();var touch=e.touches[0];var r=canvas.getBoundingClientRect();var rx=(touch.clientX-r.left)/r.width*canvas.width;var ry=(touch.clientY-r.top)/r.height*canvas.height;target.x=Math.max(20,Math.Math.min(canvas.width-20,rx));target.y=Math.max(20,Math.Math.min(canvas.height-120,ry));});
+showScreen('screen-intro');</script>
 </body>
 </html>

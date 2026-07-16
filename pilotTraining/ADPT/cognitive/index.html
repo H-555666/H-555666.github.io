@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en" class="lang-en">
 <head>
 <meta charset="utf-8">
@@ -16,11 +16,11 @@ h1{font-size:clamp(1rem,2.2vw,1.5rem);color:#88ccff;text-align:center;margin:6px
 #screen-intro.active,#screen-play.active,#screen-result.active{display:block;}
 .intro-text{font-size:clamp(0.7rem,1.2vw,0.88rem);color:#8899aa;line-height:1.6;margin:8px 0;text-align:center;}
 .intro-text strong{color:#aaccdd;}
-.btn{display:block;width:100%;max-width:min(300px,50vw);margin:12px auto;padding:clamp(8px,1.4vw,14px);border-radius:8px;font-size:clamp(0.8rem,1.3vw,1rem);text-align:center;cursor:pointer;border:none;color:#dde;box-sizing:border-box;}
+.btn{display:block;width:100%;max-width:Math.min(300px,50vw);margin:12px auto;padding:clamp(8px,1.4vw,14px);border-radius:8px;font-size:clamp(0.8rem,1.3vw,1rem);text-align:center;cursor:pointer;border:none;color:#dde;box-sizing:border-box;}
 .btn-start{background:linear-gradient(135deg,#1a5a3c,#2a8a5c);}
-.btn-back{background:#1a1a2e;border:1px solid #334;color:#667;font-size:clamp(0.7rem,1.1vw,0.82rem);padding:8px;max-width:min(300px,50vw);text-decoration:none;display:block;margin:8px auto;}
+.btn-back{background:#1a1a2e;border:1px solid #334;color:#667;font-size:clamp(0.7rem,1.1vw,0.82rem);padding:8px;max-width:Math.min(300px,50vw);text-decoration:none;display:block;margin:8px auto;}
 .btn-back:hover{color:#99a;}
-#timer-bar{width:100%;height:3px;background:#1a1a2e;border-radius:2px;margin:4px 0;overflow:hidden;}
+#timer-bar{display:none;width:100%;height:3px;background:#1a1a2e;border-radius:2px;margin:4px 0;overflow:hidden;}
 #timer-fill{height:100%;background:linear-gradient(90deg,#2a8a5c,#88cc44);width:100%;transition:width 0.2s;}
 .duration-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:10px 0;}
 .dur-btn{padding:6px 12px;border-radius:4px;border:1px solid #334;background:#0e0e18;color:#889;font-size:0.78rem;cursor:pointer;transition:all 0.15s;}
@@ -33,13 +33,13 @@ html.lang-cn .en-line{display:none;}
 .phase-label{text-align:center;font-size:0.8rem;color:#88aacc;margin:6px 0;}
 .feedback{text-align:center;font-size:1.1rem;height:24px;line-height:24px;margin:6px 0;}
 #sdt-question{text-align:center;font-size:clamp(0.85rem,1.4vw,1.05rem);color:#ccddff;margin:12px 0;line-height:1.8;padding:clamp(10px,1.5vw,16px);background:#0a0a18;border:1px solid #1a1a2e;border-radius:8px;}
-#sdt-input{display:block;width:min(200px,40vw);margin:10px auto;padding:10px;text-align:center;font-size:1.1rem;background:#0a0a18;border:2px solid #334;border-radius:6px;color:#ccddff;font-family:"Courier New",monospace;outline:none;}
+#sdt-input{display:block;width:Math.min(200px,40vw);margin:10px auto;padding:10px;text-align:center;font-size:1.1rem;background:#0a0a18;border:2px solid #334;border-radius:6px;color:#ccddff;font-family:"Courier New",monospace;outline:none;}
 #sdt-input:focus{border-color:#4488aa;}
 .sdt-unit{text-align:center;font-size:0.78rem;color:#667;margin-bottom:10px;}
 .sdt-submit{display:block;margin:6px auto;padding:8px 30px;background:#1a3a5c;color:#aaccdd;border:1px solid #338;border-radius:6px;font-size:0.9rem;cursor:pointer;}
 #matrix-area{display:flex;flex-wrap:wrap;gap:clamp(8px,1.5vw,16px);justify-content:center;margin:10px 0;}
-#matrix-canvas{border:1px solid #1a1a2e;border-radius:4px;background:#0a0a14;width:min(260px,45vw);height:auto;aspect-ratio:1;}
-#matrix-options{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(4px,1vw,10px);max-width:min(500px,85vw);}
+#matrix-canvas{border:1px solid #1a1a2e;border-radius:4px;background:#0a0a14;width:Math.min(260px,45vw);height:auto;aspect-ratio:1;}
+#matrix-options{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(4px,1vw,10px);max-width:Math.min(500px,85vw);}
 #matrix-options canvas{width:100%;cursor:pointer;border:2px solid transparent;border-radius:4px;aspect-ratio:1;}
 #matrix-options canvas:hover{border-color:#4488aa;}
 #matrix-options canvas.selected{border-color:#88ccff;}
@@ -59,6 +59,7 @@ html.lang-cn .en-line{display:none;}
 <span class="cn-line"><strong>第二部分 - 矩阵推理：</strong>完成3x3图形规律，选出缺失的一块。</span>
 </p>
 <div class="duration-row">
+<label style="font-size:0.7rem;color:#667;display:flex;align-items:center;gap:3px;margin-left:4px;"><input type="checkbox" id="show-timer" onchange="toggleTimer()"> Show timer</label>
 <span style="color:#667;font-size:0.75rem;">Duration:</span>
 <button class="dur-btn sel" data-dur="3">3 min</button>
 <button class="dur-btn" data-dur="2">2 min</button>
@@ -83,7 +84,7 @@ html.lang-cn .en-line{display:none;}
 </div>
 <div id="screen-result">
 <div class="result-summary" id="result-text"></div>
-<button class="btn btn-start" onclick="startTest()">Retry</button>
+<button class="btn btn-start" onclick="goIntro()">Retry</button>
 <a class="btn btn-back" href="../" style="display:block;text-decoration:none;" id="back-btn2">Back to ADPT</a>
 </div>
 </div>
@@ -91,7 +92,7 @@ html.lang-cn .en-line{display:none;}
 var ALL_MODE=window.location.search.indexOf('all=1')>=0;
 if(ALL_MODE){document.getElementById('back-btn').style.display='none';document.getElementById('back-btn2').style.display='none';document.getElementById('back-btn2').textContent='Continue';document.getElementById('back-btn2').style.display='block';document.getElementById('back-btn2').href='../all-practice/?continue=1';}
 (function(){var ua=navigator.userAgent.toLowerCase();if(ua.indexOf('micromessenger')>=0||ua.indexOf('safari')>=0&&ua.indexOf('chrome')<0){document.documentElement.classList.add('lang-cn');}})();
-function toggleCN(){document.documentElement.classList.toggle('lang-cn');}
+function toggleTimer(){document.getElementById('timer-bar').style.display=document.getElementById('show-timer').checked?'block':'none';} function toggleCN(){document.documentElement.classList.toggle('lang-cn');}
 var testDurMin=3;var durs={2:120,3:180,5:300};
 document.querySelectorAll('.dur-btn').forEach(function(b){b.onclick=function(){document.querySelectorAll('.dur-btn').forEach(function(x){x.classList.remove('sel');});b.classList.add('sel');testDurMin=parseInt(b.dataset.dur);};});
 var TOTAL_SDT=8,TOTAL_MATRIX=8,QUESTION_TIME=15000;
@@ -99,10 +100,10 @@ var phase=0,round=0,sdtCorrect=0,matrixCorrect=0;
 var answered=false,deadline=0;
 var testRunning=false,animId=null;
 var sdtAnswer=0;
-function showScreen(id){['screen-intro','screen-play','screen-result'].forEach(function(s){document.getElementById(s).classList.remove('active');});document.getElementById(id).classList.add('active');}
+function goIntro(){testRunning=false;if(animId)cancelAnimationFrame(animId);showScreen("screen-intro");} function showScreen(id){['screen-intro','screen-play','screen-result'].forEach(function(s){document.getElementById(s).classList.remove('active');});document.getElementById(id).classList.add('active');}
 function startTest(){
     phase=0;round=0;sdtCorrect=0;matrixCorrect=0;
-    testRunning=true;showScreen('screen-play');
+    testRunning=true;showScreen('screen-play');if(document.getElementById('show-timer').checked)document.getElementById('timer-bar').style.display='block';
     document.getElementById('sdt-view').style.display='block';document.getElementById('matrix-view').style.display='none';
     document.getElementById('phase-label').textContent='Part 1: Aviation Math';
     document.getElementById('feedback').textContent='';
@@ -137,7 +138,7 @@ function drawMatrixPuzzle(){
     var types=['orientation','shapeCount','fillPattern','shapeType'];
     var type=types[Math.floor(Math.random()*types.length)];
     var c=document.getElementById('matrix-canvas');var ctx=c.getContext('2d');
-    var size=min(c.parentElement.clientWidth,c.parentElement.clientHeight);c.width=c.height=size;
+    var size=Math.min(c.parentElement.clientWidth,c.parentElement.clientHeight);c.width=c.height=size;
     ctx.clearRect(0,0,size,size);var cellW=size/3,cellH=size/3;
     ctx.strokeStyle='#334';ctx.lineWidth=1;for(var i=0;i<4;i++){ctx.beginPath();ctx.moveTo(i*cellW,0);ctx.lineTo(i*cellW,size);ctx.stroke();ctx.beginPath();ctx.moveTo(0,i*cellH);ctx.lineTo(size,i*cellH);ctx.stroke();}
     var cells=[];for(var r=0;r<3;r++)for(var co=0;co<3;co++){if(r===2&&co===2)continue;cells.push({row:r,col:co});}
@@ -162,7 +163,7 @@ function drawMatrixPuzzle(){
     var qx=2.5*cellW,qy=2.5*cellH;ctx.fillStyle='#445';ctx.font=(cellW*0.2)+'px Arial';ctx.textAlign='center';ctx.fillText('?',qx,qy+5);
     }
 function drawArrow(ctx,cx,cy,size,angle,color){ctx.save();ctx.translate(cx,cy);ctx.rotate(angle);ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(size,0);ctx.lineTo(-size*0.5,-size*0.5);ctx.lineTo(-size*0.2,0);ctx.lineTo(-size*0.5,size*0.5);ctx.closePath();ctx.stroke();ctx.restore();}
-function drawDots(ctx,cx,cy,count,color){ctx.fillStyle=color;var positions=[];if(count<=3)for(var i=0;i<count;i++)positions.push([cx+(i-1)*10,cy]);else if(count<=5)for(var i=0;i<count;i++)positions.push([cx+(i-2)*8,cy+(i%2===0?-7:7)]);else for(var i=0;i<Math.min(count,7);i++)positions.push([cx+(i%3-1)*10,cy+(Math.floor(i/3)-1)*10]);positions.forEach(function(p){ctx.beginPath();ctx.arc(p[0],p[1],3,0,Math.PI*2);ctx.fill();});}
+function drawDots(ctx,cx,cy,count,color){ctx.fillStyle=color;var positions=[];if(count<=3)for(var i=0;i<count;i++)positions.push([cx+(i-1)*10,cy]);else if(count<=5)for(var i=0;i<count;i++)positions.push([cx+(i-2)*8,cy+(i%2===0?-7:7)]);else for(var i=0;i<Math.Math.min(count,7);i++)positions.push([cx+(i%3-1)*10,cy+(Math.floor(i/3)-1)*10]);positions.forEach(function(p){ctx.beginPath();ctx.arc(p[0],p[1],3,0,Math.PI*2);ctx.fill();});}
 function drawPattern(ctx,cx,cy,size,pat){ctx.fillStyle='#aaccdd';if(pat===0)ctx.fillRect(cx-size,cy-size,size*2,size*2);else if(pat===1){ctx.strokeStyle='#aaccdd';ctx.lineWidth=2;ctx.strokeRect(cx-size,cy-size,size*2,size*2);}else{ctx.fillRect(cx-size,cy-size,size*2,size*2);ctx.fillStyle='#0a0a14';for(var i=0;i<4;i++)ctx.fillRect(cx-size+i*7,cy-size,3,size*2);}}
 function drawSimpleShape(ctx,cx,cy,size,shape){ctx.strokeStyle='#aaccdd';ctx.lineWidth=2.5;ctx.beginPath();if(shape==='circle')ctx.arc(cx,cy,size,0,Math.PI*2);else if(shape==='square')ctx.rect(cx-size,cy-size,size*2,size*2);else{ctx.moveTo(cx,cy-size);ctx.lineTo(cx+size,cy+size);ctx.lineTo(cx-size,cy+size);ctx.closePath();}ctx.stroke();}
 function drawOptions(ctx,cellW,cellH,type,correctVal){
@@ -210,7 +211,6 @@ function endTest(){
     var raw=localStorage.getItem('adpt_cognitive');var arr=raw?JSON.parse(raw):[];arr.unshift({score:totalScore,ts:Date.now()});if(arr.length>20)arr=arr.slice(0,20);localStorage.setItem('adpt_cognitive',JSON.stringify(arr));
     if(ALL_MODE){var seq=JSON.parse(sessionStorage.getItem('adpt_all_seq')||'[]'),results=JSON.parse(sessionStorage.getItem('adpt_all_results')||'[]'),idx=parseInt(sessionStorage.getItem('adpt_all_idx')||'0');results.push({id:'cognitive',score:totalScore});sessionStorage.setItem('adpt_all_results',JSON.stringify(results));sessionStorage.setItem('adpt_all_idx',String(idx+1));window.location.href='../all-practice/?continue=1';}
     }
-showScreen('screen-intro');
-</script>
+showScreen('screen-intro');</script>
 </body>
 </html>

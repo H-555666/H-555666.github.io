@@ -5,11 +5,9 @@
 <title>Perceptual Speed - ADPT</title>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
 <meta name="format-detection" content="telephone=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <style>
 *,*::before,*::after{box-sizing:border-box;}
-body{font-size:clamp(10px,1.6vw,16px);font-family:"Microsoft YaHei",Arial,sans-serif;background:#080810;color:#ccc;margin:0;padding:0;overflow-x:hidden;user-select:none;-webkit-user-select:none;}
+body{font-size:clamp(10px,1.6vw,16px);font-family:"Microsoft YaHei",Arial;background:#080810;color:#ccc;margin:0;padding:0;overflow-x:hidden;user-select:none;-webkit-user-select:none;}
 #wrap{max-width:90vw;width:100%;margin:0 auto;padding:clamp(6px,1vw,12px);}
 h1{font-size:clamp(1rem,2.2vw,1.5rem);color:#88ccff;text-align:center;margin:6px 0;}
 #screen-intro,#screen-play,#screen-result{display:none;}
@@ -20,8 +18,8 @@ h1{font-size:clamp(1rem,2.2vw,1.5rem);color:#88ccff;text-align:center;margin:6px
 .btn-start{background:linear-gradient(135deg,#1a5a3c,#2a8a5c);}
 .btn-back{background:#1a1a2e;border:1px solid #334;color:#667;font-size:clamp(0.7rem,1.1vw,0.82rem);padding:8px;max-width:min(300px,50vw);text-decoration:none;display:block;margin:8px auto;}
 .btn-back:hover{color:#99a;}
-#timer-bar{width:100%;height:3px;background:#1a1a2e;border-radius:2px;margin:4px 0;overflow:hidden;}
-#timer-fill{height:100%;background:linear-gradient(90deg,#2a8a5c,#88cc44);width:100%;transition:width 0.2s;}
+#timer-bar{display:none;width:100%;height:3px;background:#1a1a2e;border-radius:2px;margin:4px 0;overflow:hidden;}
+#timer-fill{height:100%;background:linear-gradient(90deg,#2a8a5c,#88cc44);transition:width 0.2s;}
 .duration-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:10px 0;}
 .dur-btn{padding:6px 12px;border-radius:4px;border:1px solid #334;background:#0e0e18;color:#889;font-size:0.78rem;cursor:pointer;transition:all 0.15s;}
 .dur-btn.sel{border-color:#4488aa;color:#88ccff;background:#111a24;}
@@ -36,7 +34,6 @@ html.lang-cn .en-line{display:none;}
 .match-btn{padding:clamp(8px,1.5vw,14px) clamp(20px,4vw,40px);border-radius:8px;font-size:clamp(0.9rem,1.5vw,1.1rem);cursor:pointer;border:2px solid;min-width:clamp(80px,15vw,120px);text-align:center;}
 .match-btn.match{border-color:#33aa44;color:#33aa44;background:#0a1a0a;}
 .match-btn.no{border-color:#aa3333;color:#aa3333;background:#1a0a0a;}
-.match-btn:active{opacity:0.7;}
 .question-counter{text-align:center;font-size:0.75rem;color:#556;margin:3px 0;}
 .phase-label{text-align:center;font-size:0.8rem;color:#88aacc;margin:6px 0;}
 #gauge-grid{display:grid;gap:clamp(6px,1vw,12px);justify-content:center;margin:10px auto;max-width:min(500px,85vw);}
@@ -55,10 +52,8 @@ html.lang-cn .en-line{display:none;}
 <h1>Perceptual Speed <span class="en-line">and</span> Accuracy</h1>
 <div id="screen-intro" class="active">
 <p class="intro-text">
-<span class="en-line"><strong>Part 1 - Digit Matching:</strong> Two number/letter strings flash for 2 sec. Are they identical? Press <strong>Match</strong> or <strong>No</strong> quickly. (10 rounds)</span>
-<span class="cn-line"><strong>第一部分 - 数字对校：</strong>两组数字/字母快速闪现2秒。判断它们是否一致，快速按下 <strong>匹配</strong> 或 <strong>不一致</strong>。（10轮）</span><br>
-<span class="en-line"><strong>Part 2 - Gauge Scan:</strong> A grid of dials appears. Find the <strong>red-zone</strong> gauge(s) and click them within 3 sec. (10 rounds)</span>
-<span class="cn-line"><strong>第二部分 - 仪表扫视：</strong>仪表盘网格中找出进入<strong>红区</strong>的仪表并点击。（10轮，每题3秒）</span>
+<span class="en-line"><strong>Part 1 - Digit Matching:</strong> Two number/letter strings flash for 2 sec. Are they identical? Press <strong>Match</strong> or <strong>No</strong> quickly. (10 rounds)</span><span class="cn-line"><strong>第一部分 - 数字对校：</strong>两组数字/字母快速闪现2秒。判断是否一致。（10轮）</span><br>
+<span class="en-line"><strong>Part 2 - Gauge Scan:</strong> A grid of dials appears. Find the <strong>red-zone</strong> gauge(s) and click them within 3 sec. (10 rounds)</span><span class="cn-line"><strong>第二部分 - 仪表扫视：</strong>找出进入<strong>红区</strong>的仪表并点击。（10轮，每题3秒）</span>
 </p>
 <div class="duration-row">
 <span style="color:#667;font-size:0.75rem;">Duration:</span>
@@ -66,6 +61,7 @@ html.lang-cn .en-line{display:none;}
 <button class="dur-btn" data-dur="1">1 min</button>
 <button class="dur-btn" data-dur="3">3 min</button>
 <button class="dur-btn" data-dur="5">5 min</button>
+<label style="font-size:0.7rem;color:#667;display:flex;align-items:center;gap:3px;margin-left:4px;"><input type="checkbox" id="show-timer" onchange="toggleTimer()"> Show timer</label>
 </div>
 <button class="btn btn-start" onclick="startTest()">Start Test</button>
 <a class="btn btn-back" href="../" style="display:block;text-decoration:none;" id="back-btn">Back to ADPT</a>
@@ -83,7 +79,7 @@ html.lang-cn .en-line{display:none;}
 </div>
 <div id="screen-result">
 <div class="result-summary" id="result-text"></div>
-<button class="btn btn-start" onclick="startTest()">Retry</button>
+<button class="btn btn-start" onclick="goIntro()">Retry</button>
 <a class="btn btn-back" href="../" style="display:block;text-decoration:none;" id="back-btn2">Back to ADPT</a>
 </div>
 </div>
@@ -91,7 +87,8 @@ html.lang-cn .en-line{display:none;}
 var ALL_MODE=window.location.search.indexOf('all=1')>=0;
 if(ALL_MODE){document.getElementById('back-btn').style.display='none';document.getElementById('back-btn2').style.display='none';document.getElementById('back-btn2').textContent='Continue';document.getElementById('back-btn2').style.display='block';document.getElementById('back-btn2').href='../all-practice/?continue=1';}
 (function(){var ua=navigator.userAgent.toLowerCase();if(ua.indexOf('micromessenger')>=0||ua.indexOf('safari')>=0&&ua.indexOf('chrome')<0){document.documentElement.classList.add('lang-cn');}})();
-function toggleCN(){var h=document.documentElement;h.classList.toggle('lang-cn');}
+function toggleTimer(){document.getElementById('timer-bar').style.display=document.getElementById('show-timer').checked?'block':'none';}
+function toggleCN(){document.documentElement.classList.toggle('lang-cn');}
 var testDuration=120;var durs={1:60,2:120,3:180,5:300};
 document.querySelectorAll('.dur-btn').forEach(function(b){b.onclick=function(){document.querySelectorAll('.dur-btn').forEach(function(x){x.classList.remove('sel');});b.classList.add('sel');testDuration=durs[parseInt(b.dataset.dur)];};});
 var TOTAL_PER_PHASE=10,DIGIT_TIME=2000,GAUGE_TIME=3000;
@@ -100,10 +97,12 @@ var digitCorrect=0,gaugeCorrect=0,gaugeTotal=0;
 var digitMatch=false;
 var gaugeFaults=[];
 var testRunning=false,animId=null;
+function goIntro(){testRunning=false;if(animId)cancelAnimationFrame(animId);showScreen("screen-intro");}
 function showScreen(id){['screen-intro','screen-play','screen-result'].forEach(function(s){document.getElementById(s).classList.remove('active');});document.getElementById(id).classList.add('active');}
 function startTest(){
     phase=0;round=0;digitCorrect=0;gaugeCorrect=0;gaugeTotal=0;
     testRunning=true;showScreen('screen-play');
+    if(document.getElementById('show-timer').checked)document.getElementById('timer-bar').style.display='block';
     document.getElementById('phase-label').textContent='Part 1: Digit Matching';
     document.getElementById('digit-view').style.display='block';document.getElementById('gauge-view').style.display='none';
     document.getElementById('feedback').textContent='';
@@ -168,7 +167,8 @@ function drawGauge(ctx,cx,cy,r,isFault){
     ctx.strokeStyle='#33aa44';ctx.lineWidth=4;ctx.beginPath();ctx.arc(cx,cy,r-4,-Math.PI/3,Math.PI/3);ctx.stroke();
     ctx.strokeStyle='#ff4444';ctx.lineWidth=4;ctx.beginPath();ctx.arc(cx,cy,r-4,Math.PI/3,Math.PI/3+0.35);ctx.stroke();
     ctx.beginPath();ctx.arc(cx,cy,r-4,-Math.PI/3-0.35,-Math.PI/3);ctx.stroke();
-    var angle=isFault?(Math.PI/3+0.17+Math.random()*0.08):(Math.random()-0.5)*Math.PI*0.5;
+    var GREEN_ZONE=Math.PI/3-0.15;
+    var angle=isFault?(Math.PI/3+0.2+Math.random()*0.08):(Math.random()-0.5)*GREEN_ZONE*2;
     ctx.strokeStyle=isFault?'#ff4444':'#aaccff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.sin(angle)*(r-8),cy-Math.cos(angle)*(r-8));ctx.stroke();
     ctx.fillStyle=isFault?'#ff4444':'#aaccff';ctx.beginPath();ctx.arc(cx,cy,3,0,Math.PI*2);ctx.fill();
     }

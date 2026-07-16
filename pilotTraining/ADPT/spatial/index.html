@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en" class="lang-en">
 <head>
 <meta charset="utf-8">
@@ -16,11 +16,11 @@ h1{font-size:clamp(1rem,2.2vw,1.5rem);color:#88ccff;text-align:center;margin:6px
 #screen-intro.active,#screen-play.active,#screen-result.active{display:block;}
 .intro-text{font-size:clamp(0.7rem,1.2vw,0.88rem);color:#8899aa;line-height:1.6;margin:8px 0;text-align:center;}
 .intro-text strong{color:#aaccdd;}
-.btn{display:block;width:100%;max-width:min(300px,50vw);margin:12px auto;padding:clamp(8px,1.4vw,14px);border-radius:8px;font-size:clamp(0.8rem,1.3vw,1rem);text-align:center;cursor:pointer;border:none;color:#dde;box-sizing:border-box;}
+.btn{display:block;width:100%;max-width:Math.min(300px,50vw);margin:12px auto;padding:clamp(8px,1.4vw,14px);border-radius:8px;font-size:clamp(0.8rem,1.3vw,1rem);text-align:center;cursor:pointer;border:none;color:#dde;box-sizing:border-box;}
 .btn-start{background:linear-gradient(135deg,#1a5a3c,#2a8a5c);}
-.btn-back{background:#1a1a2e;border:1px solid #334;color:#667;font-size:clamp(0.7rem,1.1vw,0.82rem);padding:8px;max-width:min(300px,50vw);text-decoration:none;display:block;margin:8px auto;}
+.btn-back{background:#1a1a2e;border:1px solid #334;color:#667;font-size:clamp(0.7rem,1.1vw,0.82rem);padding:8px;max-width:Math.min(300px,50vw);text-decoration:none;display:block;margin:8px auto;}
 .btn-back:hover{color:#99a;}
-#timer-bar{width:100%;height:3px;background:#1a1a2e;border-radius:2px;margin:4px 0;overflow:hidden;}
+#timer-bar{display:none;width:100%;height:3px;background:#1a1a2e;border-radius:2px;margin:4px 0;overflow:hidden;}
 #timer-fill{height:100%;background:linear-gradient(90deg,#2a8a5c,#88cc44);width:100%;transition:width 0.2s;}
 .canvas-wrap{display:flex;flex-wrap:wrap;gap:clamp(6px,1vw,10px);justify-content:center;margin-top:6px;}
 .canvas-wrap canvas{border:1px solid #1a1a2e;border-radius:4px;background:#0a0a14;}
@@ -48,6 +48,7 @@ html.lang-cn .en-line{display:none;}
 <span class="cn-line">左侧显示<strong>姿态仪</strong>（俯仰和倾斜）和<strong>航向指示器</strong>（罗盘）。点击右侧与仪表读数匹配的飞机。<br>共15题，<strong>每题8秒</strong>。</span>
 </p>
 <div class="duration-row">
+<label style="font-size:0.7rem;color:#667;display:flex;align-items:center;gap:3px;margin-left:4px;"><input type="checkbox" id="show-timer" onchange="toggleTimer()"> Show timer</label>
 <span style="color:#667;font-size:0.75rem;">Duration:</span>
 <button class="dur-btn sel" data-dur="2.5">2.5 min</button>
 <button class="dur-btn" data-dur="1">1 min</button>
@@ -67,7 +68,7 @@ html.lang-cn .en-line{display:none;}
 </div>
 <div id="screen-result">
 <div class="result-summary" id="result-text"></div>
-<button class="btn btn-start" onclick="startTest()">Retry</button>
+<button class="btn btn-start" onclick="goIntro()">Retry</button>
 <a class="btn btn-back" href="../" style="display:block;text-decoration:none;" id="back-btn2">Back to ADPT</a>
 </div>
 </div>
@@ -75,7 +76,7 @@ html.lang-cn .en-line{display:none;}
 var ALL_MODE=window.location.search.indexOf('all=1')>=0;
 if(ALL_MODE){document.getElementById('back-btn').style.display='none';document.getElementById('back-btn2').style.display='none';document.getElementById('back-btn2').textContent='Continue';document.getElementById('back-btn2').style.display='block';document.getElementById('back-btn2').href='../all-practice/?continue=1';}
 (function(){var ua=navigator.userAgent.toLowerCase();if(ua.indexOf('micromessenger')>=0||ua.indexOf('safari')>=0&&ua.indexOf('chrome')<0){document.documentElement.classList.add('lang-cn');}})();
-function toggleCN(){document.documentElement.classList.toggle('lang-cn');}
+function toggleTimer(){document.getElementById('timer-bar').style.display=document.getElementById('show-timer').checked?'block':'none';} function toggleCN(){document.documentElement.classList.toggle('lang-cn');}
 var testDurMin=2.5;var durs={1:60,2.5:150,3:180,5:300};
 document.querySelectorAll('.dur-btn').forEach(function(b){b.onclick=function(){document.querySelectorAll('.dur-btn').forEach(function(x){x.classList.remove('sel');});b.classList.add('sel');testDurMin=parseFloat(b.dataset.dur);};});
 var TOTAL_QUESTIONS=15,QUESTION_TIME=8000;
@@ -83,7 +84,7 @@ var currentQ=0,correctAns=0,answered=false;
 var qPitch=0,qBank=0,qHeading=0;
 var testStart=0,testRunning=false,qDeadline=0,animId=null;
 var startTime=0;
-function showScreen(id){['screen-intro','screen-play','screen-result'].forEach(function(s){document.getElementById(s).classList.remove('active');});document.getElementById(id).classList.add('active');}
+function goIntro(){testRunning=false;if(animId)cancelAnimationFrame(animId);showScreen("screen-intro");} function showScreen(id){['screen-intro','screen-play','screen-result'].forEach(function(s){document.getElementById(s).classList.remove('active');});document.getElementById(id).classList.add('active');}
 function drawInstruments(){
     var c=document.getElementById('instruments-canvas'),ctx=c.getContext('2d'),w=c.width,h=c.height;
     ctx.clearRect(0,0,w,h);
@@ -163,7 +164,7 @@ function nextQuestion(){
 function startTest(){
     currentQ=0;correctAns=0;answered=false;
     startTime=performance.now();testStart=performance.now();testRunning=true;
-    showScreen('screen-play');nextQuestion();
+    showScreen('screen-play');if(document.getElementById('show-timer').checked)document.getElementById('timer-bar').style.display='block';nextQuestion();
     if(animId)cancelAnimationFrame(animId);animId=requestAnimationFrame(timerLoop);
     }
 function timerLoop(now){
@@ -183,7 +184,6 @@ function endTest(){
     if(ALL_MODE){var seq=JSON.parse(sessionStorage.getItem('adpt_all_seq')||'[]'),results=JSON.parse(sessionStorage.getItem('adpt_all_results')||'[]'),idx=parseInt(sessionStorage.getItem('adpt_all_idx')||'0');results.push({id:'spatial',score:pct});sessionStorage.setItem('adpt_all_results',JSON.stringify(results));sessionStorage.setItem('adpt_all_idx',String(idx+1));window.location.href='../all-practice/?continue=1';}
     }
 document.getElementById('options-canvas').addEventListener('click',handleOptionClick);
-showScreen('screen-intro');
-</script>
+showScreen('screen-intro');</script>
 </body>
 </html>
