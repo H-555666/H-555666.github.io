@@ -76,7 +76,8 @@ html.lang-cn .en-line{display:none;}
 var ALL_MODE=window.location.search.indexOf('all=1')>=0;
 if(ALL_MODE){document.getElementById('back-btn').style.display='none';document.getElementById('back-btn2').style.display='none';document.getElementById('back-btn2').textContent='Continue';document.getElementById('back-btn2').style.display='block';document.getElementById('back-btn2').href='../all-practice/?continue=1';}
 (function(){var ua=navigator.userAgent.toLowerCase();if(ua.indexOf('micromessenger')>=0||ua.indexOf('safari')>=0&&ua.indexOf('chrome')<0){document.documentElement.classList.add('lang-cn');}})();
-function toggleTimer(){document.getElementById('timer-bar').style.display=document.getElementById('show-timer').checked?'block':'none';} function toggleCN(){document.documentElement.classList.toggle('lang-cn');}
+function toggleTimer(){document.getElementById('timer-bar').style.display=document.getElementById('show-timer').checked?'block':'none';}
+function toggleCN(){document.documentElement.classList.toggle('lang-cn');}
 var testDurMin=2.5;var durs={1:60,2.5:150,3:180,5:300};
 document.querySelectorAll('.dur-btn').forEach(function(b){b.onclick=function(){document.querySelectorAll('.dur-btn').forEach(function(x){x.classList.remove('sel');});b.classList.add('sel');testDurMin=parseFloat(b.dataset.dur);};});
 var TOTAL_QUESTIONS=15,QUESTION_TIME=8000;
@@ -84,7 +85,8 @@ var currentQ=0,correctAns=0,answered=false;
 var qPitch=0,qBank=0,qHeading=0;
 var testStart=0,testRunning=false,qDeadline=0,animId=null;
 var startTime=0;
-function goIntro(){testRunning=false;if(animId)cancelAnimationFrame(animId);showScreen("screen-intro");} function showScreen(id){['screen-intro','screen-play','screen-result'].forEach(function(s){document.getElementById(s).classList.remove('active');});document.getElementById(id).classList.add('active');}
+function goIntro(){testRunning=false;if(animId)cancelAnimationFrame(animId);showScreen("screen-intro");}
+function showScreen(id){['screen-intro','screen-play','screen-result'].forEach(function(s){document.getElementById(s).classList.remove('active');});document.getElementById(id).classList.add('active');}
 function drawInstruments(){
     var c=document.getElementById('instruments-canvas'),ctx=c.getContext('2d'),w=c.width,h=c.height;
     ctx.clearRect(0,0,w,h);

@@ -9,28 +9,26 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <style>
 *,*::before,*::after{box-sizing:border-box;}
-body{font-size:clamp(10px,1.6vw,16px);font-family:"Microsoft YaHei",Arial,sans-serif;background:#080810;color:#ccc;margin:0;padding:0;overflow-x:hidden;user-select:none;-webkit-user-select:none;touch-action:none;}
+body{font-size:clamp(10px,1.6vw,16px);font-family:"Microsoft YaHei",Arial,sans-serif;background:#080810;color:#ccc;margin:0;padding:0;overflow-x:hidden;user-select:none;-webkit-user-select:none;touch-action:manipulation;}
 #wrap{max-width:90vw;width:100%;margin:0 auto;padding:clamp(4px,1vw,10px);}
-h1{font-size:clamp(1rem,2.2vw,1.5rem);color:#88ccff;text-align:center;margin:6px 0;}
+h1{font-size:clamp(1rem,2.2vw,1.5rem);color:#88ccff;text-align:center;margin:4px 0;}
 #screen-intro,#screen-play,#screen-result{display:none;}
 #screen-intro.active,#screen-play.active,#screen-result.active{display:block;}
-.intro-text{font-size:clamp(0.7rem,1.2vw,0.88rem);color:#8899aa;line-height:1.6;margin:8px 0;text-align:center;}
+.intro-text{font-size:clamp(0.7rem,1.2vw,0.88rem);color:#8899aa;line-height:1.6;margin:6px 0;text-align:center;}
 .intro-text strong{color:#aaccdd;}
 .key-hint{display:inline-block;background:#1a1a2e;border:1px solid #334;border-radius:4px;padding:2px 8px;margin:1px;font-size:0.78rem;color:#aac;}
-.btn{display:block;width:100%;max-width:Math.min(300px,50vw);margin:12px auto;padding:clamp(8px,1.4vw,14px);border-radius:8px;font-size:clamp(0.8rem,1.3vw,1rem);text-align:center;cursor:pointer;border:none;color:#dde;box-sizing:border-box;}
+.btn{display:block;width:100%;max-width:min(300px,50vw);margin:10px auto;padding:clamp(8px,1.4vw,14px);border-radius:8px;font-size:clamp(0.8rem,1.3vw,1rem);text-align:center;cursor:pointer;border:none;color:#dde;box-sizing:border-box;}
 .btn-start{background:linear-gradient(135deg,#1a5a3c,#2a8a5c);}
-.btn-back{background:#1a1a2e;border:1px solid #334;color:#667;font-size:clamp(0.7rem,1.1vw,0.82rem);padding:8px;max-width:Math.min(300px,50vw);text-decoration:none;display:block;margin:8px auto;}
-.btn-back:hover{color:#99a;}
-#game-canvas{display:block;margin:0 auto;border:1px solid #1a1a2e;border-radius:6px;background:#0a0a14;touch-action:none;width:100%;max-width:Math.min(640px,90vw);height:auto;aspect-ratio:6/5;}
+.btn-back{background:#1a1a2e;border:1px solid #334;color:#667;font-size:clamp(0.7rem,1.1vw,0.82rem);padding:8px;max-width:min(300px,50vw);text-decoration:none;display:block;margin:8px auto;}
+#game-canvas{display:block;margin:0 auto;border:1px solid #1a1a2e;border-radius:6px;background:#0a0a14;touch-action:none;width:100%;max-width:min(640px,90vw);height:auto;aspect-ratio:6/5;}
 #timer-bar{display:none;width:100%;height:3px;background:#1a1a2e;border-radius:2px;margin:4px 0;overflow:hidden;}
-#timer-fill{height:100%;background:linear-gradient(90deg,#2a8a5c,#88cc44);width:100%;transition:width 0.2s;}
+#timer-fill{height:100%;background:linear-gradient(90deg,#2a8a5c,#88cc44);transition:width 0.2s;}
 #math-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10;justify-content:center;align-items:center;flex-direction:column;}
 #math-overlay.active{display:flex;}
 #math-question{font-size:clamp(1.5rem,3vw,2rem);color:#fff;margin-bottom:16px;}
 #math-options{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
 .math-opt{width:clamp(48px,8vw,60px);height:clamp(48px,8vw,60px);border-radius:50%;border:2px solid #4488aa;background:#111;color:#aac;font-size:clamp(1rem,1.8vw,1.2rem);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s;}
 .math-opt:hover{background:#223;}
-#instrument-hint{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);color:#88cc44;font-size:1.5rem;pointer-events:none;display:none;z-index:9;text-shadow:0 0 16px #88cc44;}
 .result-summary{text-align:center;font-size:0.88rem;color:#aac;line-height:2;}
 .result-summary .big{font-size:clamp(1.3rem,2.5vw,1.8rem);color:#88ccff;font-weight:bold;}
 .score-label{color:#667;}.score-val{color:#88cc88;}
@@ -38,9 +36,11 @@ h1{font-size:clamp(1rem,2.2vw,1.5rem);color:#88ccff;text-align:center;margin:6px
 .dur-btn{padding:6px 12px;border-radius:4px;border:1px solid #334;background:#0e0e18;color:#889;font-size:0.78rem;cursor:pointer;transition:all 0.15s;}
 .dur-btn.sel{border-color:#4488aa;color:#88ccff;background:#111a24;}
 .cn-toggle{position:fixed;top:6px;right:10px;z-index:20;font-size:0.68rem;background:#0e0e18;border:1px solid #334;color:#556;padding:3px 8px;border-radius:3px;cursor:pointer;}
-.cn-line{display:none;}
-html.lang-cn .cn-line{display:inline;}
-html.lang-cn .en-line{display:none;}
+.cn-line{display:none;}html.lang-cn .cn-line{display:inline;}html.lang-cn .en-line{display:none;}
+#mobile-controls{display:none;position:fixed;bottom:0;left:0;right:0;z-index:8;padding:8px;background:rgba(6,6,14,0.9);border-top:1px solid #1a1a2e;gap:4px;justify-content:center;align-items:center;flex-wrap:wrap;}
+#screen-play.active~#mobile-controls,#screen-play.active #mobile-controls{display:flex;}
+.mbtn{min-width:36px;height:36px;border:1px solid #334;border-radius:6px;background:#111;color:#aac;font-size:0.8rem;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;touch-action:manipulation;}
+.mbtn:active{background:#226;}.mbtn.space{min-width:80px;}.mbtn.num{min-width:40px;}
 </style>
 </head>
 <body>
@@ -51,19 +51,15 @@ html.lang-cn .en-line{display:none;}
 <p class="intro-text">
 <span class="en-line"><strong>Target Tracking:</strong> Keep the red circle inside the crosshair using <span class="key-hint">WASD</span> or <span class="key-hint">Arrow keys</span>.</span>
 <span class="cn-line"><strong>目标追踪：</strong>使用<span class="key-hint">WASD</span>或<span class="key-hint">方向键</span>将红色圆点保持在准星中央。</span><br>
-<span class="en-line"><strong>Instrument Monitor:</strong> When the gauge needle enters the <span style="color:#ff6644;">red zone</span>, press <span class="key-hint">Space</span> quickly to reset.</span>
-<span class="cn-line"><strong>仪表监控：</strong>当仪表指针进入<span style="color:#ff6644;">红区</span>时，按下<span class="key-hint">空格</span>快速复位。</span><br>
-<span class="en-line"><strong>Mental Math:</strong> A math question pops up periodically. Choose with <span class="key-hint">1</span><span class="key-hint">2</span><span class="key-hint">3</span><span class="key-hint">4</span> keys (5s each).</span>
-<span class="cn-line"><strong>心算：</strong>定期弹出数学题。使用<span class="key-hint">1</span><span class="key-hint">2</span><span class="key-hint">3</span><span class="key-hint">4</span>键作答（每题5秒）。</span>
+<span class="en-line"><strong>Instrument Monitor:</strong> Watch the gauge. If the needle enters the <span style="color:#ff6644;">red zone</span>, press <span class="key-hint">Space</span> to reset it. No warning will be given.</span>
+<span class="cn-line"><strong>仪表监控：</strong>观察仪表。当指针进入<span style="color:#ff6644;">红区</span>时，自行按下<span class="key-hint">空格</span>复位。不会给出提示。</span><br>
+<span class="en-line"><strong>Mental Math:</strong> Math questions pop up. Answer with <span class="key-hint">1</span><span class="key-hint">2</span><span class="key-hint">3</span><span class="key-hint">4</span> keys (5s each).</span>
+<span class="cn-line"><strong>心算：</strong>弹出数学题。使用<span class="key-hint">1</span><span class="key-hint">2</span><span class="key-hint">3</span><span class="key-hint">4</span>键作答（每题5秒）。</span>
 </p>
 <div class="duration-row">
-<label style="font-size:0.7rem;color:#667;display:flex;align-items:center;gap:3px;margin-left:4px;"><input type="checkbox" id="show-timer" onchange="toggleTimer()"> Show timer</label>
 <span style="color:#667;font-size:0.75rem;">Duration:</span>
-<button class="dur-btn sel" data-dur="2">2 min</button>
-<button class="dur-btn" data-dur="1">1 min</button>
-<button class="dur-btn" data-dur="3">3 min</button>
-<button class="dur-btn" data-dur="5">5 min</button>
-<button class="dur-btn" data-dur="0.5">30s</button>
+<button class="dur-btn sel" data-dur="2">2 min</button><button class="dur-btn" data-dur="1">1 min</button><button class="dur-btn" data-dur="3">3 min</button><button class="dur-btn" data-dur="5">5 min</button><button class="dur-btn" data-dur="0.5">30s</button>
+<label style="font-size:0.7rem;color:#667;display:flex;align-items:center;gap:3px;margin-left:4px;"><input type="checkbox" id="show-timer" onchange="toggleTimer()"> Show timer</label>
 </div>
 <button class="btn btn-start" onclick="startTest()">Start Test</button>
 <a class="btn btn-back" href="../" style="display:block;text-decoration:none;" id="back-btn">Back to ADPT</a>
@@ -79,43 +75,57 @@ html.lang-cn .en-line{display:none;}
 </div>
 </div>
 <div id="math-overlay"><div id="math-question"></div><div id="math-options"></div></div>
-<div id="instrument-hint">PRESS SPACE!</div>
+<div id="mobile-controls" style="display:none;">
+<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+<div style="display:flex;gap:2px;"><div></div><button class="mbtn" ontouchstart="event.preventDefault();mkey('ArrowUp',1)">▲</button><div></div></div>
+<div style="display:flex;gap:2px;"><button class="mbtn" ontouchstart="event.preventDefault();mkey('ArrowLeft',1)">◀</button><button class="mbtn space" ontouchstart="event.preventDefault();mkey('Space',1)">SPACE</button><button class="mbtn" ontouchstart="event.preventDefault();mkey('ArrowRight',1)">▶</button></div>
+<div style="display:flex;gap:2px;"><div></div><button class="mbtn" ontouchstart="event.preventDefault();mkey('ArrowDown',1)">▼</button><div></div></div>
+</div>
+<div style="display:flex;gap:4px;margin-left:8px;"><button class="mbtn num" ontouchstart="event.preventDefault();mkey('Digit1',1)">1</button><button class="mbtn num" ontouchstart="event.preventDefault();mkey('Digit2',1)">2</button><button class="mbtn num" ontouchstart="event.preventDefault();mkey('Digit3',1)">3</button><button class="mbtn num" ontouchstart="event.preventDefault();mkey('Digit4',1)">4</button></div>
+</div>
 <script>
 var ALL_MODE=window.location.search.indexOf('all=1')>=0;
 if(ALL_MODE){document.getElementById('back-btn').style.display='none';document.getElementById('back-btn2').style.display='none';document.getElementById('back-btn2').textContent='Continue';document.getElementById('back-btn2').style.display='block';document.getElementById('back-btn2').href='../all-practice/?continue=1';}
 (function(){var ua=navigator.userAgent.toLowerCase();if(ua.indexOf('micromessenger')>=0||ua.indexOf('safari')>=0&&ua.indexOf('chrome')<0){document.documentElement.classList.add('lang-cn');}})();
-function toggleTimer(){document.getElementById('timer-bar').style.display=document.getElementById('show-timer').checked?'block':'none';} function toggleCN(){document.documentElement.classList.toggle('lang-cn');}
+function toggleTimer(){document.getElementById('timer-bar').style.display=document.getElementById('show-timer').checked?'block':'none';}
+function toggleCN(){document.documentElement.classList.toggle('lang-cn');}
 var testDur=120;var durs={0.5:30,1:60,2:120,3:180,5:300};
 document.querySelectorAll('.dur-btn').forEach(function(b){b.onclick=function(){document.querySelectorAll('.dur-btn').forEach(function(x){x.classList.remove('sel');});b.classList.add('sel');testDur=durs[parseFloat(b.dataset.dur)];};});
 var MATH_TIME=5;
 var canvas,ctx,rect;
 var target={x:300,y:180,vx:0,vy:0};
 var trackingErr=0,trackingSamples=0;
-var gaugeAngle=0,gaugeSpeed=0,gaugeFaultActive=false,gaugeFaultStart=0,gaugeFaultResponses=0,gaugeFaultTotal=0,gaugeResponseSum=0;
-var gaugeIsInRed=false;
+var gaugeAngle=0,gaugeSpeed=0,gaugeFaultTotal=0,gaugeFaultResponses=0,gaugeResponseSum=0,gaugeInRed=false,gaugeRedSince=0;
+var redZonePos=0;
 var mathActive=false,mathTimeLeft=0,mathCorrect=0,mathTotal=0;
-var nextMathTime=0,nextGaugeDrift=0;
+var nextMathTime=0,nextRedPush=0;
 var testStart=0,testRunning=false,animId=null;
-var keys={};
-var lastTime=0;
-function goIntro(){testRunning=false;if(animId)cancelAnimationFrame(animId);showScreen("screen-intro");} function showScreen(id){['screen-intro','screen-play','screen-result'].forEach(function(s){document.getElementById(s).classList.remove('active');});document.getElementById(id).classList.add('active');}
+var keys={};var keyHeldSince={};var lastTime=0;
+function wrapAngle(a){a=a%(Math.PI*2);if(a>Math.PI)a-=Math.PI*2;if(a<-Math.PI)a+=Math.PI*2;return a;}
+function goIntro(){testRunning=false;if(animId)cancelAnimationFrame(animId);showScreen("screen-intro");document.getElementById('mobile-controls').style.display='none';}
+function showScreen(id){['screen-intro','screen-play','screen-result'].forEach(function(s){document.getElementById(s).classList.remove('active');});document.getElementById(id).classList.add('active');}
+function mkey(code,down){keys[code]=!!down;if(code==='Space'&&down)resolveGauge();if(down&&mathActive&&(code==='Digit1'||code==='Digit2'||code==='Digit3'||code==='Digit4')){var idx=parseInt(code.slice(-1))-1;var opts=document.querySelectorAll('.math-opt');if(opts[idx])opts[idx].click();}}
 function startTest(){
     canvas=document.getElementById('game-canvas');
-    var w=Math.Math.min(640,canvas.parentElement.clientWidth||640);canvas.width=w;canvas.height=Math.round(w*5/6);
+    var w=Math.min(640,canvas.parentElement.clientWidth||640);canvas.width=w;canvas.height=Math.round(w*5/6);
     ctx=canvas.getContext('2d');rect=canvas.getBoundingClientRect();
-    target={x:canvas.width/2,y:canvas.height*0.38,vx:0,vy:0};
+    // Red dot starts at random edge, not center
+    var edge=Math.floor(Math.random()*4);
+    if(edge===0){target={x:20,y:20+Math.random()*(canvas.height-140),vx:0,vy:0};}
+    else if(edge===1){target={x:canvas.width-20,y:20+Math.random()*(canvas.height-140),vx:0,vy:0};}
+    else if(edge===2){target={x:20+Math.random()*(canvas.width-40),y:20,vx:0,vy:0};}
+    else{target={x:20+Math.random()*(canvas.width-40),y:canvas.height-120,vx:0,vy:0};}
     trackingErr=0;trackingSamples=0;
-    gaugeAngle=0;gaugeSpeed=0;gaugeFaultActive=false;gaugeFaultStart=0;gaugeFaultResponses=0;gaugeFaultTotal=0;gaugeResponseSum=0;gaugeIsInRed=false;
+    gaugeAngle=0;gaugeSpeed=0;gaugeFaultTotal=0;gaugeFaultResponses=0;gaugeResponseSum=0;gaugeInRed=false;gaugeRedSince=0;
+    redZonePos=Math.random()*Math.PI*2;
     mathActive=false;mathCorrect=0;mathTotal=0;
     nextMathTime=performance.now()+8000+Math.random()*6000;
-    nextGaugeDrift=performance.now()+5000+Math.random()*8000;
-    testStart=performance.now();testRunning=true;
-    keys={};lastTime=performance.now();
-    showScreen("screen-play");if(document.getElementById("show-timer").checked)document.getElementById("timer-bar").style.display="block";
+    nextRedPush=performance.now()+5000+Math.random()*5000;nextGaugeDir=performance.now()+2000*Math.random();
+    testStart=performance.now();testRunning=true;keys={};keyHeldSince={};lastTime=performance.now();
+    showScreen('screen-play');document.getElementById('mobile-controls').style.display='flex';
+    if(document.getElementById('show-timer').checked)document.getElementById('timer-bar').style.display='block';
     document.getElementById('math-overlay').classList.remove('active');
-    document.getElementById('instrument-hint').style.display='none';
-    if(animId)cancelAnimationFrame(animId);
-    loop(performance.now());
+    if(animId)cancelAnimationFrame(animId);loop(performance.now());
     }
 function loop(now){
     if(!testRunning)return;animId=requestAnimationFrame(loop);
@@ -123,43 +133,59 @@ function loop(now){
     var elapsed=now-testStart;var remaining=Math.max(0,testDur*1000-elapsed);
     document.getElementById('timer-fill').style.width=(remaining/(testDur*1000)*100).toFixed(1)+'%';
     if(elapsed>testDur*1000){endTest();return;}
-    updateTracking(dt);updateGauge(now,dt);updateMathTrigger(now);
-    draw(canvas.width,canvas.height);
+    updateTracking(dt,now);updateGauge(now,dt);updateMathTrigger(now);draw(canvas.width,canvas.height);
     }
-function updateTracking(dt){
-    var turbulence=(0.5+Math.random()*0.5)*30;
-    target.vx+=(Math.random()-0.5)*turbulence*dt;
-    target.vy+=(Math.random()-0.5)*turbulence*dt;
+function updateTracking(dt,now){
+    // Turbulence
+    target.vx+=(Math.random()-0.5)*40*dt;target.vy+=(Math.random()-0.5)*40*dt;
     if(Math.random()<0.02){target.vx+=(Math.random()-0.5)*200*dt;target.vy+=(Math.random()-0.5)*200*dt;}
-    target.vx*=0.94;target.vy*=0.94;
-    var vclamp=300;if(target.vx>vclamp)target.vx=vclamp;if(target.vx<-vclamp)target.vx=-vclamp;if(target.vy>vclamp)target.vy=vclamp;if(target.vy<-vclamp)target.vy=-vclamp;
-    var ax=0,ay=0;
-    if(keys['ArrowLeft']||keys['KeyA']||keys['a'])ax=-400;if(keys['ArrowRight']||keys['KeyD']||keys['d'])ax=400;
-    if(keys['ArrowUp']||keys['KeyW']||keys['w'])ay=-400;if(keys['ArrowDown']||keys['KeyS']||keys['s'])ay=400;
-    target.vx+=ax*dt;target.vy+=ay*dt;
+    // Strong random impulse every 5-10s (not scaled by dt - real impulse)
+    if(now>nextRedPush){target.vx+=(Math.random()-0.5)*150;target.vy+=(Math.random()-0.5)*150;nextRedPush=now+5000+Math.random()*5000;}
+    // Damping (friction)
+    target.vx*=0.994;target.vy*=0.994;
+    var vclamp=800;if(target.vx>vclamp)target.vx=vclamp;if(target.vx<-vclamp)target.vx=-vclamp;if(target.vy>vclamp)target.vy=vclamp;if(target.vy<-vclamp)target.vy=-vclamp;
+    // Acceleration-based steering with 0.3s delay and ramp-up
+    var nowSec=now/1000;
+    var sides=['ArrowLeft','KeyA','ArrowRight','KeyD','ArrowUp','KeyW','ArrowDown','KeyS'];
+    sides.forEach(function(k){
+        if(keys[k]){
+            if(!keyHeldSince[k])keyHeldSince[k]=nowSec;
+            var held=nowSec-keyHeldSince[k];
+            var delay=0.3;var baseForce=900;var maxForce=5400;var ramp=3600;
+            var force=held<delay?baseForce:Math.min(baseForce+(held-delay)*ramp,maxForce);
+            if(k==='ArrowLeft'||k==='KeyA')target.vx-=force*dt;
+            if(k==='ArrowRight'||k==='KeyD')target.vx+=force*dt;
+            if(k==='ArrowUp'||k==='KeyW')target.vy-=force*dt;
+            if(k==='ArrowDown'||k==='KeyS')target.vy+=force*dt;
+        }else{delete keyHeldSince[k];}
+    });
     target.x+=target.vx*dt;target.y+=target.vy*dt;
     if(target.x<20)target.x=20;if(target.x>canvas.width-20)target.x=canvas.width-20;if(target.y<20)target.y=20;if(target.y>canvas.height-120)target.y=canvas.height-120;
-    var dx=target.x-canvas.width/2,dy=target.y-canvas.height*0.38;
-    trackingErr+=Math.sqrt(dx*dx+dy*dy);trackingSamples++;
+    var dx=target.x-canvas.width/2,dy=target.y-canvas.height*0.38;trackingErr+=Math.sqrt(dx*dx+dy*dy);trackingSamples++;
     }
 function updateGauge(now,dt){
-    if(!gaugeFaultActive){
-        gaugeAngle+=gaugeSpeed*dt;if(gaugeAngle>Math.PI*0.5)gaugeAngle=Math.PI*0.5;if(gaugeAngle<-Math.PI*0.5)gaugeAngle=-Math.PI*0.5;
-        gaugeSpeed+=(Math.random()-0.5)*0.8*dt;gaugeSpeed*=0.98;
-        gaugeIsInRed=(gaugeAngle>Math.PI/3||gaugeAngle<-Math.PI/3);
-        if(now>nextGaugeDrift){gaugeFaultActive=true;gaugeFaultTotal++;gaugeFaultStart=now;gaugeIsInRed=true;document.getElementById('instrument-hint').style.display='block';}
+    // Change direction every 2-4s. Speed 1.5-3.5 rad/s (360deg in 1.8-4.2s).
+    if(now>nextGaugeDir){
+        var targetSpd=1.5+Math.random()*2.5;
+        if(Math.random()<0.5)targetSpd=-targetSpd;
+        gaugeSpeed=targetSpd;
+        nextGaugeDir=now+2000+Math.random()*2000;
         }
-    else{gaugeAngle=Math.PI/3+0.25+(Math.random()-0.5)*0.05;gaugeIsInRed=true;}
+    gaugeAngle+=gaugeSpeed*dt;
+    gaugeAngle=wrapAngle(gaugeAngle);
+    var inRed=Math.abs(wrapAngle(gaugeAngle-redZonePos))<0.4;
+    // Push toward red zone periodically
+    if(!inRed&&now>nextRedPush){gaugeSpeed=(redZonePos>gaugeAngle?1:-1)*(1.5+Math.random()*2.5);nextRedPush=now+7000+Math.random()*6000;}
+    if(inRed&&!gaugeInRed){gaugeInRed=true;gaugeRedSince=now;gaugeFaultTotal++;}
     }
 function updateMathTrigger(now){
     if(!mathActive&&now>nextMathTime){spawnMathQuestion();nextMathTime=now+10000+Math.random()*8000;}
-    if(mathActive&&mathTimeLeft>0){mathTimeLeft-=0.016;if(mathTimeLeft<=0){closeMath(false);}}
+    if(mathActive&&mathTimeLeft>0){mathTimeLeft-=0.016;if(mathTimeLeft<=0){closeMath();}}
     }
 function spawnMathQuestion(){
     mathActive=true;mathTotal++;mathTimeLeft=MATH_TIME;
     var a=Math.floor(Math.random()*12)+3,b=Math.floor(Math.random()*8)+2;
-    var op=Math.random()<0.5?'+':'-';
-    var correct;if(op==='+')correct=a+b;else{if(b>a){var t=a;a=b;b=t;}correct=a-b;}
+    var op=Math.random()<0.5?'+':'-';var correct;if(op==='+')correct=a+b;else{if(b>a){var t=a;a=b;b=t;}correct=a-b;}
     var answers=new Set();answers.add(correct);
     while(answers.size<4){answers.add(correct+Math.floor(Math.random()*9)-4);}
     var ansArr=Array.from(answers);
@@ -172,22 +198,19 @@ function spawnMathQuestion(){
 function answerMath(isCorrect){document.getElementById('math-overlay').classList.remove('active');mathActive=false;if(isCorrect)mathCorrect++;}
 function closeMath(){document.getElementById('math-overlay').classList.remove('active');mathActive=false;}
 function resolveGauge(){
-    if(!gaugeFaultActive||!gaugeIsInRed)return;
+    if(!gaugeInRed)return;
     var now=performance.now();
-    gaugeResponseSum+=(now-gaugeFaultStart)/1000;gaugeFaultResponses++;gaugeFaultActive=false;gaugeAngle=0;
-    gaugeSpeed=(Math.random()-0.5)*0.4;nextGaugeDrift=now+4000+Math.random()*7000;gaugeIsInRed=false;
-    document.getElementById('instrument-hint').style.display='none';
+    gaugeResponseSum+=(now-gaugeRedSince)/1000;gaugeFaultResponses++;
+    gaugeInRed=false;gaugeAngle=redZonePos+Math.PI;gaugeSpeed=(Math.random()-0.5)*0.4;
     }
 function endTest(){
     testRunning=false;if(animId)cancelAnimationFrame(animId);
-    document.getElementById('math-overlay').classList.remove('active');
-    document.getElementById('instrument-hint').style.display='none';
+    document.getElementById('math-overlay').classList.remove('active');document.getElementById('mobile-controls').style.display='none';
     var avgDev=(trackingSamples>0)?(trackingErr/trackingSamples).toFixed(1):0;
     var gaugeScore=gaugeFaultTotal>0?Math.round(gaugeFaultResponses/gaugeFaultTotal*100):100;
     var gaugeAvgMs=gaugeFaultResponses>0?(gaugeResponseSum/gaugeFaultResponses*1000).toFixed(0):0;
     var mathPct=mathTotal>0?Math.round(mathCorrect/mathTotal*100):0;
-    var trackingScore=Math.max(0,Math.round(100-avgDev/2));
-    var totalScore=Math.round(trackingScore*0.35+gaugeScore*0.35+mathPct*0.3);
+    var trackingScore=Math.max(0,Math.round(100-avgDev/2));var totalScore=Math.round(trackingScore*0.35+gaugeScore*0.35+mathPct*0.3);
     var html='<div class="big">Score: '+totalScore+'</div>';
     html+='<span class="score-label">Tracking: </span><span class="score-val">'+trackingScore+'%</span> (avg dev '+avgDev+'px)<br>';
     html+='<span class="score-label">Instrument Response: </span><span class="score-val">'+gaugeScore+'%</span> ('+gaugeFaultResponses+'/'+gaugeFaultTotal+' faults, avg '+gaugeAvgMs+'ms)<br>';
@@ -197,32 +220,26 @@ function endTest(){
     if(ALL_MODE){var seq=JSON.parse(sessionStorage.getItem('adpt_all_seq')||'[]'),results=JSON.parse(sessionStorage.getItem('adpt_all_results')||'[]'),idx=parseInt(sessionStorage.getItem('adpt_all_idx')||'0');results.push({id:'fast',score:totalScore});sessionStorage.setItem('adpt_all_results',JSON.stringify(results));sessionStorage.setItem('adpt_all_idx',String(idx+1));window.location.href='../all-practice/?continue=1';}
     }
 function draw(cw,ch){
-    ctx.clearRect(0,0,cw,ch);
-    var cx=cw/2,cy=ch*0.38;
-    ctx.strokeStyle='#335';ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,ch-120);ctx.stroke();
+    ctx.clearRect(0,0,cw,ch);var cx=cw/2,cy=ch*0.38;
+    ctx.strokeStyle='#335';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,ch-120);ctx.stroke();
     ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(cw,cy);ctx.stroke();
-    ctx.strokeStyle='#558';ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,Math.Math.min(60,cw*0.1),0,Math.PI*2);ctx.stroke();
+    ctx.strokeStyle='#558';ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,Math.min(60,cw*0.1),0,Math.PI*2);ctx.stroke();
     ctx.fillStyle='rgba(255,80,60,0.9)';ctx.beginPath();ctx.arc(target.x,target.y,14,0,Math.PI*2);ctx.fill();
     ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(target.x,target.y,14,0,Math.PI*2);ctx.stroke();
-    var gx=cw-20,gy=ch-60,gr=Math.max(35,Math.Math.min(45,cw*0.07));
+    var gx=cw-60,gy=ch-60,gr=Math.max(35,Math.min(45,cw*0.07));
     ctx.fillStyle='#0a0a18';ctx.strokeStyle='#334';ctx.lineWidth=2;ctx.beginPath();ctx.arc(gx,gy,gr,0,Math.PI*2);ctx.fill();ctx.stroke();
-    ctx.strokeStyle='#33aa44';ctx.lineWidth=5;ctx.beginPath();ctx.arc(gx,gy,gr-6,-Math.PI/3,Math.PI/3);ctx.stroke();
-    ctx.strokeStyle='#ff4444';ctx.beginPath();ctx.arc(gx,gy,gr-6,Math.PI/3,Math.PI/3+0.35);ctx.stroke();
-    ctx.beginPath();ctx.arc(gx,gy,gr-6,-Math.PI/3-0.35,-Math.PI/3);ctx.stroke();
-    var needleLen=gr-10;var nColor=gaugeIsInRed&&gaugeFaultActive?'#ff4444':'#aaccff';
-    ctx.strokeStyle=nColor;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(gx,gy);ctx.lineTo(gx+Math.sin(gaugeAngle)*needleLen,gy-Math.cos(gaugeAngle)*needleLen);ctx.stroke();
-    ctx.fillStyle=nColor;ctx.beginPath();ctx.arc(gx,gy,5,0,Math.PI*2);ctx.fill();
+    var rz=redZonePos,rzW=0.45;
+    ctx.strokeStyle='#33aa44';ctx.lineWidth=5;ctx.beginPath();ctx.arc(gx,gy,gr-6,rz+rzW-Math.PI/2,rz+Math.PI*2-rzW-Math.PI/2);ctx.stroke();
+    ctx.strokeStyle='#ff4444';ctx.lineWidth=5;ctx.beginPath();ctx.arc(gx,gy,gr-6,rz-rzW-Math.PI/2,rz+rzW-Math.PI/2);ctx.stroke();
+    var needleLen=gr-10;
+    ctx.strokeStyle='#aaccff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(gx,gy);ctx.lineTo(gx+Math.sin(gaugeAngle)*needleLen,gy-Math.cos(gaugeAngle)*needleLen);ctx.stroke();
+    ctx.fillStyle='#aaccff';ctx.beginPath();ctx.arc(gx,gy,5,0,Math.PI*2);ctx.fill();
     ctx.fillStyle='#556';ctx.font='10px "Microsoft YaHei",Arial';ctx.textAlign='center';ctx.fillText('GAUGE (Space)',gx,gy+gr+14);
     }
-document.addEventListener('keydown',function(e){
-    keys[e.code]=true;
-    if(e.code==='Space'){e.preventDefault();resolveGauge();}
-    if(mathActive&&(e.code==='Digit1'||e.code==='Digit2'||e.code==='Digit3'||e.code==='Digit4')){var idx=parseInt(e.code.slice(-1))-1;var opts=document.querySelectorAll('.math-opt');if(opts[idx])opts[idx].click();}
-    });
+document.addEventListener('keydown',function(e){keys[e.code]=true;if(e.code==='Space'){e.preventDefault();resolveGauge();}if(mathActive&&(e.code==='Digit1'||e.code==='Digit2'||e.code==='Digit3'||e.code==='Digit4')){var idx=parseInt(e.code.slice(-1))-1;var opts=document.querySelectorAll('.math-opt');if(opts[idx])opts[idx].click();}});
 document.addEventListener('keyup',function(e){keys[e.code]=false;});
-canvas=document.getElementById('game-canvas');canvas.addEventListener('touchstart',function(e){e.preventDefault();});
-canvas.addEventListener('touchmove',function(e){e.preventDefault();var touch=e.touches[0];var r=canvas.getBoundingClientRect();var rx=(touch.clientX-r.left)/r.width*canvas.width;var ry=(touch.clientY-r.top)/r.height*canvas.height;target.x=Math.max(20,Math.Math.min(canvas.width-20,rx));target.y=Math.max(20,Math.Math.min(canvas.height-120,ry));});
-showScreen('screen-intro');</script>
+canvas=document.getElementById('game-canvas');canvas.addEventListener('touchstart',function(e){e.preventDefault();});canvas.addEventListener('touchmove',function(e){e.preventDefault();var touch=e.touches[0];var r=canvas.getBoundingClientRect();var rx=(touch.clientX-r.left)/r.width*canvas.width;var ry=(touch.clientY-r.top)/r.height*canvas.height;target.x=Math.max(20,Math.min(canvas.width-20,rx));target.y=Math.max(20,Math.min(canvas.height-120,ry));});
+showScreen('screen-intro');
+</script>
 </body>
 </html>

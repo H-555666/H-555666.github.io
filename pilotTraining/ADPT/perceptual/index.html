@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en" class="lang-en">
 <head>
 <meta charset="utf-8">
@@ -17,16 +17,13 @@ h1{font-size:clamp(1rem,2.2vw,1.5rem);color:#88ccff;text-align:center;margin:6px
 .btn{display:block;width:100%;max-width:min(300px,50vw);margin:12px auto;padding:clamp(8px,1.4vw,14px);border-radius:8px;font-size:clamp(0.8rem,1.3vw,1rem);text-align:center;cursor:pointer;border:none;color:#dde;box-sizing:border-box;}
 .btn-start{background:linear-gradient(135deg,#1a5a3c,#2a8a5c);}
 .btn-back{background:#1a1a2e;border:1px solid #334;color:#667;font-size:clamp(0.7rem,1.1vw,0.82rem);padding:8px;max-width:min(300px,50vw);text-decoration:none;display:block;margin:8px auto;}
-.btn-back:hover{color:#99a;}
 #timer-bar{display:none;width:100%;height:3px;background:#1a1a2e;border-radius:2px;margin:4px 0;overflow:hidden;}
 #timer-fill{height:100%;background:linear-gradient(90deg,#2a8a5c,#88cc44);transition:width 0.2s;}
 .duration-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:10px 0;}
-.dur-btn{padding:6px 12px;border-radius:4px;border:1px solid #334;background:#0e0e18;color:#889;font-size:0.78rem;cursor:pointer;transition:all 0.15s;}
+.dur-btn{padding:6px 12px;border-radius:4px;border:1px solid #334;background:#0e0e18;color:#889;font-size:0.78rem;cursor:pointer;}
 .dur-btn.sel{border-color:#4488aa;color:#88ccff;background:#111a24;}
 .cn-toggle{position:fixed;top:6px;right:10px;z-index:20;font-size:0.68rem;background:#0e0e18;border:1px solid #334;color:#556;padding:3px 8px;border-radius:3px;cursor:pointer;}
-.cn-line{display:none;}
-html.lang-cn .cn-line{display:inline;}
-html.lang-cn .en-line{display:none;}
+.cn-line{display:none;}html.lang-cn .cn-line{display:inline;}html.lang-cn .en-line{display:none;}
 #digit-pair{display:flex;justify-content:center;align-items:center;gap:clamp(10px,2vw,20px);margin:16px 0;flex-wrap:wrap;}
 .digit-str{font-size:clamp(1.2rem,2.5vw,1.8rem);font-family:"Courier New",monospace;color:#ccddff;letter-spacing:3px;padding:clamp(8px,1.5vw,14px) clamp(12px,2vw,20px);background:#0a0a18;border:2px solid #1e1e2e;border-radius:8px;word-break:break-all;}
 .digit-label{text-align:center;font-size:0.7rem;color:#556;margin-top:3px;}
@@ -52,15 +49,12 @@ html.lang-cn .en-line{display:none;}
 <h1>Perceptual Speed <span class="en-line">and</span> Accuracy</h1>
 <div id="screen-intro" class="active">
 <p class="intro-text">
-<span class="en-line"><strong>Part 1 - Digit Matching:</strong> Two number/letter strings flash for 2 sec. Are they identical? Press <strong>Match</strong> or <strong>No</strong> quickly. (10 rounds)</span><span class="cn-line"><strong>第一部分 - 数字对校：</strong>两组数字/字母快速闪现2秒。判断是否一致。（10轮）</span><br>
-<span class="en-line"><strong>Part 2 - Gauge Scan:</strong> A grid of dials appears. Find the <strong>red-zone</strong> gauge(s) and click them within 3 sec. (10 rounds)</span><span class="cn-line"><strong>第二部分 - 仪表扫视：</strong>找出进入<strong>红区</strong>的仪表并点击。（10轮，每题3秒）</span>
+<span class="en-line"><strong>Part 1 - Digit Matching:</strong> Two strings flash for 2 sec. Match or No? 10 rounds.</span><span class="cn-line"><strong>第一部分：</strong>两组字符闪现2秒。判断是否一致。10轮。</span><br>
+<span class="en-line"><strong>Part 2 - Gauge Scan:</strong> Find the red-zone gauge(s) and click them. 10 rounds, 3 sec each.</span><span class="cn-line"><strong>第二部分：</strong>找出红区仪表并点击。10轮，每题3秒。</span>
 </p>
 <div class="duration-row">
 <span style="color:#667;font-size:0.75rem;">Duration:</span>
-<button class="dur-btn sel" data-dur="2">2 min</button>
-<button class="dur-btn" data-dur="1">1 min</button>
-<button class="dur-btn" data-dur="3">3 min</button>
-<button class="dur-btn" data-dur="5">5 min</button>
+<button class="dur-btn sel" data-dur="2">2 min</button><button class="dur-btn" data-dur="1">1 min</button><button class="dur-btn" data-dur="3">3 min</button><button class="dur-btn" data-dur="5">5 min</button>
 <label style="font-size:0.7rem;color:#667;display:flex;align-items:center;gap:3px;margin-left:4px;"><input type="checkbox" id="show-timer" onchange="toggleTimer()"> Show timer</label>
 </div>
 <button class="btn btn-start" onclick="startTest()">Start Test</button>
@@ -68,13 +62,8 @@ html.lang-cn .en-line{display:none;}
 </div>
 <div id="screen-play">
 <div id="timer-bar"><div id="timer-fill"></div></div>
-<div class="question-counter" id="q-counter"></div>
-<div class="phase-label" id="phase-label"></div>
-<div class="feedback" id="feedback"></div>
-<div id="digit-view" style="display:none;">
-<div id="digit-pair"><div><div class="digit-str" id="digit1"></div><div class="digit-label">A</div></div><div><div class="digit-str" id="digit2"></div><div class="digit-label">B</div></div></div>
-<div id="digit-buttons"><div class="match-btn match" id="btn-match" onclick="answerDigit(true)">MATCH</div><div class="match-btn no" id="btn-no" onclick="answerDigit(false)">NO</div></div>
-</div>
+<div class="question-counter" id="q-counter"></div><div class="phase-label" id="phase-label"></div><div class="feedback" id="feedback"></div>
+<div id="digit-view" style="display:none;"><div id="digit-pair"><div><div class="digit-str" id="digit1"></div><div class="digit-label">A</div></div><div><div class="digit-str" id="digit2"></div><div class="digit-label">B</div></div></div><div id="digit-buttons"><div class="match-btn match" onclick="answerDigit(true)">MATCH</div><div class="match-btn no" onclick="answerDigit(false)">NO</div></div></div>
 <div id="gauge-view" style="display:none;"><div id="gauge-grid" class="col3"></div></div>
 </div>
 <div id="screen-result">
@@ -93,104 +82,53 @@ var testDuration=120;var durs={1:60,2:120,3:180,5:300};
 document.querySelectorAll('.dur-btn').forEach(function(b){b.onclick=function(){document.querySelectorAll('.dur-btn').forEach(function(x){x.classList.remove('sel');});b.classList.add('sel');testDuration=durs[parseInt(b.dataset.dur)];};});
 var TOTAL_PER_PHASE=10,DIGIT_TIME=2000,GAUGE_TIME=3000;
 var phase=0,round=0,answered=false,deadline=0;
-var digitCorrect=0,gaugeCorrect=0,gaugeTotal=0;
-var digitMatch=false;
-var gaugeFaults=[];
+var digitCorrect=0,gaugeCorrect=0,gaugeTotal=0;var digitMatch=false;
 var testRunning=false,animId=null;
 function goIntro(){testRunning=false;if(animId)cancelAnimationFrame(animId);showScreen("screen-intro");}
 function showScreen(id){['screen-intro','screen-play','screen-result'].forEach(function(s){document.getElementById(s).classList.remove('active');});document.getElementById(id).classList.add('active');}
-function startTest(){
-    phase=0;round=0;digitCorrect=0;gaugeCorrect=0;gaugeTotal=0;
-    testRunning=true;showScreen('screen-play');
-    if(document.getElementById('show-timer').checked)document.getElementById('timer-bar').style.display='block';
-    document.getElementById('phase-label').textContent='Part 1: Digit Matching';
-    document.getElementById('digit-view').style.display='block';document.getElementById('gauge-view').style.display='none';
-    document.getElementById('feedback').textContent='';
-    nextDigitQuestion();
-    }
-function nextDigitQuestion(){
-    if(round>=TOTAL_PER_PHASE){startGaugePhase();return;}
-    round++;answered=false;
-    document.getElementById('q-counter').textContent='Part 1: '+round+' / '+TOTAL_PER_PHASE;
-    var len=8+Math.floor(Math.random()*4);
-    var chars='0123456789ABCDEFGH';
-    var str='';for(var i=0;i<len;i++)str+=chars[Math.floor(Math.random()*chars.length)];
-    digitMatch=Math.random()<0.5;
-    var str2;if(digitMatch){str2=str;}else{str2=str.split('');var pos=Math.floor(Math.random()*len);var c;do{c=chars[Math.floor(Math.random()*chars.length)];}while(c===str2[pos]);str2[pos]=c;str2=str2.join('');}
-    document.getElementById('digit1').textContent=str;document.getElementById('digit2').textContent=str2;
-    document.getElementById('feedback').textContent='';
-    deadline=performance.now()+DIGIT_TIME;
-    if(animId)cancelAnimationFrame(animId);animId=requestAnimationFrame(timerLoop);
-    }
-function answerDigit(userMatch){
-    if(answered||phase!==0)return;answered=true;
-    if(userMatch===digitMatch){digitCorrect++;document.getElementById('feedback').textContent='OK';document.getElementById('feedback').style.color='#88cc44';}else{document.getElementById('feedback').textContent='X';document.getElementById('feedback').style.color='#ff4444';}
-    setTimeout(nextDigitQuestion,600);
-    }
-function startGaugePhase(){
-    phase=1;round=0;gaugeCorrect=0;gaugeTotal=0;
-    document.getElementById('phase-label').textContent='Part 2: Gauge Scanning';
-    document.getElementById('digit-view').style.display='none';document.getElementById('gauge-view').style.display='block';
-    document.getElementById('feedback').textContent='';
-    nextGaugeQuestion();
-    }
+function startTest(){phase=0;round=0;digitCorrect=0;gaugeCorrect=0;gaugeTotal=0;testRunning=true;showScreen('screen-play');if(document.getElementById('show-timer').checked)document.getElementById('timer-bar').style.display='block';document.getElementById('phase-label').textContent='Part 1: Digit Matching';document.getElementById('digit-view').style.display='block';document.getElementById('gauge-view').style.display='none';document.getElementById('feedback').textContent='';nextDigitQuestion();}
+function nextDigitQuestion(){if(round>=TOTAL_PER_PHASE){startGaugePhase();return;}round++;answered=false;document.getElementById('q-counter').textContent='Part 1: '+round+' / '+TOTAL_PER_PHASE;var len=8+Math.floor(Math.random()*4);var chars='0123456789ABCDEFGH';var str='';for(var i=0;i<len;i++)str+=chars[Math.floor(Math.random()*chars.length)];digitMatch=Math.random()<0.5;var str2;if(digitMatch){str2=str;}else{str2=str.split('');var pos=Math.floor(Math.random()*len);var c;do{c=chars[Math.floor(Math.random()*chars.length)];}while(c===str2[pos]);str2[pos]=c;str2=str2.join('');}document.getElementById('digit1').textContent=str;document.getElementById('digit2').textContent=str2;document.getElementById('feedback').textContent='';deadline=performance.now()+DIGIT_TIME;if(animId)cancelAnimationFrame(animId);animId=requestAnimationFrame(timerLoop);}
+function answerDigit(userMatch){if(answered||phase!==0)return;answered=true;if(userMatch===digitMatch){digitCorrect++;document.getElementById('feedback').textContent='OK';document.getElementById('feedback').style.color='#88cc44';}else{document.getElementById('feedback').textContent='X';document.getElementById('feedback').style.color='#ff4444';}setTimeout(nextDigitQuestion,600);}
+function startGaugePhase(){phase=1;round=0;gaugeCorrect=0;gaugeTotal=0;document.getElementById('phase-label').textContent='Part 2: Gauge Scanning';document.getElementById('digit-view').style.display='none';document.getElementById('gauge-view').style.display='block';document.getElementById('feedback').textContent='';nextGaugeQuestion();}
 function nextGaugeQuestion(){
     if(round>=TOTAL_PER_PHASE){endTest();return;}
-    round++;answered=false;gaugeFaults=[];
+    round++;answered=false;
     document.getElementById('q-counter').textContent='Part 2: '+round+' / '+TOTAL_PER_PHASE;
-    var grid=document.getElementById('gauge-grid');
-    var size=(round<=5)?3:4;grid.className=(size===3)?'col3':'col4';grid.innerHTML='';
+    var grid=document.getElementById('gauge-grid');var size=(round<=5)?3:4;grid.className=(size===3)?'col3':'col4';grid.innerHTML='';
     var numFaults=1+(Math.random()<0.3?1:0);var total=size*size;
     var allIdx=[];for(var i=0;i<total;i++)allIdx.push(i);
     for(var i=allIdx.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=allIdx[i];allIdx[i]=allIdx[j];allIdx[j]=tmp;}
-    var faultIdx=new Set(allIdx.slice(0,numFaults));
+    var faultIdxSet=new Set(allIdx.slice(0,numFaults));
+    var gaugeFaults=[];
     for(var i=0;i<total;i++){
         var cell=document.createElement('div');cell.className='gauge-cell';
-        var c=document.createElement('canvas');c.width=c.height=80;cell.appendChild(c);
-        var isFault=faultIdx.has(i);
-        drawGauge(c.getContext('2d'),40,40,32,isFault);
+        var cv=document.createElement('canvas');cv.width=cv.height=80;cell.appendChild(cv);
+        var isFault=faultIdxSet.has(i);
+        var rz=Math.random()*Math.PI*2;
+        drawGauge(cv.getContext('2d'),40,40,32,isFault,rz);
         if(isFault){cell.dataset.fault='1';gaugeFaults.push(cell);}
-        cell.addEventListener('click',function(){
-            if(answered||phase!==1)return;
-            if(this.dataset.fault==='1'&&!this.dataset.clicked){this.dataset.clicked='1';gaugeCorrect++;}
-            if(gaugeCorrect>=gaugeFaults.length){answered=true;document.getElementById('feedback').textContent='OK';document.getElementById('feedback').style.color='#88cc44';setTimeout(nextGaugeQuestion,600);}
-        });
+        cell.addEventListener('click',function(){if(answered||phase!==1)return;if(this.dataset.fault==='1'&&!this.dataset.clicked){this.dataset.clicked='1';gaugeCorrect++;}if(gaugeCorrect>=gaugeFaults.length){answered=true;document.getElementById('feedback').textContent='OK';document.getElementById('feedback').style.color='#88cc44';setTimeout(nextGaugeQuestion,600);}});
         grid.appendChild(cell);
         }
     gaugeTotal+=numFaults;document.getElementById('feedback').textContent='';
-    deadline=performance.now()+GAUGE_TIME;
-    if(animId)cancelAnimationFrame(animId);animId=requestAnimationFrame(timerLoop);
+    deadline=performance.now()+GAUGE_TIME;if(animId)cancelAnimationFrame(animId);animId=requestAnimationFrame(timerLoop);
     }
-function drawGauge(ctx,cx,cy,r,isFault){
+function drawGauge(ctx,cx,cy,r,isFault,redZoneAngle){
     ctx.clearRect(0,0,80,80);
     ctx.fillStyle='#0a0a18';ctx.strokeStyle='#334';ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();ctx.stroke();
-    ctx.strokeStyle='#33aa44';ctx.lineWidth=4;ctx.beginPath();ctx.arc(cx,cy,r-4,-Math.PI/3,Math.PI/3);ctx.stroke();
-    ctx.strokeStyle='#ff4444';ctx.lineWidth=4;ctx.beginPath();ctx.arc(cx,cy,r-4,Math.PI/3,Math.PI/3+0.35);ctx.stroke();
-    ctx.beginPath();ctx.arc(cx,cy,r-4,-Math.PI/3-0.35,-Math.PI/3);ctx.stroke();
-    var GREEN_ZONE=Math.PI/3-0.15;
-    var angle=isFault?(Math.PI/3+0.2+Math.random()*0.08):(Math.random()-0.5)*GREEN_ZONE*2;
-    ctx.strokeStyle=isFault?'#ff4444':'#aaccff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.sin(angle)*(r-8),cy-Math.cos(angle)*(r-8));ctx.stroke();
-    ctx.fillStyle=isFault?'#ff4444':'#aaccff';ctx.beginPath();ctx.arc(cx,cy,3,0,Math.PI*2);ctx.fill();
+    var rz=redZoneAngle,rzW=0.45;
+    ctx.strokeStyle='#33aa44';ctx.lineWidth=4;ctx.beginPath();ctx.arc(cx,cy,r-4,rz+rzW-Math.PI/2,rz+Math.PI*2-rzW-Math.PI/2);ctx.stroke();
+    ctx.strokeStyle='#ff4444';ctx.lineWidth=4;ctx.beginPath();ctx.arc(cx,cy,r-4,rz-rzW-Math.PI/2,rz+rzW-Math.PI/2);ctx.stroke();
+    var angle=isFault?rz+(Math.random()-0.5)*0.3:(rz+Math.PI+(Math.random()-0.5)*(Math.PI-rzW-0.4));
+    if(angle>Math.PI)angle-=Math.PI*2;if(angle<-Math.PI)angle+=Math.PI*2;
+    ctx.strokeStyle='#aaccff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.sin(angle)*(r-8),cy-Math.cos(angle)*(r-8));ctx.stroke();
+    ctx.fillStyle='#aaccff';ctx.beginPath();ctx.arc(cx,cy,3,0,Math.PI*2);ctx.fill();
     }
-function timerLoop(now){
-    if(!testRunning)return;animId=requestAnimationFrame(timerLoop);
-    var rem=Math.max(0,deadline-now);
-    var timeLimit=phase===0?DIGIT_TIME:GAUGE_TIME;
-    var pct=(rem/timeLimit*100).toFixed(1);document.getElementById('timer-fill').style.width=pct+'%';
-    if(rem<=0&&!answered){answered=true;document.getElementById('feedback').textContent='TIME';document.getElementById('feedback').style.color='#ffaa00';if(phase===0)setTimeout(nextDigitQuestion,500);else setTimeout(nextGaugeQuestion,500);}
-    }
-document.addEventListener('keydown',function(e){
-    if(!testRunning||answered)return;
-    if(phase===0){if(e.key==='y'||e.key==='Y'||e.key==='ArrowRight')answerDigit(true);if(e.key==='n'||e.key==='N'||e.key==='ArrowLeft')answerDigit(false);}
-    });
+function timerLoop(now){if(!testRunning)return;animId=requestAnimationFrame(timerLoop);var rem=Math.max(0,deadline-now);var timeLimit=phase===0?DIGIT_TIME:GAUGE_TIME;document.getElementById('timer-fill').style.width=(rem/timeLimit*100).toFixed(1)+'%';if(rem<=0&&!answered){answered=true;document.getElementById('feedback').textContent='TIME';document.getElementById('feedback').style.color='#ffaa00';if(phase===0)setTimeout(nextDigitQuestion,500);else setTimeout(nextGaugeQuestion,500);}}
+document.addEventListener('keydown',function(e){if(!testRunning||answered)return;if(phase===0){if(e.key==='y'||e.key==='Y'||e.key==='ArrowRight')answerDigit(true);if(e.key==='n'||e.key==='N'||e.key==='ArrowLeft')answerDigit(false);}});
 function endTest(){
-    testRunning=false;if(animId)cancelAnimationFrame(animId);
-    var digitPct=Math.round(digitCorrect/TOTAL_PER_PHASE*100);
-    var gaugePct=gaugeTotal>0?Math.round(gaugeCorrect/gaugeTotal*100):0;
-    var totalScore=Math.round(digitPct*0.5+gaugePct*0.5);
-    var html='<div class="big">Score: '+totalScore+'%</div>';
-    html+='Digit Matching: '+digitCorrect+'/'+TOTAL_PER_PHASE+' ('+digitPct+'%)<br>';
-    html+='Gauge Scanning: '+gaugeCorrect+'/'+gaugeTotal+' faults found ('+gaugePct+'%)';
+    testRunning=false;if(animId)cancelAnimationFrame(animId);var digitPct=Math.round(digitCorrect/TOTAL_PER_PHASE*100);var gaugePct=gaugeTotal>0?Math.round(gaugeCorrect/gaugeTotal*100):0;var totalScore=Math.round(digitPct*0.5+gaugePct*0.5);
+    var html='<div class="big">Score: '+totalScore+'%</div>';html+='Digit Matching: '+digitCorrect+'/'+TOTAL_PER_PHASE+' ('+digitPct+'%)<br>';html+='Gauge Scanning: '+gaugeCorrect+'/'+gaugeTotal+' faults found ('+gaugePct+'%)';
     document.getElementById('result-text').innerHTML=html;showScreen('screen-result');
     var raw=localStorage.getItem('adpt_perceptual');var arr=raw?JSON.parse(raw):[];arr.unshift({score:totalScore,ts:Date.now()});if(arr.length>20)arr=arr.slice(0,20);localStorage.setItem('adpt_perceptual',JSON.stringify(arr));
     if(ALL_MODE){var seq=JSON.parse(sessionStorage.getItem('adpt_all_seq')||'[]'),results=JSON.parse(sessionStorage.getItem('adpt_all_results')||'[]'),idx=parseInt(sessionStorage.getItem('adpt_all_idx')||'0');results.push({id:'perceptual',score:totalScore});sessionStorage.setItem('adpt_all_results',JSON.stringify(results));sessionStorage.setItem('adpt_all_idx',String(idx+1));window.location.href='../all-practice/?continue=1';}
