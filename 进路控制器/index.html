@@ -107,14 +107,14 @@
 <body>
 
 <div class="container">
-    <h1>道岔与电磁铁集控系统操作手册</h1>
+    <h1>道岔进路控制系统操作手册</h1>
 
     <div class="alert alert-info">
-        <strong>提示：</strong> 本手册面向现场操作人员。请在初次上电前仔细阅读“初次使用与配置指引”章节。
+        <strong>提示：</strong> 请在初次上电前仔细阅读“初次使用与配置指引”章节。
     </div>
 
     <h2>一、 硬件与指示灯说明</h2>
-    <h3>1. 主控板（ESP32）</h3>
+    <h3>1. 主控板</h3>
     <table>
         <tr>
             <th width="20%">组件</th>
@@ -130,24 +130,24 @@
         </tr>
         <tr>
             <td><strong>按钮 A 指示灯</strong></td>
-            <td><strong>蓝色</strong>：当前有电磁铁正在移动（0.5秒）/系统严重报错。<br><strong>绿色</strong>：当前路线已设定完成。</td>
+            <td><strong>蓝色</strong>：当前有道岔正在移动（0.5秒）/系统严重报错（长亮）。<br><strong>绿色</strong>：当前道岔进路已设定完成。</td>
         </tr>
         <tr>
             <td><strong>按钮 B 指示灯</strong></td>
             <td><strong>绿色长亮</strong>：WiFi已成功连接。<br><strong>蓝色闪烁</strong>：有用户正在通过网页后台查看系统状态（LAN指示）。</td>
         </tr>
         <tr>
-            <td><strong>OLED 屏幕</strong></td>
-            <td>显示当前运行状态、正被操作的道岔信息、报错原因以及IP地址等。无操作 <strong>10秒后自动息屏</strong>。</td>
+            <td><strong>OLED 屏幕（在第一个按钮模块上）</strong></td>
+            <td>显示当前运行状态、正被操作的道岔信息、报错原因以及IP地址等。<strong>无操作10秒后自动息屏</strong>。</td>
         </tr>
     </table>
 
     <h3>2. 按钮模块 (最多支持4个模块，共20个按键)</h3>
-    <p>每个模块包含5个操作按钮，每个按钮配有独立的蓝/绿双色指示灯，以及1个全局红灯。</p>
+    <p>每个模块包含5个操作按钮，每个按钮配有独立的蓝/绿双色指示灯，以及所有按钮同时亮灭的红灯。</p>
     <ul>
-        <li><strong>红灯长亮：</strong> 该模块通信中断或系统处于紧急停止状态。</li>
-        <li><strong>蓝灯亮起：</strong> 该按钮正在控制电磁铁移动（持续约0.5秒）。</li>
-        <li><strong>绿灯亮起：</strong> 该按钮控制的路线目前处于激活/占用状态。</li>
+        <li><strong>红灯长亮：</strong> 出现模块断线或系统处于紧急停止状态。</li>
+        <li><strong>蓝灯亮起：</strong> 道岔正在移动（持续约0.5秒）。</li>
+        <li><strong>绿灯亮起：</strong> 该按钮对应的路线目前处于选定状态。</li>
     </ul>
 
     <hr>
@@ -155,67 +155,71 @@
     <h2>二、 初次使用与配置指引</h2>
     <p>当系统首次上电或存储被清空时，会自动进入<strong>初始配置模式</strong>。</p>
     
+    <h3>步骤 0：完成接线</h3>
+    <p>将主控与<strong>至少一个</strong>按钮模块和<strong>至少一个</strong>驱动模块相连，将需要控制的道岔线插在主控和驱动模块对应的接口相连<br>
+    务必<strong>断电接线</strong>  道岔线<strong>不用区分正反</strong>  （设计有防呆，所以一般区分正反的线如果反了是插不进去的）</p>
+
     <h3>步骤 1：扫描设备</h3>
-    <p>上电后，OLED屏幕会显示扫描到的按钮模块和驱动模块数量（例如 <code>2 btn 3 pwr</code>）。请核对数量是否正确。<br>
-    确认无误后，按下主控板 <strong>按钮 A</strong> 进入下一步；此时屏幕会显示模块的地址。如需重新扫描，请按下 <strong>按钮 B</strong>。</p>
+    <p>上电后，OLED屏幕会显示扫描到的按钮模块和驱动模块数量（例如 <code>2 btn 3 pwr</code>表示2个按钮模块和3个驱动模块）。请核对数量是否正确。<br>
+    确认无误后，按下主控板 <strong>按钮 A</strong> 进入下一步；此时屏幕会显示模块的地址，如果不知道或者确认地址没问题，再次按A进入配置界面。如果数量不对，请断电并检查接线，再重新上电。</p>
 
     <h3>步骤 2：分配路线（电磁铁映射）</h3>
-    <p>屏幕显示 <code>Btn 1 -> A</code>，表示当前正在为 <strong>1号按钮</strong> 配置 <strong>电磁铁A</strong> 的动作方向。<br>
+    <p>例：屏幕显示 <code>Btn 1 -> A</code>，表示当前正在为 <strong>1号按钮</strong> 配置 <strong>电磁铁A</strong> 的动作方向。<br>
     此时，<strong>第一个按钮模块（主模块）</strong>的5个按钮功能将临时变为配置键盘：</p>
     <ul>
-        <li><span class="key-btn">按钮 1</span>：结束当前路线按钮的所有配置，保存并进入下一个路线按钮（如进入 Btn 2）。</li>
+        <li><span class="key-btn">按钮 1</span>：结束当前按钮的配置，保存并配置下一个按钮（如结束Btn1 进入 Btn 2配置）。</li>
         <li><span class="key-btn">按钮 2</span>：跳过当前电磁铁，配置当前按钮的下一个电磁铁（例如从 A 切换到 B）。</li>
-        <li><span class="key-btn">按钮 3</span>：设定电磁铁向 <strong>左</strong> 移动（按下后电磁铁会实际动作一次以供确认，对应蓝灯亮起）。</li>
-        <li><span class="key-btn">按钮 4</span>：设定电磁铁向 <strong>右</strong> 移动（按下后电磁铁会实际动作一次以供确认，对应蓝灯亮起）。</li>
-        <li><span class="key-btn">按钮 5</span>：设定电磁铁 <strong>无动作</strong>（对应蓝灯亮起）。</li>
+        <li><span class="key-btn">按钮 3</span>：设定电磁铁向 <strong>一个方向</strong> 移动（按下后电磁铁会实际动作一次以供确认，如果反了可以再按下另一个，对应蓝灯亮起）。</li>
+        <li><span class="key-btn">按钮 4</span>：设定电磁铁向 <strong>另一个方向</strong> 移动（按下后电磁铁会实际动作一次以供确认，如果反了可以再按下另一个，对应蓝灯亮起）。</li>
+        <li><span class="key-btn">按钮 5</span>：设定电磁铁 <strong>无动作</strong>（对应蓝灯亮起）（默认）。</li>
     </ul>
 
     <h3>步骤 3：保存配置</h3>
     <p>当最后一个按钮配置完成后，再次按下 <span class="key-btn">按钮 1</span>。屏幕提示 <code>Press A to save</code>。<br>
-    按下主控板 <strong>按钮 A</strong>，系统将配置写入芯片并提示 <code>Reboot Now</code>。请 <strong>断开电源并重新上电</strong> 即可进入正常工作模式。</p>
+    按下主控板 <strong>按钮 A</strong>，系统将配置写入芯片。提示 <code>Reboot Now</code>之后，请 <strong>断开电源并重新上电</strong> 即可进入正常工作模式。</p>
 
     <hr>
 
     <h2>三、 日常操作指南</h2>
     <h3>1. 正常运行</h3>
-    <p>在正常模式下，按下任意一个设定好的模块按钮，对应的蓝灯亮起，电磁铁将向配置好的方向执行0.5秒的推拉动作。屏幕会亮起并显示移动详情（如 <code>Moving: A\ C/</code>，\代表左，/代表右）。动作完成后，蓝灯熄灭，绿灯亮起，表示该路线已就绪。</p>
-    
+    <p>在正常模式下，按下任意一个设定好的模块按钮，对应的蓝灯亮起，所有相关道岔将向配置好的方向执行0.5秒的推拉动作。屏幕会亮起并显示移动详情（如 <code>Moving: A\ C/</code>，\代表左，/代表右，设定无动作的道岔不会在这里出现）。动作完成后，蓝灯熄灭，绿灯亮起，表示该路线已就绪。</p>
+    <!--
     <h3>2. 防误触与冲突处理</h3>
     <ul>
         <li><strong>防干扰校验：</strong> 按钮按下后系统会在极短时间内进行3次复查，有效过滤静电和干扰导致的误触发。</li>
         <li><strong>防冲突延时：</strong> 如果在一个道岔正在移动时按下了新按钮，系统会立即切断当前供电，等待 <strong>0.2秒</strong> 的安全死区后，再执行新按钮的操作。</li>
         <li><strong>灯光自我修复：</strong> 系统每10秒会核对一次所有指示灯状态。如果发现指示灯因电磁干扰异常点亮，系统会自动将其强制恢复到正确状态。</li>
     </ul>
-
+-->
     <hr>
 
     <h2>四、 异常处理与紧急停止 (E-Stop)</h2>
-    <p>系统拥有强大的安全保护机制，分为手动急停和自动急停：</p>
+    <p>系统拥有安全保护机制，分为手动急停和自动急停：</p>
 
     <div class="alert alert-warning">
         <h4>1. 手动紧急停止 (Manual E-Stop)</h4>
         <p><strong>触发：</strong> 运行中按下主板 <strong>按钮 B</strong>。<br>
-        <strong>表现：</strong> 所有电磁铁断电，所有模块亮起红灯。屏幕显示设备IP地址（若未连网则显示提示）。<br>
-        <strong>恢复：</strong> <strong>长按 按钮 A 满一秒钟</strong>，系统将自动重启并恢复正常。</p>
+        <strong>表现：</strong> 所有道岔断电，所有模块亮起红灯。屏幕显示设备IP地址（若未连网则显示提示）。<br>
+        <strong>恢复：</strong> <strong>长按 按钮 A 一秒钟</strong>，系统将自动重启并恢复正常。</p>
     </div>
 
     <div class="alert alert-danger">
         <h4>2. 自动紧急停止 (Auto E-Stop)</h4>
-        <p><strong>触发：</strong> 系统检测到模块总线断开连接（如线缆松动），或遭受严重电磁干扰。<br>
-        <strong>表现：</strong> 所有电磁铁断电，模块亮起红灯。屏幕显示 <code>AUTO E-STOP: Wait...</code>。<br>
-        <strong>恢复：</strong> <strong>无需人工干预</strong>。请检查排线是否插紧，系统每秒会自动探测一次，一旦连续两次探测到硬件正常，将自动解除急停并恢复工作。</p>
+        <p><strong>触发：</strong> 系统检测到模块总线断开连接（如线缆松动），或遭受严重干扰（磁场、宇宙射线等等）。<br>
+        <strong>表现：</strong> 所有道岔断电，模块亮起红灯。屏幕显示 <code>AUTO E-STOP: Wait...</code>。<br>
+        <strong>恢复：</strong> <strong>无需人工干预</strong>。请检查排线是否插紧，系统每秒会自动探测一次，一旦连续两次探测到硬件正常，将自动解除急停并恢复工作。如果长时间没有恢复正常工作请检查接线是否稳固</p>
     </div>
 
     <hr>
 
-    <h2>五、 高级功能：无线网络与网页后台</h2>
-    <p>系统内置WiFi与网页服务器功能，供维护人员进行免打扰巡检。</p>
+    <h2>五、 高级功能：无线网络与网页后台 （该功能旧版暂不完全可用，请携带主控前往4s店更新固件，需提前预约）</h2>
+    <p>系统内置WiFi与网页服务器功能，可以联网查看日志。</p>
     <ul>
-        <li><strong>默认网络：</strong> WiFi名称为 <code>teacher</code>，密码为 <code>AAAAAAAA</code>。</li>
-        <li><strong>访问后台：</strong> 连接该WiFi后，可在紧急停止界面（按下按钮B）的OLED屏幕上查看本机IP地址（如显示 <code>E-STOP IP: 4.1</code>，若网段为192.168，则访问 <code>http://192.168.4.1</code>）。</li>
+        <li><strong>默认网络：</strong> WiFi名称为 <code>JinLuKongZhiQi</code>，密码为 <code>yaoguangmoxing</code>。</li>
+        <li><strong>访问后台：</strong> 开热点并设置上述wifi名称和密码后设备会自动连接该WiFi，连接成功后（按钮B绿色长亮），可在紧急停止界面（按下按钮B）的OLED屏幕上查看本机IP地址（如显示 <code>E-STOP IP: 4.1</code>，若网段为192.168，则访问 <code>http://192.168.4.1</code>）访问该ip以查看后台。</li>
         <li><strong>后台功能：</strong> 实时查看系统状态、当前道岔方向、查看最近1小时内的系统操作与报错日志。网页每5秒自动刷新。</li>
         <li><strong>修改WiFi：</strong> 在后台点击 <strong>Configure New WiFi</strong>，输入旧密码及新WiFi账号密码即可保存并重启。
-            <br><em>注：上电时系统会优先尝试连接新WiFi，如果20秒内连接失败，将自动回退到默认的 `teacher` 局域网。</em></li>
+            <br><em>注：修改WiFi后上电时系统会优先尝试连接新WiFi，如果20秒内连接失败，将自动回退到默认的 `JinLuKongZhiQi` 局域网并尝试连接。</em></li>
     </ul>
 
     <hr>
@@ -232,7 +236,7 @@
     </div>
 
     <div class="footer">
-        &copy; 2023-2024 Switch Control System | 道岔控制系统操作手册 V1.2
+        &copy; 2025 道岔控制系统操作手册 V1.0
     </div>
 </div>
 
