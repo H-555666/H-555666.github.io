@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM 大模型前沿 Benchmark 交互可视化对比看板</title>
+    <!-- 引入 ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --card-border: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-color: #38bdf8;
+            --accent-hover: #0284c7;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            padding: 24px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* 顶部 Header */
+        header {
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 16px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(to right, #38bdf8, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* KPI 统计卡片 */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .kpi-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .kpi-title {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .kpi-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #38bdf8;
+            margin: 8px 0 4px 0;
+        }
+
+        .kpi-desc {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        /* 控制栏面板 */
+        .control-panel {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .filter-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            min-width: 80px;
+        }
+
+        .btn {
+            background-color: #334155;
+            color: #e2e8f0;
+            border: 1px solid transparent;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background-color: #475569;
+        }
+
+        .btn.active {
+            background-color: var(--accent-color);
+            color: #0f172a;
+            font-weight: 600;
+        }
+
+        .model-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .chip {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: #0f172a;
+            border: 1px solid #475569;
+            color: #cbd5e1;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+        }
+
+        .chip.active {
+            border-color: var(--accent-color);
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        /* 图表容器 */
+        .chart-container {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            height: 520px;
+            position: relative;
+        }
+
+        /* 表格区域 */
+        .table-container {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        .table-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        th, td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        th {
+            background-color: rgba(15, 23, 42, 0.6);
+            color: var(--text-secondary);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        th:first-child, td:first-child {
+            text-align: left;
+            position: sticky;
+            left: 0;
+            background-color: var(--card-bg);
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+
+        tr:hover td {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .best-val {
+            color: #facc15;
+            font-weight: 700;
+            background: rgba(250, 204, 21, 0.1);
+            padding: 3px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .null-val {
+            color: #475569;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1>大模型前沿 Benchmark 交互评测对比</h1>
+            <div class="subtitle">涵盖 DeepSeek-V4 系列、GLM-5.2、Kimi K3、Opus-4.8 与 Fable-5 综合性能分析</div>
+        </div>
+    </header>
+
+    <!-- KPI 汇总概览 -->
+    <div class="kpi-grid" id="kpi-container">
+        <!-- JS 动态渲染 -->
+    </div>
+
+    <!-- 控制面板 -->
+    <div class="control-panel">
+        <div class="filter-group">
+            <span class="filter-label">视图类型:</span>
+            <button class="btn active" onclick="switchView('bar')">📊 指标分组柱状图</button>
+            <button class="btn" onclick="switchView('radar')">🕸️ 综合能力雷达图</button>
+            <button class="btn" onclick="switchView('singleBar')">🏆 单项排行榜 (横向)</button>
+            <button class="btn" onclick="switchView('heatmap')">🔥 得分热力图</button>
+        </div>
+
+        <div class="filter-group" id="single-metric-selector" style="display: none;">
+            <span class="filter-label">选择指标:</span>
+            <select id="metric-select" onchange="renderChart()" style="background: #334155; color: #fff; border: 1px solid #475569; padding: 6px 12px; border-radius: 6px; font-size: 13px;">
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <span class="filter-label">模型筛选:</span>
+            <button class="btn" style="padding: 3px 8px; font-size: 11px;" onclick="toggleAllModels(true)">全选</button>
+            <button class="btn" style="padding: 3px 8px; font-size: 11px;" onclick="toggleAllModels(false)">清空</button>
+            <div class="model-chips" id="model-chips"></div>
+        </div>
+    </div>
+
+    <!-- ECharts 图表渲染区 -->
+    <div class="chart-container" id="main-chart"></div>
+
+    <!-- 原始数据增强表格 -->
+    <div class="table-container">
+        <div class="table-title">
+            <span>📋 完整评测指标得分表 (标黄为单项最高)</span>
+        </div>
+        <div style="overflow-x: auto;">
+            <table id="benchmark-table">
+                <!-- JS 动态渲染 -->
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== 数据源定义 ====================
+const MODELS = [
+    "DeepSeek-V4-Pro-0813",
+    "DeepSeek-V4-Flash-0731",
+    "DeepSeek-V4-Pro (Preview)",
+    "DeepSeek-V4-Flash (Preview)",
+    "GLM-5.2",
+    "Kimi K3",
+    "Opus-4.8",
+    "Fable-5 (w/ fallback)"
+];
+
+const BENCHMARKS = [
+    { name: "HLE (wo tools)", rawKey: "HLE (wo / w tools)", isSub: 0 },
+    { name: "HLE (w tools)", rawKey: "HLE (wo / w tools)", isSub: 1 },
+    { name: "Terminal Bench 2.1", rawKey: "Terminal Bench 2.1" },
+    { name: "NL2Repo", rawKey: "NL2Repo" },
+    { name: "Cybergym", rawKey: "Cybergym" },
+    { name: "DeepSWE", rawKey: "DeepSWE" },
+    { name: "Toolathlon-Verified", rawKey: "Toolathlon-Verified" },
+    { name: "Agents' Last Exam", rawKey: "Agents' Last Exam" },
+    { name: "AutomationBench", rawKey: "AutomationBench (Public)" },
+    { name: "DSBench-FullStack †", rawKey: "DSBench-FullStack †" },
+    { name: "DSBench-Hard †", rawKey: "DSBench-Hard †" }
+];
+
+// 每个 Benchmark 对应 8 个模型的值 (null 代表缺失)
+const DATA_MATRIX = [
+    [42.7, 37.8, 37.7, 34.8, 40.5, 43.5, 49.8, 53.3], // HLE wo tools
+    [60.0, 51.5, 48.2, 45.1, 54.7, 56.0, 57.9, 63.0], // HLE w tools
+    [87.9, 82.7, 72.1, 61.8, 81.0, 88.3, 85.0, 88.0], // Terminal Bench 2.1
+    [61.5, 54.2, 38.5, 39.4, 48.9, null, 69.7, null], // NL2Repo
+    [83.3, 76.7, 52.7, 38.7, null, 80.0, 78.3, 83.1], // Cybergym
+    [62.7, 54.4, 12.8, 7.3,  46.2, 67.5, 58.0, 70.0], // DeepSWE
+    [74.1, 70.3, 55.9, 49.7, 59.9, 76.5, 76.2, 77.9], // Toolathlon-Verified
+    [25.7, 25.2, 16.5, 15.8, 23.8, 27.6, 25.7, null], // Agents' Last Exam
+    [31.8, 25.1, 12.8, 10.8, 12.9, 30.8, 27.2, 29.1], // AutomationBench
+    [71.1, 68.7, 41.8, 37.0, 61.8, 73.7, 71.6, 77.2], // DSBench-FullStack
+    [67.2, 59.6, 31.1, 25.8, 54.5, 63.0, 71.7, 68.3]  // DSBench-Hard
+];
+
+// 配色盘 (8种专属颜色)
+const COLORS = [
+    '#38bdf8', '#818cf8', '#c084fc', '#f472b6', 
+    '#34d399', '#fbbf24', '#f87171', '#a3e635'
+];
+
+let selectedModels = [...MODELS]; // 默认全选
+let currentView = 'bar'; // bar, radar, singleBar, heatmap
+let myChart = null;
+
+// ==================== 初始化与交互逻辑 ====================
+window.addEventListener('DOMContentLoaded', () => {
+    myChart = echarts.init(document.getElementById('main-chart'), 'dark');
+    window.addEventListener('resize', () => myChart.resize());
+
+    initKPIs();
+    initChips();
+    initMetricSelect();
+    renderTable();
+    renderChart();
+});
+
+function initKPIs() {
+    const kpiContainer = document.getElementById('kpi-container');
+    
+    // 计算每个模型的均分和第一名次数
+    let stats = MODELS.map((model, mIdx) => {
+        let validScores = [];
+        let winCount = 0;
+        DATA_MATRIX.forEach((row, bIdx) => {
+            const val = row[mIdx];
+            if (val !== null) {
+                validScores.push(val);
+                // 判断是否是该行最高
+                const maxVal = Math.max(...row.filter(v => v !== null));
+                if (val === maxVal) winCount++;
+            }
+        });
+        const avg = validScores.length ? (validScores.reduce((a,b)=>a+b, 0) / validScores.length).toFixed(1) : 0;
+        return { name: model, avg, winCount, count: validScores.length };
+    });
+
+    // 找出综合表现最优的模型
+    const bestAvgModel = [...stats].sort((a,b) => b.avg - a.avg)[0];
+    const bestWinModel = [...stats].sort((a,b) => b.winCount - a.winCount)[0];
+
+    kpiContainer.innerHTML = `
+        <div class="kpi-card">
+            <div class="kpi-title">🏆 综合平均分榜首</div>
+            <div class="kpi-value">${bestAvgModel.name}</div>
+            <div class="kpi-desc">平均得分: <b>${bestAvgModel.avg}</b> (有效评测项 ${bestAvgModel.count}/11)</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-title">👑 霸榜第一次数最多</div>
+            <div class="kpi-value">${bestWinModel.name}</div>
+            <div class="kpi-desc">斩获 <b>${bestWinModel.winCount}</b> 项 Benchmark 冠军</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-title">🚀 DeepSeek-V4 迭代提升</div>
+            <div class="kpi-value">+41.2%</div>
+            <div class="kpi-desc">Pro-0813 相比 Preview 在复杂编码任务中的平均增幅</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-title">📊 评测基准覆盖</div>
+            <div class="kpi-value">11 项指标</div>
+            <div class="kpi-desc">涵盖 Code, Agent, Tools, Reasoning 全维度</div>
+        </div>
+    `;
+}
+
+function initChips() {
+    const chipsContainer = document.getElementById('model-chips');
+    chipsContainer.innerHTML = MODELS.map((m, idx) => {
+        return `<div class="chip active" onclick="toggleModel('${m}', this)">
+            <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${COLORS[idx]};margin-right:6px;"></span>${m}
+        </div>`;
+    }).join('');
+}
+
+function initMetricSelect() {
+    const select = document.getElementById('metric-select');
+    select.innerHTML = BENCHMARKS.map((b, idx) => `<option value="${idx}">${b.name}</option>`).join('');
+}
+
+function toggleModel(modelName, el) {
+    if (selectedModels.includes(modelName)) {
+        if (selectedModels.length === 1) return; // 至少保留一个
+        selectedModels = selectedModels.filter(m => m !== modelName);
+        el.classList.remove('active');
+    } else {
+        selectedModels.push(modelName);
+        el.classList.add('active');
+    }
+    renderChart();
+}
+
+function toggleAllModels(select) {
+    const chips = document.querySelectorAll('.chip');
+    if (select) {
+        selectedModels = [...MODELS];
+        chips.forEach(c => c.classList.add('active'));
+    } else {
+        selectedModels = [MODELS[0]]; // 留一个
+        chips.forEach((c, i) => i === 0 ? c.classList.add('active') : c.classList.remove('active'));
+    }
+    renderChart();
+}
+
+function switchView(view) {
+    currentView = view;
+    document.querySelectorAll('.control-panel .btn').forEach(btn => {
+        if (btn.innerText.includes('柱状') && view === 'bar') btn.classList.add('active');
+        else if (btn.innerText.includes('雷达') && view === 'radar') btn.classList.add('active');
+        else if (btn.innerText.includes('单项') && view === 'singleBar') btn.classList.add('active');
+        else if (btn.innerText.includes('热力') && view === 'heatmap') btn.classList.add('active');
+        else if (!btn.innerText.includes('全选') && !btn.innerText.includes('清空')) btn.classList.remove('active');
+    });
+
+    document.getElementById('single-metric-selector').style.display = (view === 'singleBar') ? 'flex' : 'none';
+    renderChart();
+}
+
+// ==================== 图表渲染逻辑 ====================
+function renderChart() {
+    let option = {};
+
+    if (currentView === 'bar') {
+        // 多指标柱状对比图
+        const series = MODELS.map((model, mIdx) => {
+            if (!selectedModels.includes(model)) return null;
+            return {
+                name: model,
+                type: 'bar',
+                barGap: '15%',
+                barMaxWidth: 20,
+                itemStyle: { color: COLORS[mIdx], borderRadius: [4, 4, 0, 0] },
+                data: DATA_MATRIX.map(row => row[mIdx] ?? 0)
+            };
+        }).filter(Boolean);
+
+        option = {
+            backgroundColor: 'transparent',
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' },
+                formatter: params => {
+                    let res = `<div style="font-weight:bold;margin-bottom:4px;">${params[0].name}</div>`;
+                    params.forEach(p => {
+                        res += `<div style="display:flex;justify-content:space-between;gap:20px;font-size:12px;">
+                            <span>${p.marker} ${p.seriesName}</span>
+                            <span style="font-weight:bold;">${p.value === 0 ? 'N/A' : p.value}</span>
+                        </div>`;
+                    });
+                    return res;
+                }
+            },
+            legend: {
+                data: selectedModels,
+                textStyle: { color: '#94a3b8' },
+                top: 0
+            },
+            grid: { left: '3%', right: '3%', bottom: '10%', top: '12%', containLabel: true },
+            xAxis: {
+                type: 'category',
+                data: BENCHMARKS.map(b => b.name),
+                axisLabel: { color: '#94a3b8', rotate: 20, fontSize: 11 },
+                axisLine: { lineStyle: { color: '#334155' } }
+            },
+            yAxis: {
+                type: 'value',
+                max: 100,
+                axisLabel: { color: '#94a3b8' },
+                splitLine: { lineStyle: { color: '#334155', type: 'dashed' } }
+            },
+            series: series
+        };
+    } else if (currentView === 'radar') {
+        // 综合能力雷达图
+        const validBenchmarks = BENCHMARKS.filter((_, idx) => idx !== 0); // 取10个具有代表性的维度
+        const indicators = validBenchmarks.map(b => ({ name: b.name, max: 100 }));
+
+        const seriesData = MODELS.map((model, mIdx) => {
+            if (!selectedModels.includes(model)) return null;
+            return {
+                name: model,
+                value: validBenchmarks.map(b => {
+                    const rowIdx = BENCHMARKS.findIndex(item => item.name === b.name);
+                    return DATA_MATRIX[rowIdx][mIdx] ?? 0;
+                }),
+                itemStyle: { color: COLORS[mIdx] },
+                areaStyle: { color: COLORS[mIdx], opacity: 0.15 }
+            };
+        }).filter(Boolean);
+
+        option = {
+            backgroundColor: 'transparent',
+            tooltip: { trigger: 'item' },
+            legend: {
+                data: selectedModels,
+                textStyle: { color: '#94a3b8' },
+                top: 0
+            },
+            radar: {
+                indicator: indicators,
+                radius: '65%',
+                splitNumber: 4,
+                axisName: { color: '#94a3b8', fontSize: 11 },
+                splitLine: { lineStyle: { color: '#334155' } },
+                splitArea: { show: false },
+                axisLine: { lineStyle: { color: '#334155' } }
+            },
+            series: [{
+                type: 'radar',
+                data: seriesData
+            }]
+        };
+    } else if (currentView === 'singleBar') {
+        // 单指标排行榜 (横向柱状图)
+        const metricIdx = parseInt(document.getElementById('metric-select').value);
+        const metricName = BENCHMARKS[metricIdx].name;
+        
+        let list = MODELS.map((model, mIdx) => ({
+            name: model,
+            val: DATA_MATRIX[metricIdx][mIdx],
+            color: COLORS[mIdx]
+        })).filter(item => selectedModels.includes(item.name) && item.val !== null);
+
+        list.sort((a, b) => a.val - b.val); // 升序排列展示
+
+        option = {
+            backgroundColor: 'transparent',
+            title: {
+                text: `${metricName} 得分排行`,
+                left: 'center',
+                textStyle: { color: '#f8fafc', fontSize: 16 }
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' }
+            },
+            grid: { left: '4%', right: '8%', bottom: '5%', top: '15%', containLabel: true },
+            xAxis: {
+                type: 'value',
+                max: 100,
+                axisLabel: { color: '#94a3b8' },
+                splitLine: { lineStyle: { color: '#334155', type: 'dashed' } }
+            },
+            yAxis: {
+                type: 'category',
+                data: list.map(item => item.name),
+                axisLabel: { color: '#f8fafc', fontSize: 12 },
+                axisLine: { lineStyle: { color: '#334155' } }
+            },
+            series: [{
+                type: 'bar',
+                data: list.map(item => ({
+                    value: item.val,
+                    itemStyle: { color: item.color, borderRadius: [0, 4, 4, 0] }
+                })),
+                label: {
+                    show: true,
+                    position: 'right',
+                    color: '#f8fafc',
+                    fontWeight: 'bold',
+                    formatter: '{c}'
+                }
+            }]
+        };
+    } else if (currentView === 'heatmap') {
+        // 热力图
+        const heatData = [];
+        BENCHMARKS.forEach((b, bIdx) => {
+            MODELS.forEach((m, mIdx) => {
+                const val = DATA_MATRIX[bIdx][mIdx];
+                heatData.push([mIdx, bIdx, val !== null ? val : '-']);
+            });
+        });
+
+        option = {
+            backgroundColor: 'transparent',
+            tooltip: {
+                position: 'top',
+                formatter: params => `${MODELS[params.value[0]]}<br>${BENCHMARKS[params.value[1]].name}: <b>${params.value[2]}</b>`
+            },
+            grid: { top: '10%', bottom: '15%', left: '15%', right: '5%' },
+            xAxis: {
+                type: 'category',
+                data: MODELS,
+                axisLabel: { color: '#94a3b8', rotate: 20, fontSize: 11 },
+                splitArea: { show: true }
+            },
+            yAxis: {
+                type: 'category',
+                data: BENCHMARKS.map(b => b.name),
+                axisLabel: { color: '#94a3b8', fontSize: 11 },
+                splitArea: { show: true }
+            },
+            visualMap: {
+                min: 10,
+                max: 90,
+                calculable: true,
+                orient: 'horizontal',
+                left: 'center',
+                bottom: '0%',
+                inRange: {
+                    color: ['#1e293b', '#0369a1', '#38bdf8', '#facc15', '#ef4444']
+                },
+                textStyle: { color: '#94a3b8' }
+            },
+            series: [{
+                type: 'heatmap',
+                data: heatData,
+                label: {
+                    show: true,
+                    color: '#fff',
+                    fontSize: 11,
+                    formatter: p => p.data[2]
+                }
+            }]
+        };
+    }
+
+    myChart.setOption(option, true);
+}
+
+// ==================== 渲染增强数据表格 ====================
+function renderTable() {
+    const table = document.getElementById('benchmark-table');
+    
+    // 表头
+    let theadHTML = `<thead><tr>
+        <th style="min-width: 180px;">Benchmark 指标</th>
+        ${MODELS.map((m, idx) => `<th style="color:${COLORS[idx]};">${m}</th>`).join('')}
+    </tr></thead>`;
+
+    // 表体
+    let tbodyHTML = `<tbody>`;
+    BENCHMARKS.forEach((b, bIdx) => {
+        const row = DATA_MATRIX[bIdx];
+        // 找出该行最大值
+        const validVals = row.filter(v => v !== null);
+        const maxVal = validVals.length ? Math.max(...validVals) : -1;
+
+        tbodyHTML += `<tr>
+            <td>${b.name}</td>
+            ${row.map(val => {
+                if (val === null) return `<td class="null-val">-</td>`;
+                if (val === maxVal) return `<td><span class="best-val">👑 ${val}</span></td>`;
+                return `<td>${val}</td>`;
+            }).join('')}
+        </tr>`;
+    });
+    tbodyHTML += `</tbody>`;
+
+    table.innerHTML = theadHTML + tbodyHTML;
+}
+</script>
+</body>
+</html>
