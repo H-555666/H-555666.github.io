@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sirius 谱面演示器 (云端增强版)</title>
+    <title>wds 谱面演示器</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         body {
@@ -292,10 +292,14 @@ function parseChartJSON(jsonObj, filename) {
         if (type === "Sirius Sync Line") {
             syncLines.push({ time: time, left: d.left, right: d.right });
         }
+        // 长按起点
         else if (type.includes("Hold Start") || type.includes("Scratch Hold Start")) {
-            activeHoldPool.push({ beat: d.beat, time: time, lane: d.lane, laneLength: d.laneLength, type: noteType });
-            notes.push({ time, lane: d.lane, laneLength: d.laneLength, type: noteType });
+            // 如果不是特殊类型，就标记为专门的长条节点类型
+            let startType = noteType === "normal" ? "hold_node" : noteType;
+            activeHoldPool.push({ beat: d.beat, time: time, lane: d.lane, laneLength: d.laneLength, type: startType });
+            notes.push({ time, lane: d.lane, laneLength: d.laneLength, type: startType });
         }
+        // 长按终点 / 转折点
         else if (type.includes("Hold End") || type.includes("Scratch Hold End")) {
             const stBeat = d.stBeat;
             let head = null;
@@ -311,6 +315,9 @@ function parseChartJSON(jsonObj, filename) {
                 });
             }
 
+            // 继承头部的颜色类型，否则默认用蓝色的 hold_node
+            let endType = head ? head.type : (noteType === "normal" ? "hold_node" : noteType);
+
             if (d.scratchLength !== undefined && d.scratchLength !== 0) {
                 const sLen = d.scratchLength;
                 let flickLane = d.lane;
@@ -318,10 +325,10 @@ function parseChartJSON(jsonObj, filename) {
                 if (sLen < 0) flickLane = Math.max(1, d.lane + d.laneLength + sLen);
                 notes.push({ time, lane: flickLane, laneLength: flickLength, type: "flick" });
             } else {
-                notes.push({ time, lane: d.lane, laneLength: d.laneLength, type: head ? head.type : "normal" });
+                notes.push({ time, lane: d.lane, laneLength: d.laneLength, type: endType });
             }
 
-            activeHoldPool.push({ beat: d.beat, time: time, lane: d.lane, laneLength: d.laneLength, type: head ? head.type : noteType });
+            activeHoldPool.push({ beat: d.beat, time: time, lane: d.lane, laneLength: d.laneLength, type: endType });
         }
         else if (type.includes("Note") || type.includes("Flick")) {
             notes.push({ time, lane: d.lane, laneLength: d.laneLength, type: noteType });
@@ -622,10 +629,11 @@ function renderChart(currentTime) {
             const noteHeight = 36 * (0.6 + visualProgress * 0.7); // 3倍厚度加强
 
             ctx.save();
-            let color = "#f2346a"; // 粉红
+            let color = "#f2346a"; // 粉红 (独立单点 Normal Note)
             if (note.type === "critical") color = "#ffd000"; // 金黄
             if (note.type === "flick") color = "#b53cf5"; // 深紫
             if (note.type === "scratch") color = "#773eb8"; // 紫罗兰
+            if (note.type === "hold_node") color = "#00c3ff"; // 普通长条头尾节点 天蓝色
 
             ctx.shadowColor = color; ctx.shadowBlur = 10; ctx.fillStyle = color;
             ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 3.0;
@@ -633,7 +641,7 @@ function renderChart(currentTime) {
             ctx.beginPath(); ctx.roundRect(pos.x1, pos.y - noteHeight / 2, pos.w, noteHeight, 6);
             ctx.fill(); ctx.stroke();
 
-            // 滑键专属六重连击书名号
+            // 滑键书名号
             if (note.type === "flick") {
                 const fontSize = Math.max(14, Math.min(28, pos.w * 0.28));
                 ctx.font = `900 ${fontSize}px sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
