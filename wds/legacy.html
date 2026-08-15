@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sirius 谱面演示器</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+        body {
+            background-color: #080911;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 1100px;
+            height: 78vh;
+            background: #000;
+            box-shadow: 0 16px 50px rgba(0, 0, 0, 0.95);
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        #ui-overlay {
+            position: absolute;
+            top: 16px;
+            left: 20px;
+            pointer-events: none;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.9);
+            z-index: 10;
+        }
+        .song-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #f2346a;
+        }
+        .song-meta {
+            font-size: 0.85rem;
+            color: #d0d2db;
+            margin-top: 4px;
+        }
+        #status-panel {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            align-items: flex-end;
+            z-index: 10;
+        }
+        .tag-status {
+            font-size: 0.78rem;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: rgba(18, 22, 38, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #aaa;
+        }
+        .tag-status.active {
+            color: #4ade80;
+            border-color: rgba(74, 222, 128, 0.4);
+        }
+        #drop-mask {
+            position: absolute;
+            inset: 0;
+            background: rgba(11, 13, 23, 0.88);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            z-index: 20;
+            transition: opacity 0.3s;
+        }
+        #drop-mask.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .drop-icon {
+            font-size: 3.5rem;
+            color: #f2346a;
+        }
+        .drop-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #eee;
+        }
+        .drop-subtext {
+            font-size: 0.85rem;
+            color: #888;
+        }
+        #controls {
+            width: 100%;
+            max-width: 1100px;
+            height: 18vh;
+            padding: 12px 24px;
+            background: rgba(18, 22, 38, 0.98);
+            border-radius: 14px;
+            margin-top: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .progress-bar-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .time-text {
+            font-size: 0.9rem;
+            font-family: monospace;
+            min-width: 50px;
+            color: #aaa;
+        }
+        input[type="range"] {
+            flex: 1;
+            accent-color: #f2346a;
+            cursor: pointer;
+        }
+        .buttons-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        button, .file-btn {
+            background: #2b3254;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            padding: 7px 14px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+        }
+        button:hover, .file-btn:hover {
+            background: #f2346a;
+            border-color: #f2346a;
+        }
+        .ctrl-label {
+            font-size: 0.85rem;
+            color: #ccd;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 0, 0, 0.35);
+            padding: 5px 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        input[type="file"] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <canvas id="stage"></canvas>
+    
+    <div id="ui-overlay">
+        <div class="song-title" id="disp-title"></div>
+        <div class="song-meta" id="disp-meta"></div>
+    </div>
+
+    <div id="status-panel">
+        <span class="tag-status" id="st-chart">谱面: 未加载</span>
+        <span class="tag-status" id="st-audio">音频: 未加载</span>
+        <span class="tag-status" id="st-bg">背景: 默认</span>
+    </div>
+
+    <div id="drop-mask">
+        <div class="drop-icon">📂</div>
+        <div class="drop-text">将谱面相关文件直接拖入此窗口</div>
+        <div class="drop-subtext">支持直接全选拖入 chart.json、音频、背景图片、level-metadata.json</div>
+    </div>
+</div>
+
+<div id="controls">
+    <div class="progress-bar-container">
+        <span class="time-text" id="current-time">00:00</span>
+        <input type="range" id="seek-bar" min="0" max="100" step="0.01" value="0">
+        <span class="time-text" id="total-time">00:00</span>
+    </div>
+    <div class="buttons-container">
+        <div class="btn-group">
+            <button id="btn-play">▶ 播放</button>
+            <button id="btn-restart">↺ 重播</button>
+            <label class="file-btn">
+                📄 选谱面(JSON)
+                <input type="file" id="input-chart" accept=".json,*">
+            </label>
+            <label class="file-btn">
+                🎵 选音频
+                <input type="file" id="input-audio">
+            </label>
+            <label class="file-btn">
+                🖼️ 选背景
+                <input type="file" id="input-bg">
+            </label>
+        </div>
+        <div class="btn-group">
+            <label class="ctrl-label">
+                流速:
+                <input type="range" id="speed-bar" min="1.0" max="16.0" step="0.1" value="10.0" style="width: 100px;">
+                <span id="speed-val">10.0</span>
+            </label>
+            <label class="ctrl-label">
+                音量:
+                <input type="range" id="vol-bar" min="0" max="1" step="0.05" value="0.8" style="width: 70px;">
+            </label>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== 1. 谱面解析引擎 (完美适配多节链式与颜色) ====================
+let bpmTimeline = [{ beat: 0, bpm: 60.0, time: 0 }];
+let notes = [];
+let holds = [];
+let syncLines = [];
+let totalDuration = 60.0;
+
+function parseChartJSON(jsonObj, filename) {
+    if (!jsonObj || !Array.isArray(jsonObj.entities)) {
+        throw new Error("无效的 Sirius chart.json 结构");
+    }
+
+    notes = [];
+    holds = [];
+    syncLines = [];
+    bpmTimeline = [];
+
+    // 解析 BPM
+    const bpmEntities = jsonObj.entities.filter(e => e.archetype === "#BPM_CHANGE");
+    bpmEntities.forEach(e => {
+        let b = 0, bpm = 60;
+        e.data.forEach(d => {
+            if (d.name === "#BEAT") b = d.value;
+            if (d.name === "#BPM") bpm = d.value;
+        });
+        bpmTimeline.push({ beat: b, bpm: bpm, time: 0 });
+    });
+    if (bpmTimeline.length === 0) {
+        bpmTimeline.push({ beat: 0, bpm: 60.0, time: 0 });
+    }
+    bpmTimeline.sort((a, b) => a.beat - b.beat);
+
+    for (let i = 0; i < bpmTimeline.length; i++) {
+        if (i === 0) {
+            bpmTimeline[i].time = 0;
+        } else {
+            const prev = bpmTimeline[i - 1];
+            const beatDiff = bpmTimeline[i].beat - prev.beat;
+            bpmTimeline[i].time = prev.time + (beatDiff * (60.0 / prev.bpm));
+        }
+    }
+
+    function beatToSeconds(beat) {
+        let seg = bpmTimeline[0];
+        for (let i = bpmTimeline.length - 1; i >= 0; i--) {
+            if (beat >= bpmTimeline[i].beat) {
+                seg = bpmTimeline[i];
+                break;
+            }
+        }
+        return seg.time + (beat - seg.beat) * (60.0 / seg.bpm);
+    }
+
+    let maxTime = 0;
+    
+    // 活动节点追踪池，用于精准匹配 stBeat 串联多节长条
+    const activeHoldPool = [];
+
+    jsonObj.entities.forEach(ent => {
+        const d = {};
+        if (ent.data) ent.data.forEach(item => { d[item.name] = item.value; });
+        const type = ent.archetype;
+        const time = beatToSeconds(d.beat || 0);
+        if (time > maxTime) maxTime = time;
+
+        let noteType = "normal";
+        if (type.includes("Critical")) noteType = "critical";
+        if (type.includes("Scratch")) noteType = "scratch";
+        if (type.includes("Flick")) noteType = "flick";
+
+        // 同步双押线
+        if (type === "Sirius Sync Line") {
+            syncLines.push({ time: time, left: d.left, right: d.right });
+        }
+
+        // 长按起点
+        if (type.includes("Hold Start") || type.includes("Scratch Hold Start")) {
+            activeHoldPool.push({
+                beat: d.beat,
+                time: time,
+                lane: d.lane,
+                laneLength: d.laneLength,
+                type: noteType
+            });
+            // 起点始终附带一个判定 Note 头
+            notes.push({ time, lane: d.lane, laneLength: d.laneLength, type: noteType });
+        }
+        // 长按终点 (包含中间转折的 End)
+        else if (type.includes("Hold End") || type.includes("Scratch Hold End")) {
+            const stBeat = d.stBeat;
+            let head = null;
+
+            // 优先通过 stBeat 及 lane 匹配上一个节点
+            if (stBeat !== undefined) {
+                head = activeHoldPool.find(h => Math.abs(h.beat - stBeat) < 0.001 && h.lane === d.lane);
+                if (!head) head = activeHoldPool.find(h => Math.abs(h.beat - stBeat) < 0.001);
+            }
+
+            if (head) {
+                holds.push({
+                    stTime: head.time,
+                    endTime: time,
+                    lane: d.lane,
+                    laneLength: d.laneLength,
+                    type: head.type === "critical" ? "critical" : (type.includes("Scratch") ? "scratch" : "normal")
+                });
+            }
+
+            // 判断末尾是否生成滑键或普通封口 Note
+            if (d.scratchLength !== undefined && d.scratchLength !== 0) {
+                const sLen = d.scratchLength;
+                // 滑键跨度处理
+                let fLane = d.lane;
+                let fLen = Math.max(d.laneLength, Math.abs(sLen));
+                if (sLen < 0) fLane = Math.max(1, d.lane + d.laneLength + sLen);
+                
+                notes.push({ time, lane: d.lane, laneLength: d.laneLength, type: "flick" });
+            } else {
+                notes.push({ time, lane: d.lane, laneLength: d.laneLength, type: head ? head.type : "normal" });
+            }
+
+            // 将当前 End 加入追踪池，作为可能存在的下一小节的起点
+            activeHoldPool.push({
+                beat: d.beat,
+                time: time,
+                lane: d.lane,
+                laneLength: d.laneLength,
+                type: head ? head.type : noteType
+            });
+        }
+        // 独立单点 / 滑键
+        else if (type === "Sirius Normal Note" || type === "Sirius Critical Note" || type === "Sirius Flick Note") {
+            notes.push({ time, lane: d.lane, laneLength: d.laneLength, type: noteType });
+        }
+    });
+
+    totalDuration = Math.max(maxTime + 3.0, 30.0);
+    document.getElementById("st-chart").innerText = `谱面: ${notes.length + holds.length} 实体`;
+    document.getElementById("st-chart").classList.add("active");
+    document.getElementById("drop-mask").classList.add("hide");
+    document.getElementById("total-time").innerText = formatTime(totalDuration);
+
+    if (!document.getElementById("disp-title").innerText) {
+        document.getElementById("disp-title").innerText = filename || "已载入谱面";
+    }
+}
+
+function parseMetadataJSON(meta) {
+    if (meta.item) meta = meta.item;
+    if (meta.title) document.getElementById("disp-title").innerText = meta.title;
+    
+    let sub = [];
+    if (meta.artists) sub.push("Artist: " + meta.artists);
+    if (meta.rating) sub.push("Lv." + meta.rating);
+    if (meta.tags && meta.tags[0]) sub.push(meta.tags[0].title);
+    if (sub.length > 0) document.getElementById("disp-meta").innerText = sub.join(" | ");
+}
+
+// ==================== 2. Web Audio 解码引擎 ====================
+let audioCtx = null;
+let audioBuffer = null;
+let audioSourceNode = null;
+let gainNode = null;
+let isPlaying = false;
+let startTimeOffset = 0;
+let playStartContextTime = 0;
+
+const bgImg = new Image();
+
+function initAudioContext() {
+    if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContextClass();
+        gainNode = audioCtx.createGain();
+        gainNode.gain.value = parseFloat(document.getElementById("vol-bar").value);
+        gainNode.connect(audioCtx.destination);
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function loadAudioBuffer(file) {
+    initAudioContext();
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        audioCtx.decodeAudioData(e.target.result)
+            .then(buf => {
+                audioBuffer = buf;
+                totalDuration = buf.duration;
+                document.getElementById("total-time").innerText = formatTime(totalDuration);
+                document.getElementById("st-audio").innerText = `音频: 已解码 (${formatTime(buf.duration)})`;
+                document.getElementById("st-audio").classList.add("active");
+            })
+            .catch(() => {
+                document.getElementById("st-audio").innerText = "音频: 虚拟时钟";
+            });
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function loadImageFile(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        bgImg.src = e.target.result;
+        document.getElementById("st-bg").innerText = "背景: 已加载";
+        document.getElementById("st-bg").classList.add("active");
+    };
+    reader.readAsDataURL(file);
+}
+
+function handleUniversalFile(file) {
+    if (file.name.endsWith(".json")) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const obj = JSON.parse(e.target.result);
+                if (obj.entities) {
+                    parseChartJSON(obj, file.name);
+                } else if (obj.title || obj.item || obj.recommended) {
+                    parseMetadataJSON(obj);
+                }
+            } catch(err) {
+                console.error("JSON 解析错误", err);
+            }
+        };
+        reader.readAsText(file);
+        return;
+    }
+
+    if (file.type.startsWith("image/") || /\.(png|jpe?g|webp|bmp)$/i.test(file.name)) {
+        loadImageFile(file);
+        return;
+    }
+
+    loadAudioBuffer(file);
+}
+
+window.addEventListener("dragover", (e) => e.preventDefault());
+window.addEventListener("drop", (e) => {
+    e.preventDefault();
+    Array.from(e.dataTransfer.files).forEach(handleUniversalFile);
+});
+
+document.getElementById("input-chart").addEventListener("change", (e) => {
+    if (e.target.files[0]) handleUniversalFile(e.target.files[0]);
+});
+document.getElementById("input-audio").addEventListener("change", (e) => {
+    if (e.target.files[0]) handleUniversalFile(e.target.files[0]);
+});
+document.getElementById("input-bg").addEventListener("change", (e) => {
+    if (e.target.files[0]) handleUniversalFile(e.target.files[0]);
+});
+
+function playAudio(offset) {
+    initAudioContext();
+    if (audioSourceNode) {
+        try { audioSourceNode.stop(); } catch(e){}
+        audioSourceNode.disconnect();
+    }
+    if (audioBuffer) {
+        audioSourceNode = audioCtx.createBufferSource();
+        audioSourceNode.buffer = audioBuffer;
+        audioSourceNode.connect(gainNode);
+        audioSourceNode.start(0, offset);
+    }
+    playStartContextTime = audioCtx ? audioCtx.currentTime : (performance.now() / 1000);
+    startTimeOffset = offset;
+}
+
+function stopAudio() {
+    if (audioSourceNode) {
+        try { audioSourceNode.stop(); } catch(e){}
+        audioSourceNode.disconnect();
+        audioSourceNode = null;
+    }
+}
+
+function getCurrentPlayTime() {
+    if (!isPlaying) return startTimeOffset;
+    if (audioCtx) {
+        return startTimeOffset + (audioCtx.currentTime - playStartContextTime);
+    }
+    return startTimeOffset + (performance.now() - playStartContextTime * 1000) / 1000;
+}
+
+// ==================== 3. 舞台渲染与透视投影 ====================
+const canvas = document.getElementById("stage");
+const ctx = canvas.getContext("2d");
+let hiSpeed = 10.0;
+const accelPower = 2.0; // 锁定 2.0 纯幂次加速度
+
+let viewport = {
+    centerX: 0,
+    topY: 0,
+    botY: 0,
+    topWidth: 0,
+    botWidth: 0
+};
+
+function resize() {
+    canvas.width = canvas.parentElement.clientWidth * window.devicePixelRatio;
+    canvas.height = canvas.parentElement.clientHeight * window.devicePixelRatio;
+
+    const w = canvas.width;
+    const h = canvas.height;
+
+    let botW = w * 0.86;
+    let trackH = botW * 0.75;
+
+    if (trackH > h * 0.82) {
+        trackH = h * 0.82;
+        botW = trackH / 0.75;
+    }
+
+    const topW = botW / 6.0;
+    const botY = (h + trackH) / 2;
+    const topY = botY - trackH;
+
+    viewport = {
+        centerX: w * 0.5,
+        topY: topY,
+        botY: botY,
+        topWidth: topW,
+        botWidth: botW
+    };
+}
+window.addEventListener("resize", resize);
+resize();
+
+function getAcceleratedProgress(linearP) {
+    if (linearP <= 0) return 0;
+    if (linearP >= 1) return 1;
+    return Math.pow(linearP, accelPower);
+}
+
+function project(lane, length, visualP) {
+    const curY = viewport.topY + (viewport.botY - viewport.topY) * visualP;
+    const curWidth = viewport.topWidth + (viewport.botWidth - viewport.topWidth) * visualP;
+
+    const leftX = viewport.centerX - (curWidth / 2);
+    const laneUnit = curWidth / 12;
+    const x1 = leftX + (lane - 1) * laneUnit;
+    const x2 = leftX + (lane - 1 + length) * laneUnit;
+
+    return { x1, x2, y: curY, w: x2 - x1 };
+}
+
+function drawStage() {
+    const w = canvas.width, h = canvas.height;
+    ctx.fillStyle = "#080911";
+    ctx.fillRect(0, 0, w, h);
+
+    if (bgImg.complete && bgImg.naturalWidth > 0) {
+        ctx.globalAlpha = 0.35;
+        ctx.drawImage(bgImg, 0, 0, w, h);
+        ctx.globalAlpha = 1.0;
+    }
+
+    ctx.save();
+    for (let i = 0; i <= 12; i++) {
+        const pTop = project(i + 1, 0, 0);
+        const pBot = project(i + 1, 0, 1);
+        ctx.strokeStyle = (i === 0 || i === 12) ? "rgba(255,255,255,0.75)" : "rgba(255,255,255,0.12)";
+        ctx.lineWidth = (i === 0 || i === 12) ? 3 : 1;
+        ctx.beginPath();
+        ctx.moveTo(pTop.x1, pTop.y);
+        ctx.lineTo(pBot.x1, pBot.y);
+        ctx.stroke();
+    }
+
+    const botP1 = project(1, 0, 1);
+    const botP2 = project(13, 0, 1);
+    ctx.strokeStyle = "#f2346a";
+    ctx.lineWidth = 5;
+    ctx.shadowColor = "#f2346a";
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.moveTo(botP1.x1, botP1.y);
+    ctx.lineTo(botP2.x1, botP2.y);
+    ctx.stroke();
+    ctx.restore();
+}
+
+function renderChart(currentTime) {
+    // 基础流速再次提升 1.2 倍
+    const timeSpan = 5.0 / (hiSpeed * 1.2);
+
+    // 1. 同步连线 (Sync Lines)
+    syncLines.forEach(sync => {
+        const timeDiff = sync.time - currentTime;
+        if (timeDiff >= 0 && timeDiff <= timeSpan) {
+            const linearProgress = 1.0 - (timeDiff / timeSpan);
+            const visualProgress = getAcceleratedProgress(linearProgress);
+            const pos1 = project(sync.left, 0, visualProgress);
+            const pos2 = project(sync.right + 1, 0, visualProgress);
+
+            ctx.save();
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
+            ctx.lineWidth = 4;
+            ctx.shadowColor = "rgba(255, 255, 255, 0.8)";
+            ctx.shadowBlur = 8;
+            ctx.beginPath();
+            ctx.moveTo(pos1.x1, pos1.y);
+            ctx.lineTo(pos2.x1, pos2.y);
+            ctx.stroke();
+            ctx.restore();
+        }
+    });
+
+    // 2. 长条实体 (Hold Bodies)
+    holds.forEach(hold => {
+        if (currentTime < hold.endTime && hold.stTime < currentTime + timeSpan) {
+            const steps = 14;
+            const tStartClamped = Math.max(hold.stTime, currentTime);
+            const tEndClamped = Math.min(hold.endTime, currentTime + timeSpan);
+
+            const leftPoints = [];
+            const rightPoints = [];
+
+            for (let i = 0; i <= steps; i++) {
+                const curT = tStartClamped + (tEndClamped - tStartClamped) * (i / steps);
+                const linearP = 1.0 - (curT - currentTime) / timeSpan;
+                const visualP = getAcceleratedProgress(linearP);
+                const pos = project(hold.lane, hold.laneLength, visualP);
+                leftPoints.push({ x: pos.x1, y: pos.y });
+                rightPoints.push({ x: pos.x2, y: pos.y });
+            }
+
+            if (leftPoints.length > 1) {
+                ctx.save();
+                let fillGrad = ctx.createLinearGradient(0, rightPoints[rightPoints.length - 1].y, 0, leftPoints[0].y);
+                
+                if (hold.type === "scratch") {
+                    fillGrad.addColorStop(0, "rgba(119, 62, 184, 0.45)"); // 紫罗兰色
+                    fillGrad.addColorStop(1, "rgba(119, 62, 184, 0.85)");
+                } else if (hold.type === "critical") {
+                    fillGrad.addColorStop(0, "rgba(255, 208, 0, 0.35)"); // 金黄色
+                    fillGrad.addColorStop(1, "rgba(255, 208, 0, 0.75)");
+                } else {
+                    fillGrad.addColorStop(0, "rgba(0, 195, 255, 0.4)");  // 蓝色 (普通长条)
+                    fillGrad.addColorStop(1, "rgba(0, 140, 255, 0.85)");
+                }
+
+                ctx.fillStyle = fillGrad;
+                ctx.strokeStyle = "#ffffff";
+                ctx.lineWidth = 3.5;
+                ctx.shadowColor = "rgba(255, 255, 255, 0.8)";
+                ctx.shadowBlur = 4;
+
+                ctx.beginPath();
+                ctx.moveTo(leftPoints[0].x, leftPoints[0].y);
+                for (let i = 1; i < leftPoints.length; i++) ctx.lineTo(leftPoints[i].x, leftPoints[i].y);
+                for (let i = rightPoints.length - 1; i >= 0; i--) ctx.lineTo(rightPoints[i].x, rightPoints[i].y);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+    });
+
+    // 3. 点音符 / 滑键 / 长条头尾 (Notes)
+    notes.forEach(note => {
+        const timeDiff = note.time - currentTime;
+        if (timeDiff >= 0 && timeDiff <= timeSpan) {
+            const linearProgress = 1.0 - (timeDiff / timeSpan);
+            const visualProgress = getAcceleratedProgress(linearProgress);
+            const pos = project(note.lane, note.laneLength, visualProgress);
+            
+            // 基础厚度翻 3 倍
+            const noteHeight = 36 * (0.6 + visualProgress * 0.7);
+
+            ctx.save();
+            let color = "#f2346a"; // Normal Note 粉红色
+            if (note.type === "critical") color = "#ffd000"; // 暴击黄色
+            if (note.type === "flick") color = "#b53cf5"; // 滑键紫色
+            if (note.type === "scratch") color = "#773eb8"; // 换轨长条头紫罗兰色
+
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 10;
+            ctx.fillStyle = color;
+            
+            ctx.strokeStyle = "#ffffff";
+            ctx.lineWidth = 3.0;
+
+            ctx.beginPath();
+            ctx.roundRect(pos.x1, pos.y - noteHeight / 2, pos.w, noteHeight, 6);
+            ctx.fill();
+            ctx.stroke();
+
+            // 六重书名号滑键标识
+            if (note.type === "flick") {
+                const fontSize = Math.max(14, Math.min(28, pos.w * 0.28));
+                ctx.font = `900 ${fontSize}px sans-serif`;
+                ctx.textAlign = "center";
+                ctx.textBaseline = "bottom";
+                
+                ctx.fillStyle = "#faf3ff";
+                ctx.shadowColor = "#d8b4fe";
+                ctx.shadowBlur = 12;
+                
+                const textY = pos.y - noteHeight / 2 - 3;
+                ctx.fillText("《《《  》》》", pos.x1 + pos.w * 0.5, textY);
+            }
+            ctx.restore();
+        }
+    });
+}
+
+function update() {
+    let curTime = getCurrentPlayTime();
+
+    if (isPlaying && curTime > totalDuration) {
+        isPlaying = false;
+        stopAudio();
+        startTimeOffset = 0;
+        document.getElementById("btn-play").innerText = "▶ 播放";
+    }
+
+    drawStage();
+    renderChart(curTime);
+
+    document.getElementById("current-time").innerText = formatTime(curTime);
+    if (!isDraggingSeek) {
+        document.getElementById("seek-bar").value = (curTime / totalDuration) * 100;
+    }
+
+    requestAnimationFrame(update);
+}
+
+function formatTime(sec) {
+    if (isNaN(sec) || sec < 0) sec = 0;
+    const m = Math.floor(sec / 60).toString().padStart(2, '0');
+    const s = Math.floor(sec % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+}
+
+// ==================== 4. 控制交互 ====================
+const btnPlay = document.getElementById("btn-play");
+const btnRestart = document.getElementById("btn-restart");
+const seekBar = document.getElementById("seek-bar");
+let isDraggingSeek = false;
+
+btnPlay.addEventListener("click", () => {
+    initAudioContext();
+    if (isPlaying) {
+        startTimeOffset = getCurrentPlayTime();
+        stopAudio();
+        isPlaying = false;
+        btnPlay.innerText = "▶ 播放";
+    } else {
+        isPlaying = true;
+        playAudio(startTimeOffset);
+        btnPlay.innerText = "❚❚ 暂停";
+    }
+});
+
+btnRestart.addEventListener("click", () => {
+    stopAudio();
+    startTimeOffset = 0;
+    if (isPlaying) {
+        playAudio(0);
+    } else {
+        btnPlay.innerText = "▶ 播放";
+    }
+});
+
+seekBar.addEventListener("input", () => {
+    isDraggingSeek = true;
+    const targetTime = (seekBar.value / 100) * totalDuration;
+    if (isPlaying) {
+        playAudio(targetTime);
+    } else {
+        startTimeOffset = targetTime;
+    }
+});
+seekBar.addEventListener("change", () => isDraggingSeek = false);
+
+document.getElementById("speed-bar").addEventListener("input", (e) => {
+    hiSpeed = parseFloat(e.target.value);
+    document.getElementById("speed-val").innerText = hiSpeed.toFixed(1);
+});
+
+document.getElementById("vol-bar").addEventListener("input", (e) => {
+    if (gainNode) {
+        gainNode.gain.value = parseFloat(e.target.value);
+    }
+});
+
+requestAnimationFrame(update);
+</script>
+</body>
+</html>
