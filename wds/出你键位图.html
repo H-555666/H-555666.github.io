@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>街机控制器键位映射图 (CHUNITHM / Segatools)</title>
+    <style>
+        :root {
+            --bg-color: #12141a;
+            --keyboard-bg: #1e222d;
+            --key-default: #2a2f3e;
+            --key-border: #3d4458;
+            --text-main: #f0f3f8;
+            --text-sub: #8d96aa;
+            
+            /* 功能配色 */
+            --color-sys: #ff4757;        /* 系统控制: F1-F3 */
+            --color-ir: #00d2d3;         /* IR 空中感应: Q W E R T Y */
+            --color-slider-1: #2ed573;   /* 滑条左半区: 32 ~ 17 */
+            --color-slider-2: #ffa502;   /* 滑条右半区: 16 ~ 1 */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .subtitle {
+            color: var(--text-sub);
+            font-size: 14px;
+        }
+
+        /* 图例区域 */
+        .legend-container {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        /* 键盘容器 */
+        .keyboard-wrapper {
+            background-color: var(--keyboard-bg);
+            padding: 22px;
+            border-radius: 16px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08);
+            max-width: 1080px;
+            width: 100%;
+        }
+
+        .keyboard {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .row {
+            display: flex;
+            gap: 7px;
+            width: 100%;
+        }
+
+        /* F键专用轻量行 */
+        .row.row-f {
+            margin-bottom: 6px;
+        }
+
+        .row.row-f .key {
+            height: 38px;
+            padding: 4px 6px;
+        }
+
+        .row.row-f .key .main-label {
+            font-size: 12px;
+        }
+
+        /* 键帽样式 */
+        .key {
+            background: var(--key-default);
+            height: 56px;
+            border-radius: 7px;
+            border-bottom: 3px solid var(--key-border);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 5px 7px;
+            flex: 1;
+            position: relative;
+            transition: all 0.08s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .key .main-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .key .fn-label {
+            font-size: 10.5px;
+            font-weight: 600;
+            text-align: right;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* 按键按压物理特效 */
+        .key.active, .key:active {
+            transform: translateY(2px);
+            border-bottom-width: 1px;
+            filter: brightness(1.3);
+            box-shadow: 0 0 14px currentColor;
+        }
+
+        /* 特殊按键宽度 */
+        .key.w-0-5  { flex: 0.5; }
+        .key.w-1-25 { flex: 1.25; }
+        .key.w-1-5  { flex: 1.5; }
+        .key.w-1-75 { flex: 1.75; }
+        .key.w-2    { flex: 2; }
+        .key.w-2-25 { flex: 2.25; }
+        .key.w-2-75 { flex: 2.75; }
+        .key.w-space{ flex: 6.25; }
+
+        /* 功能色彩高亮 */
+        .key.fn-sys {
+            border-color: var(--color-sys);
+            background: rgba(255, 71, 87, 0.15);
+            color: var(--color-sys);
+        }
+        .key.fn-sys .fn-label { color: var(--color-sys); }
+
+        .key.fn-ir {
+            border-color: var(--color-ir);
+            background: rgba(0, 210, 211, 0.15);
+            color: var(--color-ir);
+        }
+        .key.fn-ir .fn-label { color: var(--color-ir); }
+
+        .key.fn-slider-1 {
+            border-color: var(--color-slider-1);
+            background: rgba(46, 213, 115, 0.15);
+            color: var(--color-slider-1);
+        }
+        .key.fn-slider-1 .fn-label { color: var(--color-slider-1); font-weight: bold; }
+
+        .key.fn-slider-2 {
+            border-color: var(--color-slider-2);
+            background: rgba(255, 165, 2, 0.15);
+            color: var(--color-slider-2);
+        }
+        .key.fn-slider-2 .fn-label { color: var(--color-slider-2); font-weight: bold; }
+
+        /* 底部说明文档 */
+        .info-panel {
+            margin-top: 25px;
+            max-width: 1080px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 16px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 13px;
+            color: var(--text-sub);
+            line-height: 1.6;
+        }
+
+        .info-panel strong {
+            color: var(--text-main);
+        }
+
+        .info-panel ul {
+            margin-left: 20px;
+            margin-top: 6px;
+        }
+
+        .info-panel code {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #ff9ff3;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>街机 32 键独立映射布局图 (CHUNITHM)</h1>
+        <p class="subtitle">已适配 32 Cell 独立无合并 Slider + AIR 红外感应 + F 区系统功能控制</p>
+    </header>
+
+    <!-- 图例 -->
+    <div class="legend-container">
+        <div class="legend-item">
+            <span class="legend-dot" style="background: var(--color-sys);"></span>
+            <span>系统控制 (F1 Test / F2 Service / F3 Coin)</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-dot" style="background: var(--color-ir);"></span>
+            <span>AIR 空中红外感应 (IR 1-6)</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-dot" style="background: var(--color-slider-1);"></span>
+            <span>滑条左半区 (Cell 32-17)</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-dot" style="background: var(--color-slider-2);"></span>
+            <span>滑条右半区 (Cell 16-1)</span>
+        </div>
+    </div>
+
+    <!-- 键盘实体展示 -->
+    <div class="keyboard-wrapper">
+        <div class="keyboard">
+            
+            <!-- ROW 0: F-KEYS -->
+            <div class="row row-f">
+                <div class="key" data-key="Escape"><span class="main-label">Esc</span></div>
+                <div class="key w-0-5" style="opacity:0; pointer-events:none;"></div>
+                <div class="key fn-sys" data-key="F1"><span class="main-label">F1</span><span class="fn-label">TEST</span></div>
+                <div class="key fn-sys" data-key="F2"><span class="main-label">F2</span><span class="fn-label">SERVICE</span></div>
+                <div class="key fn-sys" data-key="F3"><span class="main-label">F3</span><span class="fn-label">COIN</span></div>
+                <div class="key" data-key="F4"><span class="main-label">F4</span></div>
+                <div class="key w-0-5" style="opacity:0; pointer-events:none;"></div>
+                <div class="key" data-key="F5"><span class="main-label">F5</span></div>
+                <div class="key" data-key="F6"><span class="main-label">F6</span></div>
+                <div class="key" data-key="F7"><span class="main-label">F7</span></div>
+                <div class="key" data-key="F8"><span class="main-label">F8</span></div>
+                <div class="key w-0-5" style="opacity:0; pointer-events:none;"></div>
+                <div class="key" data-key="F9"><span class="main-label">F9</span></div>
+                <div class="key" data-key="F10"><span class="main-label">F10</span></div>
+                <div class="key" data-key="F11"><span class="main-label">F11</span></div>
+                <div class="key" data-key="F12"><span class="main-label">F12</span></div>
+            </div>
+
+            <!-- ROW 1: 数字区 -->
+            <div class="row">
+                <div class="key" data-key="Backquote"><span class="main-label">~ `</span></div>
+                <div class="key fn-slider-1" data-key="Digit1"><span class="main-label">1</span><span class="fn-label">Cell 31</span></div>
+                <div class="key fn-slider-1" data-key="Digit2"><span class="main-label">2</span><span class="fn-label">Cell 29</span></div>
+                <div class="key fn-slider-1" data-key="Digit3"><span class="main-label">3</span><span class="fn-label">Cell 27</span></div>
+                <div class="key fn-slider-1" data-key="Digit4"><span class="main-label">4</span><span class="fn-label">Cell 25</span></div>
+                <div class="key fn-slider-1" data-key="Digit5"><span class="main-label">5</span><span class="fn-label">Cell 23</span></div>
+                <div class="key fn-slider-1" data-key="Digit6"><span class="main-label">6</span><span class="fn-label">Cell 21</span></div>
+                <div class="key fn-slider-1" data-key="Digit7"><span class="main-label">7</span><span class="fn-label">Cell 19</span></div>
+                <div class="key fn-slider-1" data-key="Digit8"><span class="main-label">8</span><span class="fn-label">Cell 17</span></div>
+                <div class="key fn-slider-2" data-key="Digit9"><span class="main-label">9</span><span class="fn-label">Cell 15</span></div>
+                <div class="key fn-slider-2" data-key="Digit0"><span class="main-label">0</span><span class="fn-label">Cell 13</span></div>
+                <div class="key fn-slider-2" data-key="Minus"><span class="main-label">-</span><span class="fn-label">Cell 11</span></div>
+                <div class="key fn-slider-2" data-key="Equal"><span class="main-label">=</span><span class="fn-label">Cell 9</span></div>
+                <div class="key w-2" data-key="Backspace"><span class="main-label">Backspace</span></div>
+            </div>
+
+            <!-- ROW 2: QWERTY 行 -->
+            <div class="row">
+                <div class="key w-1-5" data-key="Tab"><span class="main-label">Tab</span></div>
+                <div class="key fn-ir" data-key="KeyQ"><span class="main-label">Q</span><span class="fn-label">IR 3</span></div>
+                <div class="key fn-ir" data-key="KeyW"><span class="main-label">W</span><span class="fn-label">IR 2</span></div>
+                <div class="key fn-ir" data-key="KeyE"><span class="main-label">E</span><span class="fn-label">IR 1</span></div>
+                <div class="key fn-ir" data-key="KeyR"><span class="main-label">R</span><span class="fn-label">IR 6</span></div>
+                <div class="key fn-ir" data-key="KeyT"><span class="main-label">T</span><span class="fn-label">IR 5</span></div>
+                <div class="key fn-ir" data-key="KeyY"><span class="main-label">Y</span><span class="fn-label">IR 4</span></div>
+                <div class="key fn-slider-2" data-key="KeyU"><span class="main-label">U</span><span class="fn-label">Cell 7</span></div>
+                <div class="key fn-slider-2" data-key="KeyI"><span class="main-label">I</span><span class="fn-label">Cell 5</span></div>
+                <div class="key fn-slider-2" data-key="KeyO"><span class="main-label">O</span><span class="fn-label">Cell 3</span></div>
+                <div class="key fn-slider-2" data-key="KeyP"><span class="main-label">P</span><span class="fn-label">Cell 1</span></div>
+                <div class="key" data-key="BracketLeft"><span class="main-label">[</span></div>
+                <div class="key" data-key="BracketRight"><span class="main-label">]</span></div>
+                <div class="key w-1-5" data-key="Backslash"><span class="main-label">\</span></div>
+            </div>
+
+            <!-- ROW 3: ASDF 行 -->
+            <div class="row">
+                <div class="key w-1-75" data-key="CapsLock"><span class="main-label">Caps</span></div>
+                <div class="key fn-slider-1" data-key="KeyA"><span class="main-label">A</span><span class="fn-label">Cell 32</span></div>
+                <div class="key fn-slider-1" data-key="KeyS"><span class="main-label">S</span><span class="fn-label">Cell 30</span></div>
+                <div class="key fn-slider-1" data-key="KeyD"><span class="main-label">D</span><span class="fn-label">Cell 28</span></div>
+                <div class="key fn-slider-1" data-key="KeyF"><span class="main-label">F</span><span class="fn-label">Cell 26</span></div>
+                <div class="key fn-slider-1" data-key="KeyG"><span class="main-label">G</span><span class="fn-label">Cell 24</span></div>
+                <div class="key fn-slider-1" data-key="KeyH"><span class="main-label">H</span><span class="fn-label">Cell 22</span></div>
+                <div class="key fn-slider-1" data-key="KeyJ"><span class="main-label">J</span><span class="fn-label">Cell 20</span></div>
+                <div class="key fn-slider-1" data-key="KeyK"><span class="main-label">K</span><span class="fn-label">Cell 18</span></div>
+                <div class="key fn-slider-2" data-key="KeyL"><span class="main-label">L</span><span class="fn-label">Cell 16</span></div>
+                <div class="key" data-key="Semicolon"><span class="main-label">;</span></div>
+                <div class="key" data-key="Quote"><span class="main-label">'</span></div>
+                <div class="key w-2-25" data-key="Enter"><span class="main-label">Enter</span></div>
+            </div>
+
+            <!-- ROW 4: ZXCV 行 -->
+            <div class="row">
+                <div class="key w-2-25" data-key="ShiftLeft"><span class="main-label">Shift</span></div>
+                <div class="key fn-slider-2" data-key="KeyZ"><span class="main-label">Z</span><span class="fn-label">Cell 14</span></div>
+                <div class="key fn-slider-2" data-key="KeyX"><span class="main-label">X</span><span class="fn-label">Cell 12</span></div>
+                <div class="key fn-slider-2" data-key="KeyC"><span class="main-label">C</span><span class="fn-label">Cell 10</span></div>
+                <div class="key fn-slider-2" data-key="KeyV"><span class="main-label">V</span><span class="fn-label">Cell 8</span></div>
+                <div class="key fn-slider-2" data-key="KeyB"><span class="main-label">B</span><span class="fn-label">Cell 6</span></div>
+                <div class="key fn-slider-2" data-key="KeyN"><span class="main-label">N</span><span class="fn-label">Cell 4</span></div>
+                <div class="key fn-slider-2" data-key="KeyM"><span class="main-label">M</span><span class="fn-label">Cell 2</span></div>
+                <div class="key" data-key="Comma"><span class="main-label">,</span></div>
+                <div class="key" data-key="Period"><span class="main-label">.</span></div>
+                <div class="key" data-key="Slash"><span class="main-label">/</span></div>
+                <div class="key w-2-75" data-key="ShiftRight"><span class="main-label">Shift</span></div>
+            </div>
+
+            <!-- ROW 5: 底部控制行 -->
+            <div class="row">
+                <div class="key w-1-25" data-key="ControlLeft"><span class="main-label">Ctrl</span></div>
+                <div class="key w-1-25" data-key="MetaLeft"><span class="main-label">Win</span></div>
+                <div class="key w-1-25" data-key="AltLeft"><span class="main-label">Alt</span></div>
+                <div class="key w-space" data-key="Space"><span class="main-label">Space</span></div>
+                <div class="key w-1-25" data-key="AltRight"><span class="main-label">Alt</span></div>
+                <div class="key w-1-25" data-key="ContextMenu"><span class="main-label">Menu</span></div>
+                <div class="key w-1-25" data-key="ControlRight"><span class="main-label">Ctrl</span></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 详细说明 -->
+    <div class="info-panel">
+        <strong>💡 32 键独立映射逻辑解析：</strong>
+        <ul>
+            <li><strong>上排触控点（奇数 Cell 31 ~ 1）：</strong> 映射为 <code>1 ~ =</code> (12键) 以及 <code>U, I, O, P</code> (4键)，由左至右平铺展开。</li>
+            <li><strong>下排触控点（偶数 Cell 32 ~ 2）：</strong> 映射为 <code>A ~ L</code> (9键) 以及 <code>Z ~ M</code> (7键)，覆盖主键盘核心手势区。</li>
+            <li><strong>系统控制键位：</strong> 原 <code>1, 2, 3</code> 已上移至顶部 <code>F1 (TEST)</code>, <code>F2 (SERVICE)</code>, <code>F3 (COIN)</code>。</li>
+            <li><strong>实时按键测试：</strong> 支持全键盘实时按键高亮响应（已内置屏蔽 F1 弹出浏览器帮助）。</li>
+        </ul>
+    </div>
+
+    <!-- 交互脚本 -->
+    <script>
+        window.addEventListener('keydown', (e) => {
+            // 屏蔽 F1~F3 等默认浏览器行为，防止弹出系统帮助
+            if (['F1', 'F2', 'F3'].includes(e.code)) {
+                e.preventDefault();
+            }
+            const el = document.querySelector(`.key[data-key="${e.code}"]`);
+            if (el) el.classList.add('active');
+        });
+
+        window.addEventListener('keyup', (e) => {
+            const el = document.querySelector(`.key[data-key="${e.code}"]`);
+            if (el) el.classList.remove('active');
+        });
+    </script>
+</body>
+</html>
