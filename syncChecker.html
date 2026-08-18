@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实时文本/文件对比器</title>
+    <!-- 引入轻量级文本 Diff 库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/5.2.0/diff.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            overflow: hidden;
+        }
+
+        /* 顶部工具栏 */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 16px;
+            background-color: #252526;
+            border-bottom: 1px solid #3c3c3c;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .header-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+        }
+
+        .header-center {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: #2d2d2d;
+            padding: 4px 12px;
+            border-radius: 4px;
+        }
+
+        select, button {
+            background-color: #3c3c3c;
+            color: #cccccc;
+            border: 1px solid #555;
+            padding: 4px 8px;
+            border-radius: 3px;
+            outline: none;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        select:focus, button:focus {
+            border-color: #007acc;
+        }
+
+        .switch-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* 主工作区 */
+        .workspace {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 49px);
+            position: relative;
+        }
+
+        .pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            border-right: 1px solid #3c3c3c;
+            overflow: hidden;
+        }
+
+        .pane:last-child {
+            border-right: none;
+        }
+
+        .pane-title {
+            padding: 4px 12px;
+            background: #2d2d2d;
+            font-size: 12px;
+            color: #888;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #3c3c3c;
+        }
+
+        /* 拖拽区域与编辑器 */
+        .editor-container {
+            position: relative;
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            background: #1e1e1e;
+        }
+
+        /* 行号 */
+        .line-numbers {
+            width: 45px;
+            background-color: #1e1e1e;
+            color: #6e7681;
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 13px;
+            line-height: 20px;
+            text-align: right;
+            padding: 10px 8px 10px 0;
+            user-select: none;
+            border-right: 1px solid #333;
+            overflow: hidden;
+        }
+
+        .text-area-wrapper {
+            position: relative;
+            flex: 1;
+            height: 100%;
+        }
+
+        textarea, .diff-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 10px;
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 13px;
+            line-height: 20px;
+            white-space: pre;
+            overflow: auto;
+            border: none;
+            outline: none;
+            tab-size: 4;
+        }
+
+        textarea {
+            color: #d4d4d4;
+            background: transparent;
+            resize: none;
+            z-index: 2;
+        }
+
+        /* 右侧只读/高亮叠加层 */
+        .diff-overlay {
+            color: transparent;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* 高亮样式 */
+        .diff-add {
+            background-color: rgba(46, 160, 67, 0.25);
+        }
+        .diff-add-char {
+            background-color: rgba(46, 160, 67, 0.6);
+            color: #fff;
+            border-radius: 2px;
+        }
+        .diff-mod {
+            background-color: rgba(210, 153, 34, 0.2);
+        }
+        .diff-mod-char {
+            background-color: rgba(210, 153, 34, 0.55);
+            color: #fff;
+            border-radius: 2px;
+        }
+
+        /* 拖拽浮层提示 */
+        .drag-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 122, 204, 0.2);
+            border: 2px dashed #007acc;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        /* 弹窗 Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-content {
+            background: #252526;
+            padding: 20px;
+            border-radius: 6px;
+            border: 1px solid #454545;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        .modal-content p {
+            margin-bottom: 20px;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 顶部配置栏 -->
+    <header>
+        <!-- 左侧编码 -->
+        <div class="header-section">
+            <span>左侧编码:</span>
+            <select id="left-encoding">
+                <option value="utf-8" selected>UTF-8</option>
+                <option value="gbk">GBK / GB2312</option>
+                <option value="utf-16le">UTF-16 LE</option>
+                <option value="big5">Big5</option>
+                <option value="iso-8859-1">ISO-8859-1</option>
+            </select>
+        </div>
+
+        <!-- 居中功能区 -->
+        <div class="header-center">
+            <label class="switch-label">
+                <input type="checkbox" id="sync-scroll-toggle" checked>
+                <span>同步滚动</span>
+            </label>
+            <label class="switch-label">
+                <input type="checkbox" id="sync-cursor-toggle" checked>
+                <span>同步光标/位置</span>
+            </label>
+            <button id="manual-diff-btn">立即比对</button>
+            <span id="diff-status" style="color: #4ec9b0; font-size: 12px;">实时同步中</span>
+        </div>
+
+        <!-- 右侧编码 -->
+        <div class="header-section">
+            <span>右侧编码:</span>
+            <select id="right-encoding">
+                <option value="utf-8" selected>UTF-8</option>
+                <option value="gbk">GBK / GB2312</option>
+                <option value="utf-16le">UTF-16 LE</option>
+                <option value="big5">Big5</option>
+                <option value="iso-8859-1">ISO-8859-1</option>
+            </select>
+        </div>
+    </header>
+
+    <!-- 主编辑区 -->
+    <div class="workspace">
+        <!-- 左侧面板 (基准文件) -->
+        <div class="pane" id="left-pane">
+            <div class="pane-title">
+                <span>左侧文件 (原内容/基准)</span>
+                <span id="left-info">行数: 0</span>
+            </div>
+            <div class="editor-container">
+                <div class="line-numbers" id="left-lines">1</div>
+                <div class="text-area-wrapper">
+                    <textarea id="left-text" placeholder="拖入文件或在此输入原文本..."></textarea>
+                </div>
+                <div class="drag-overlay" id="left-drag">拖拽文件至此加载</div>
+            </div>
+        </div>
+
+        <!-- 右侧面板 (比对差异) -->
+        <div class="pane" id="right-pane">
+            <div class="pane-title">
+                <span>右侧文件 (修改后内容/高亮显示差异)</span>
+                <span id="right-info">差异: 0 处</span>
+            </div>
+            <div class="editor-container">
+                <div class="line-numbers" id="right-lines">1</div>
+                <div class="text-area-wrapper">
+                    <div class="diff-overlay" id="right-overlay"></div>
+                    <textarea id="right-text" placeholder="拖入文件或在此输入对比文本..."></textarea>
+                </div>
+                <div class="drag-overlay" id="right-drag">拖拽文件至此加载</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 行数不一致/同步确认弹窗 -->
+    <div class="modal" id="sync-modal">
+        <div class="modal-content">
+            <p id="modal-msg">两侧内容行数差异较大，强行同步可能导致显示错位，是否仍要强制对齐该位置？</p>
+            <div class="modal-actions">
+                <button id="modal-confirm" style="background:#007acc;color:#fff;">仍要同步</button>
+                <button id="modal-cancel">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM 元素获取
+        const leftText = document.getElementById('left-text');
+        const rightText = document.getElementById('right-text');
+        const rightOverlay = document.getElementById('right-overlay');
+        const leftLines = document.getElementById('left-lines');
+        const rightLines = document.getElementById('right-lines');
+        const leftEncoding = document.getElementById('left-encoding');
+        const rightEncoding = document.getElementById('right-encoding');
+        const syncScrollToggle = document.getElementById('sync-scroll-toggle');
+        const syncCursorToggle = document.getElementById('sync-cursor-toggle');
+        const diffStatus = document.getElementById('diff-status');
+        const rightInfo = document.getElementById('right-info');
+        const leftInfo = document.getElementById('left-info');
+
+        // 文件 Buffer 暂存（用于编码切换时重新解析）
+        let leftFileBuffer = null;
+        let rightFileBuffer = null;
+
+        // 同步锁
+        let isSyncingScroll = false;
+        let isSyncingCursor = false;
+
+        /* ================= 1. 文件拖入与编码解析 ================= */
+
+        function setupDragAndDrop(paneId, dragOverlayId, setBufferCallback, textarea, selectEncoding) {
+            const pane = document.getElementById(paneId);
+            const overlay = document.getElementById(dragOverlayId);
+
+            pane.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                overlay.style.display = 'flex';
+            });
+
+            pane.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                overlay.style.display = 'none';
+            });
+
+            pane.addEventListener('drop', (e) => {
+                e.preventDefault();
+                overlay.style.display = 'none';
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    const reader = new FileReader();
+                    reader.onload = function(evt) {
+                        const buffer = evt.target.result;
+                        setBufferCallback(buffer);
+                        decodeAndSetText(buffer, selectEncoding.value, textarea);
+                        render();
+                    };
+                    reader.readAsArrayBuffer(file);
+                }
+            });
+        }
+
+        function decodeAndSetText(buffer, encoding, textarea) {
+            if (!buffer) return;
+            try {
+                const decoder = new TextDecoder(encoding);
+                textarea.value = decoder.decode(buffer);
+            } catch (err) {
+                alert(`解码失败，可能是不支持的编码格式: ${encoding}`);
+            }
+        }
+
+        // 初始化两侧拖拽绑定
+        setupDragAndDrop('left-pane', 'left-drag', (buf) => { leftFileBuffer = buf; }, leftText, leftEncoding);
+        setupDragAndDrop('right-pane', 'right-drag', (buf) => { rightFileBuffer = buf; }, rightText, rightEncoding);
+
+        // 编码切换事件
+        leftEncoding.addEventListener('change', () => {
+            if (leftFileBuffer) {
+                decodeAndSetText(leftFileBuffer, leftEncoding.value, leftText);
+                render();
+            }
+        });
+
+        rightEncoding.addEventListener('change', () => {
+            if (rightFileBuffer) {
+                decodeAndSetText(rightFileBuffer, rightEncoding.value, rightText);
+                render();
+            }
+        });
+
+        /* ================= 2. 行号与实时 Diff 高亮 ================= */
+
+        function updateLineNumbers(text, container) {
+            const lines = text.split('\n').length;
+            let html = '';
+            for (let i = 1; i <= lines; i++) {
+                html += i + '<br>';
+            }
+            container.innerHTML = html;
+            return lines;
+        }
+
+        // 执行 Diff 并渲染右侧叠加层
+        function updateDiff() {
+            const text1 = leftText.value;
+            const text2 = rightText.value;
+
+            const leftLineCount = updateLineNumbers(text1, leftLines);
+            const rightLineCount = updateLineNumbers(text2, rightLines);
+
+            leftInfo.innerText = `行数: ${leftLineCount}`;
+
+            // 利用 jsdiff 比对行差异
+            const diff = Diff.diffLines(text1, text2);
+            let overlayHTML = '';
+            let diffCount = 0;
+
+            const lines1 = text1.split('\n');
+            const lines2 = text2.split('\n');
+
+            // 逐行进行精细化字符差异检测
+            const maxLines = lines2.length;
+            for (let i = 0; i < maxLines; i++) {
+                const l1 = lines1[i];
+                const l2 = lines2[i];
+
+                if (l1 === undefined) {
+                    // 右侧完全新增的行
+                    overlayHTML += `<div class="diff-add">${escapeHtml(l2 || ' ')}</div>`;
+                    diffCount++;
+                } else if (l1 !== l2) {
+                    // 行内容被修改 -> 字符级比对
+                    diffCount++;
+                    const charDiff = Diff.diffChars(l1, l2);
+                    let lineHTML = '';
+                    charDiff.forEach(part => {
+                        if (part.added) {
+                            lineHTML += `<span class="diff-mod-char">${escapeHtml(part.value)}</span>`;
+                        } else if (!part.removed) {
+                            lineHTML += escapeHtml(part.value);
+                        }
+                    });
+                    overlayHTML += `<div class="diff-mod">${lineHTML || '&nbsp;'}</div>`;
+                } else {
+                    // 相同内容
+                    overlayHTML += `<div>${escapeHtml(l2 || ' ')}</div>`;
+                }
+            }
+
+            rightOverlay.innerHTML = overlayHTML;
+            rightInfo.innerText = `差异: ${diffCount} 行`;
+        }
+
+        function escapeHtml(string) {
+            return String(string)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function render() {
+            updateDiff();
+        }
+
+        // 实时输入监听
+        leftText.addEventListener('input', render);
+        rightText.addEventListener('input', render);
+        document.getElementById('manual-diff-btn').addEventListener('click', render);
+
+        /* ================= 3. 滚动与光标位置同步 ================= */
+
+        // 滚动同步
+        function syncScroll(source, target, lineSource, lineTarget, overlay) {
+            if (!syncScrollToggle.checked || isSyncingScroll) return;
+            isSyncingScroll = true;
+            target.scrollTop = source.scrollTop;
+            target.scrollLeft = source.scrollLeft;
+            lineSource.scrollTop = source.scrollTop;
+            lineTarget.scrollTop = source.scrollTop;
+            if (overlay) {
+                overlay.scrollTop = source.scrollTop;
+                overlay.scrollLeft = source.scrollLeft;
+            }
+            setTimeout(() => { isSyncingScroll = false; }, 20);
+        }
+
+        leftText.addEventListener('scroll', () => {
+            syncScroll(leftText, rightText, leftLines, rightLines, rightOverlay);
+        });
+
+        rightText.addEventListener('scroll', () => {
+            syncScroll(rightText, leftText, rightLines, leftLines, rightOverlay);
+        });
+
+        // 光标与选区同步
+        function getLineAndCol(textarea) {
+            const pos = textarea.selectionStart;
+            const lines = textarea.value.substr(0, pos).split("\n");
+            return { line: lines.length - 1, col: lines[lines.length - 1].length };
+        }
+
+        function setPosByLineAndCol(textarea, line, col) {
+            const lines = textarea.value.split("\n");
+            let pos = 0;
+            for (let i = 0; i < line && i < lines.length; i++) {
+                pos += lines[i].length + 1;
+            }
+            pos += Math.min(col, (lines[line] || '').length);
+            textarea.setSelectionRange(pos, pos);
+        }
+
+        function handleCursorSync(source, target) {
+            if (!syncCursorToggle.checked || isSyncingCursor) return;
+
+            const srcPos = getLineAndCol(source);
+            const targetLines = target.value.split('\n').length;
+
+            // 检查行数不对称时的错位
+            if (srcPos.line >= targetLines) {
+                showModal("检测到目标文件没有对应的行（两侧行数不匹配），是否仍要将光标移动到末尾？", () => {
+                    isSyncingCursor = true;
+                    setPosByLineAndCol(target, targetLines - 1, srcPos.col);
+                    target.focus();
+                    setTimeout(() => isSyncingCursor = false, 50);
+                });
+                return;
+            }
+
+            isSyncingCursor = true;
+            setPosByLineAndCol(target, srcPos.line, srcPos.col);
+            setTimeout(() => isSyncingCursor = false, 50);
+        }
+
+        leftText.addEventListener('keyup', () => handleCursorSync(leftText, rightText));
+        leftText.addEventListener('click', () => handleCursorSync(leftText, rightText));
+        rightText.addEventListener('keyup', () => handleCursorSync(rightText, leftText));
+        rightText.addEventListener('click', () => handleCursorSync(rightText, leftText));
+
+        /* ================= 4. 对齐弹窗逻辑 ================= */
+
+        const modal = document.getElementById('sync-modal');
+        const modalMsg = document.getElementById('modal-msg');
+        const modalConfirm = document.getElementById('modal-confirm');
+        const modalCancel = document.getElementById('modal-cancel');
+        let currentModalCallback = null;
+
+        function showModal(msg, onConfirm) {
+            modalMsg.innerText = msg;
+            currentModalCallback = onConfirm;
+            modal.style.display = 'flex';
+        }
+
+        modalConfirm.onclick = () => {
+            modal.style.display = 'none';
+            if (currentModalCallback) currentModalCallback();
+        };
+
+        modalCancel.onclick = () => {
+            modal.style.display = 'none';
+        };
+
+        // 初始化
+        render();
+    </script>
+</body>
+</html>
