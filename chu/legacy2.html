@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>CHUNITHM c2s Pro Studio - 终极效率版</title>
+<title>CHUNITHM c2s Pro Studio - 终极版</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #12141a; color: #e2e8f0; display: flex; height: 100vh; overflow: hidden; }
@@ -26,7 +26,7 @@
     display: flex; align-items: center; padding: 0 20px; gap: 12px; font-size: 13px; z-index: 100;
   }
 
-  /* 通用组件 */
+  /* 通用组件与卡片 */
   .section-card { background: #202430; border: 1px solid #2d3748; border-radius: 6px; padding: 10px; }
   .section-title { font-size: 12px; font-weight: 700; color: #a0aec0; text-transform: uppercase; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
   label { display: block; font-size: 11px; color: #cbd5e0; margin-bottom: 3px; }
@@ -54,6 +54,7 @@
   .diff-row:hover { filter: brightness(1.2); }
   .diff-row.highlight { outline: 1px solid #00d2ff; font-weight: bold; }
   
+  /* Git Diff 状态颜色 */
   .diff-same { color: #a0aec0; }
   .diff-add { background: rgba(56, 161, 105, 0.22); color: #68d391; }
   .diff-del { background: rgba(229, 62, 62, 0.22); color: #fc8181; text-decoration: line-through; }
@@ -92,14 +93,14 @@
   <div style="width: 1px; height: 20px; background: #4a5568; margin: 0 4px;"></div>
 
   <span>吸附网格:</span>
-  <select id="grid-snap" style="width: 86px;">
-    <option value="1" selected>自由 (1 Tick)</option>
-    <option value="96">1/4 拍 (96)</option>
-    <option value="48">1/8 拍 (48)</option>
-    <option value="24">1/16 拍 (24)</option>
-    <option value="16">1/24 拍 (16)</option>
-    <option value="12">1/32 拍 (12)</option>
-    <option value="6">1/64 拍 (6)</option>
+  <select id="grid-snap" style="width: 78px;">
+    <option value="96">1/4 拍</option>
+    <option value="48">1/8 拍</option>
+    <option value="24" selected>1/16 拍</option>
+    <option value="16">1/24 拍</option>
+    <option value="12">1/32 拍</option>
+    <option value="6">1/64 拍</option>
+    <option value="1">自由 (1 Tick)</option>
   </select>
 
   <div style="margin-left: auto; display: flex; gap: 8px;">
@@ -167,8 +168,6 @@
             <option value="TAP">转为 TAP</option>
             <option value="CHR">转为 CHR(ExTAP)</option>
             <option value="FLK">转为 FLK</option>
-            <option value="HLD">转为 HLD</option>
-            <option value="SLD">转为 SLD</option>
             <option value="AIR">转为 AIR</option>
           </select>
           <button id="btn-batch-change">转换类型</button>
@@ -178,21 +177,21 @@
 
       <!-- 单选详细面板 -->
       <div id="single-inspector" style="display:none;">
-        <div style="font-size:11px; color:#718096; margin-bottom:4px;">唯一标识: <b id="ins-line" style="color:#cbd5e0;">-</b></div>
+        <div style="font-size:11px; color:#718096; margin-bottom:4px;">源码行号: <b id="ins-line" style="color:#cbd5e0;">-</b></div>
         <div class="grid-2">
           <div><label>类型 (Type)</label>
             <select id="ins-type">
               <option value="TAP">TAP</option>
               <option value="CHR">CHR (ExTAP)</option>
-              <option value="HLD">HLD (长按)</option>
+              <option value="HLD">HLD</option>
               <option value="FLK">FLK</option>
               <option value="AIR">AIR</option>
               <option value="AUL">AUL</option>
               <option value="AUR">AUR</option>
-              <option value="SLD">SLD (滑键)</option>
-              <option value="SLC">SLC (滑键中继)</option>
-              <option value="SXD">SXD (Ex滑键)</option>
-              <option value="SXC">SXC (Ex滑键中继)</option>
+              <option value="SLD">SLD</option>
+              <option value="SLC">SLC</option>
+              <option value="SXD">SXD</option>
+              <option value="SXC">SXC</option>
               <option value="SLP">SLP (变速)</option>
             </select>
           </div>
@@ -200,35 +199,18 @@
         </div>
         <div class="grid-3" style="margin-top:4px;">
           <div><label>Tick</label><input type="number" id="ins-tick"></div>
-          <div><label>起点轨道(0-15)</label><input type="number" id="ins-lane" min="0" max="15"></div>
-          <div><label>起点宽度(1-16)</label><input type="number" id="ins-width" min="1" max="16"></div>
+          <div><label>轨道(Lane 0-15)</label><input type="number" id="ins-lane" min="0" max="15"></div>
+          <div><label>宽度(1-16)</label><input type="number" id="ins-width" min="1" max="16"></div>
         </div>
 
-        <!-- 针对 HLD 与 SLD/SLC 的时长 -->
-        <div id="ins-dur-container" style="margin-top:4px; display:none;">
-          <label>时长 (Duration Ticks)</label>
-          <input type="number" id="ins-dur" min="1">
-        </div>
-
-        <!-- 仅 SLD / SLC / SXD / SXC 显示终点轨道与终点宽度 -->
-        <div id="ins-slide-end-container" class="grid-2" style="margin-top:4px; display:none; background:#181b24; padding:5px; border-radius:4px;">
-          <div><label>终点轨道(0-15)</label><input type="number" id="ins-next-lane" min="0" max="15"></div>
-          <div><label>终点宽度(1-16)</label><input type="number" id="ins-next-width" min="1" max="16"></div>
-        </div>
-
-        <!-- 长条尾部追加按键 (支持自定义按键类型，默认 FLK) -->
-        <div id="ins-tail-append-container" style="margin-top:6px; display:none;">
-          <div style="display:flex; gap:4px;">
-            <button id="btn-append-tail-note" class="success" style="flex:1;">➕ 在长条结尾添加</button>
-            <select id="tail-note-type" style="width:75px; font-weight:bold;">
-              <option value="FLK" selected>FLK</option>
-              <option value="TAP">TAP</option>
-              <option value="CHR">CHR</option>
-              <option value="AIR">AIR</option>
-              <option value="AUL">AUL</option>
-              <option value="AUR">AUR</option>
-            </select>
+        <!-- 仅长条/滑键显示时长和终点属性 -->
+        <div id="ins-extra-fields" style="margin-top:6px; display:none; background:#181b24; padding:6px; border-radius:4px;">
+          <div class="grid-3">
+            <div><label>时长(Dur)</label><input type="number" id="ins-dur"></div>
+            <div><label>终点轨道</label><input type="number" id="ins-next-lane" min="0" max="15"></div>
+            <div><label>终点宽度</label><input type="number" id="ins-next-width" min="1" max="16"></div>
           </div>
+          <button id="btn-append-tail-note" class="success" style="margin-top:6px; width:100%;">➕ 在长条结尾快速添加 TAP</button>
         </div>
 
         <!-- 方向与附着属性 (CHR/AIR等) -->
@@ -241,7 +223,7 @@
       </div>
 
       <div id="none-inspector" style="color:#718096; font-size:11px; text-align:center; padding:10px 0;">
-        点击音符查看属性<br>快捷键：Ctrl+C/V 复制粘贴 | ↑↓←→ 移动音符 | 空格 播放/暂停
+        点击音符查看属性<br>快捷键：Ctrl+C/V 复制粘贴 | ↑↓←→ 移动音符
       </div>
     </div>
 
@@ -305,14 +287,14 @@ let bpm = 150.0;
 let resolution = 384;
 let audioOffset = 0.0;
 let headerLines = [];
-let originalSourceLines = []; 
+let originalSourceLines = []; // 用于 Git Diff 对比的基准代码
 
 let audio = new Audio();
 let isPlaying = false;
 let currentTime = 0;
 let maxMeasures = 85;
 
-// 撤销 / 重做
+// 撤销 / 重做 (最多 10 步)
 const MAX_HISTORY = 10;
 let historyStack = [];
 let redoStack = [];
@@ -325,7 +307,7 @@ let selectBoxStart = { x: 0, y: 0 };
 let selectBoxEnd = { x: 0, y: 0 };
 
 // 复制 / 粘贴 系统
-let clipboard = []; 
+let clipboard = []; // { relTicks, relLane, width, type, dur, next_lane_rel, next_width, dir, parent, flag }
 let isPasting = false;
 let pasteGhostPos = { measure: 0, tick: 0, lane: 0 };
 
@@ -335,7 +317,7 @@ const ctx = canvas.getContext("2d");
 const LANES = 16;
 let laneWidth = 22;
 let trackWidth = laneWidth * LANES;
-let pixelsPerMeasure = 384; 
+let pixelsPerMeasure = 384; // 垂直像素高度，最高支持 4800px
 
 // ==================== 历史记录 (Undo/Redo) ====================
 function pushHistory() {
@@ -383,7 +365,7 @@ function parseC2S(text) {
   notes = [];
   headerLines = [];
   const lines = text.split(/\r?\n/);
-  originalSourceLines = lines.map(l => l.trim()).filter(l => l.length > 0);
+  originalSourceLines = lines.map(l => l.trim()).filter(l => l.length > 0); // 记录基准用于 diff
 
   let idGen = 1;
   for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
@@ -413,8 +395,7 @@ function parseC2S(text) {
         id: idGen++, type: cmd,
         measure: parseInt(parts[1]) || 0, tick: parseInt(parts[2]) || 0,
         lane: parseInt(parts[3]) || 0, width: parseInt(parts[4]) || 4,
-        dur: parseInt(parts[5]) || 28, next_lane: parseInt(parts[3]) || 0, next_width: parseInt(parts[4]) || 4,
-        dir: "", parent: "", flag: ""
+        dur: parseInt(parts[5]) || 28, next_lane: 0, next_width: 0, dir: "", parent: "", flag: ""
       });
     } else if (cmd === "CHR") {
       notes.push({
@@ -436,8 +417,8 @@ function parseC2S(text) {
         measure: parseInt(parts[1]) || 0, tick: parseInt(parts[2]) || 0,
         lane: parseInt(parts[3]) || 0, width: parseInt(parts[4]) || 4,
         dur: parseInt(parts[5]) || 48,
-        next_lane: parseInt(parts[6]) !== undefined ? parseInt(parts[6]) : parseInt(parts[3]) || 0,
-        next_width: parseInt(parts[7]) !== undefined ? parseInt(parts[7]) : parseInt(parts[4]) || 4,
+        next_lane: parseInt(parts[6]) || parseInt(parts[3]) || 0,
+        next_width: parseInt(parts[7]) || parseInt(parts[4]) || 4,
         parent: parts[8] || "SLD", dir: parts[9] || ""
       });
     } else if (cmd === "SLP") {
@@ -487,9 +468,7 @@ function generateC2SLines() {
     else if (["AIR", "AUL", "AUR"].includes(n.type)) out.push(`${n.type}\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.parent || "TAP"}\t${n.flag || "DEF"}`);
     else if (["SLD", "SLC", "SXD", "SXC"].includes(n.type)) {
       const extra = n.dir ? `\t${n.dir}` : "";
-      const nLane = n.next_lane !== undefined ? n.next_lane : n.lane;
-      const nWidth = n.next_width !== undefined ? n.next_width : n.width;
-      out.push(`${n.type}\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.dur}\t${nLane}\t${nWidth}\t${n.parent || "SLD"}${extra}`);
+      out.push(`${n.type}\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.dur}\t${n.next_lane}\t${n.next_width}\t${n.parent || "SLD"}${extra}`);
     } else if (n.type === "SLP") {
       out.push(`SLP\t${n.measure}\t${n.tick}\t${n.dur}\t${n.speed ? n.speed.toFixed(6) : "1.000000"}\t${n.flag || "0"}`);
     }
@@ -506,7 +485,7 @@ function exportC2S() {
   a.click();
 }
 
-// ==================== Git 风格 Diff ====================
+// ==================== Git 风格 Diff 引擎 ====================
 function computeLCSDiff(orig, curr) {
   const n = orig.length;
   const m = curr.length;
@@ -756,6 +735,7 @@ function render() {
       ctx.fill();
       ctx.stroke();
 
+      // 尾端小横杠
       ctx.fillStyle = isEx ? "#ffd700" : "#00d2ff";
       ctx.fillRect(endX, endY - 2, endW, 4);
 
@@ -837,6 +817,7 @@ function render() {
       ctx.fillStyle = "#f72585";
       ctx.beginPath();
       ctx.moveTo(x + w / 2 + 8, y - 14);
+      ctx.lineTo(x + w / 2 + 8, y - 14);
       ctx.lineTo(x + w / 2 + 2, y + 2);
       ctx.lineTo(x + w / 2 - 6, y - 8);
       ctx.closePath();
@@ -844,7 +825,7 @@ function render() {
     }
   }
 
-  // 7. 绘制 Ctrl+V 粘贴预览
+  // 7. 绘制 Ctrl+V 粘贴预览 (半透明跟随)
   if (isPasting && clipboard.length > 0) {
     ctx.save();
     ctx.globalAlpha = 0.55;
@@ -857,6 +838,7 @@ function render() {
       const gx = originX + targetLane * laneWidth;
       const gw = item.width * laneWidth;
 
+      // 虚线外框
       ctx.strokeStyle = "#00d2ff";
       ctx.setLineDash([3, 3]);
       ctx.strokeRect(gx, gy - 6, gw, 12);
@@ -890,7 +872,7 @@ function render() {
     ctx.restore();
   }
 
-  // 8. 多选选框
+  // 8. 多选框选框
   if (isSelectingBox) {
     ctx.strokeStyle = "#00d2ff";
     ctx.lineWidth = 1;
@@ -917,7 +899,7 @@ function render() {
   document.getElementById("measure-display").innerText = Math.floor(currentTicks / resolution);
 }
 
-// ==================== 缩放控制 (80px ~ 4800px) ====================
+// ==================== 缩放控制 (最高 4800px) ====================
 function setZoom(val) {
   pixelsPerMeasure = Math.max(80, Math.min(4800, val));
   document.getElementById("zoom-slider").value = pixelsPerMeasure;
@@ -929,7 +911,7 @@ document.getElementById("zoom-slider").addEventListener("input", (e) => setZoom(
 document.getElementById("btn-zoom-in").addEventListener("click", () => setZoom(pixelsPerMeasure * 1.25));
 document.getElementById("btn-zoom-out").addEventListener("click", () => setZoom(pixelsPerMeasure * 0.8));
 
-// ==================== 复制与粘贴 ====================
+// ==================== 复制与粘贴系统 ====================
 function copySelectedNotes() {
   if (selectedNoteIds.size === 0) return;
   const list = notes.filter(n => selectedNoteIds.has(n.id));
@@ -956,6 +938,8 @@ function copySelectedNotes() {
     parent: n.parent || "",
     flag: n.flag || ""
   }));
+
+  console.log(`已复制 ${clipboard.length} 个音符到剪贴板`);
 }
 
 function enterPasteMode() {
@@ -1037,7 +1021,7 @@ function moveSelectedNotes(dMeasure, dTick, dLane) {
   render();
 }
 
-// ==================== 快捷长条尾部添加自定义音符 (默认 FLK) ====================
+// ==================== 快捷长条尾部添加 TAP ====================
 document.getElementById("btn-append-tail-note").addEventListener("click", () => {
   if (selectedNoteIds.size !== 1) return;
   const note = notes.find(n => selectedNoteIds.has(n.id));
@@ -1049,26 +1033,20 @@ document.getElementById("btn-append-tail-note").addEventListener("click", () => 
   const endT = endTicks % resolution;
   const endLane = (note.next_lane !== undefined) ? note.next_lane : note.lane;
   const endWidth = (note.next_width !== undefined) ? note.next_width : note.width;
-  const appendType = document.getElementById("tail-note-type").value || "FLK";
 
-  const newNote = {
+  const newTap = {
     id: Date.now(),
-    type: appendType,
+    type: "TAP",
     measure: endM,
     tick: endT,
     lane: endLane,
     width: endWidth,
-    dur: 0,
-    next_lane: endLane,
-    next_width: endWidth,
-    dir: appendType === "CHR" ? "UP" : "",
-    parent: appendType === "AIR" || appendType === "AUL" || appendType === "AUR" ? "SLD" : "",
-    flag: "DEF"
+    dur: 0, next_lane: 0, next_width: 0, dir: "", parent: "", flag: ""
   };
 
-  notes.push(newNote);
+  notes.push(newTap);
   selectedNoteIds.clear();
-  selectedNoteIds.add(newNote.id);
+  selectedNoteIds.add(newTap.id);
 
   updateTotalMeasures();
   updateInspector();
@@ -1141,12 +1119,13 @@ canvas.addEventListener("mousedown", (e) => {
       render();
     }
   } else {
+    // 放置新音符
     if (clickX < originX || clickX > originX + trackWidth) return;
     
     pushHistory();
     const currentTicks = timeToTotalTicks(currentTime);
     const currentScrollY = (currentTicks / resolution) * pixelsPerMeasure;
-    const snap = parseInt(document.getElementById("grid-snap").value) || 1;
+    const snap = parseInt(document.getElementById("grid-snap").value) || 24;
 
     const rawTicks = Math.round(((judgeY - clickY + currentScrollY) / pixelsPerMeasure) * resolution);
     const snappedTicks = Math.max(0, Math.round(rawTicks / snap) * snap);
@@ -1191,7 +1170,7 @@ canvas.addEventListener("mousemove", (e) => {
   const currentScrollY = (currentTicks / resolution) * pixelsPerMeasure;
 
   if (isPasting) {
-    const snap = parseInt(document.getElementById("grid-snap").value) || 1;
+    const snap = parseInt(document.getElementById("grid-snap").value) || 24;
     const rawTicks = Math.round(((judgeY - mouseY + currentScrollY) / pixelsPerMeasure) * resolution);
     const snappedTicks = Math.max(0, Math.round(rawTicks / snap) * snap);
 
@@ -1230,25 +1209,14 @@ window.addEventListener("mouseup", () => {
   }
 });
 
-// 全局按键绑定（包含非直编模式下空格键优先控制播放）
+// 全局按键绑定
 window.addEventListener("keydown", (e) => {
-  // 空格键控制播放/暂停
-  if (e.code === "Space") {
-    // 只有在直编模式且光标在代码输入框中时，才允许输入空格
-    if (isRawCodeEdit && document.activeElement === document.getElementById("raw-code-textarea")) {
-      return;
-    }
-    e.preventDefault();
-    if (document.activeElement && document.activeElement.blur) {
-      document.activeElement.blur(); // 自动取消输入框焦点
-    }
-    togglePlay();
-    return;
-  }
-
   if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
 
-  if (e.code === "Escape") {
+  if (e.code === "Space") {
+    e.preventDefault();
+    togglePlay();
+  } else if (e.code === "Escape") {
     exitPasteMode();
   } else if (e.ctrlKey && e.code === "KeyC") {
     copySelectedNotes();
@@ -1278,7 +1246,7 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
-// ==================== 属性检查器与智能转换 ====================
+// ==================== 属性检查器 (智能显示/隐藏) ====================
 function updateInspector() {
   const selectCount = selectedNoteIds.size;
   const badge = document.getElementById("select-count");
@@ -1307,27 +1275,15 @@ function updateInspector() {
     document.getElementById("ins-lane").value = note.lane;
     document.getElementById("ins-width").value = note.width;
 
-    // HLD / SLD / SLC 逻辑区分
-    const isSlide = ["SLD", "SLC", "SXD", "SXC"].includes(note.type);
-    const isHold = (note.type === "HLD");
-    const hasDur = isSlide || isHold || (note.type === "SLP");
-
-    document.getElementById("ins-dur-container").style.display = hasDur ? "block" : "none";
-    if (hasDur) {
+    // 智能隐藏 / 显示
+    const isLongNote = ["HLD", "SLD", "SLC", "SXD", "SXC", "SLP"].includes(note.type);
+    document.getElementById("ins-extra-fields").style.display = isLongNote ? "block" : "none";
+    if (isLongNote) {
       document.getElementById("ins-dur").value = note.dur || 0;
+      document.getElementById("ins-next-lane").value = note.next_lane !== undefined ? note.next_lane : note.lane;
+      document.getElementById("ins-next-width").value = note.next_width !== undefined ? note.next_width : note.width;
     }
 
-    // 终点轨道和终点宽度仅对 Slide 显示
-    document.getElementById("ins-slide-end-container").style.display = isSlide ? "grid" : "none";
-    if (isSlide) {
-      document.getElementById("ins-next-lane").value = (note.next_lane !== undefined) ? note.next_lane : note.lane;
-      document.getElementById("ins-next-width").value = (note.next_width !== undefined) ? note.next_width : note.width;
-    }
-
-    // 尾部追加按钮面板 (对 HLD 和 Slide 均开放)
-    document.getElementById("ins-tail-append-container").style.display = (isSlide || isHold) ? "block" : "none";
-
-    // 方向与附着字段
     const hasDirOrParent = ["CHR", "AIR", "AUL", "AUR"].includes(note.type);
     document.getElementById("ins-dir-fields").style.display = hasDirOrParent ? "grid" : "none";
     if (hasDirOrParent) {
@@ -1342,7 +1298,6 @@ function updateInspector() {
   }
 }
 
-// 属性修改与智能补全
 function bindInspectorChange() {
   const fields = ["type", "measure", "tick", "lane", "width", "dur", "next-lane", "next-width", "dir", "parent"];
   fields.forEach(f => {
@@ -1353,31 +1308,11 @@ function bindInspectorChange() {
       if (!note) return;
 
       pushHistory();
-      if (f === "type") {
-        const oldType = note.type;
-        note.type = el.value;
-
-        // 如果由 HLD 或其他点音符改为 SLD/SLC/SXD/SXC，自动补齐终点参数
-        if (["SLD", "SLC", "SXD", "SXC"].includes(note.type)) {
-          if (note.next_lane === undefined || oldType === "HLD") note.next_lane = note.lane;
-          if (note.next_width === undefined || oldType === "HLD") note.next_width = note.width;
-          if (!note.dur) note.dur = 48;
-        } else if (note.type === "HLD") {
-          if (!note.dur) note.dur = 28;
-        }
-      }
+      if (f === "type") note.type = el.value;
       else if (f === "measure") note.measure = parseInt(el.value) || 0;
       else if (f === "tick") note.tick = parseInt(el.value) || 0;
-      else if (f === "lane") {
-        note.lane = parseInt(el.value) || 0;
-        // 如果是 HLD，终点轨道自动跟随
-        if (note.type === "HLD") note.next_lane = note.lane;
-      }
-      else if (f === "width") {
-        note.width = parseInt(el.value) || 1;
-        // 如果是 HLD，终点宽度自动跟随
-        if (note.type === "HLD") note.next_width = note.width;
-      }
+      else if (f === "lane") note.lane = parseInt(el.value) || 0;
+      else if (f === "width") note.width = parseInt(el.value) || 1;
       else if (f === "dur") note.dur = parseInt(el.value) || 0;
       else if (f === "next-lane") note.next_lane = parseInt(el.value) || 0;
       else if (f === "next-width") note.next_width = parseInt(el.value) || 1;
@@ -1391,32 +1326,6 @@ function bindInspectorChange() {
   });
 }
 bindInspectorChange();
-
-// 批量类型转换智能补全
-document.getElementById("btn-batch-change").addEventListener("click", () => {
-  if (selectedNoteIds.size === 0) return;
-  pushHistory();
-  const targetType = document.getElementById("batch-type").value;
-  notes.forEach(n => {
-    if (selectedNoteIds.has(n.id)) {
-      const oldType = n.type;
-      n.type = targetType;
-      if (["SLD", "SLC", "SXD", "SXC"].includes(targetType)) {
-        if (n.next_lane === undefined || oldType === "HLD") n.next_lane = n.lane;
-        if (n.next_width === undefined || oldType === "HLD") n.next_width = n.width;
-        if (!n.dur) n.dur = 48;
-      } else if (targetType === "HLD") {
-        if (!n.dur) n.dur = 28;
-        n.next_lane = n.lane;
-        n.next_width = n.width;
-      }
-      if (targetType === "CHR" && !n.dir) n.dir = "UP";
-    }
-  });
-  updateInspector();
-  syncCodeView();
-  render();
-});
 
 function deleteSelectedNotes() {
   if (selectedNoteIds.size === 0) return;
