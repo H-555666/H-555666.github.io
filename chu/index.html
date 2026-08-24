@@ -2,7 +2,8 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>CHUNITHM c2s Pro Studio - 终极效率版</title>
+<title>c2s Pro Studio</title>
+<link rel="shortcut icon" href="/wds/gf.png">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #12141a; color: #e2e8f0; display: flex; height: 100vh; overflow: hidden; }
@@ -76,7 +77,7 @@
 
 <!-- 顶部工具栏 -->
 <div id="header">
-  <div class="app-title">⚡ CHUNITHM c2s Studio</div>
+  <div class="app-title">⚡c2s Studio</div>
   
   <button id="btn-undo" title="撤回 (Ctrl+Z)" disabled>⮌ 撤回 (0)</button>
   <button id="btn-redo" title="重做 (Ctrl+Y)" disabled>⮎ 重做 (0)</button>
@@ -93,13 +94,13 @@
 
   <span>吸附网格:</span>
   <select id="grid-snap" style="width: 86px;">
-    <option value="1" selected>自由 (1 Tick)</option>
-    <option value="96">1/4 拍 (96)</option>
-    <option value="48">1/8 拍 (48)</option>
-    <option value="24">1/16 拍 (24)</option>
-    <option value="16">1/24 拍 (16)</option>
-    <option value="12">1/32 拍 (12)</option>
-    <option value="6">1/64 拍 (6)</option>
+    <option value="1" selected>1 Tick</option>
+    <option value="96">1/4拍(96)</option>
+    <option value="48">1/8拍(48)</option>
+    <option value="24">1/16拍(24)</option>
+    <option value="16">1/24拍(16)</option>
+    <option value="12">1/32拍(12)</option>
+    <option value="6">1/64拍(6)</option>
   </select>
 
   <div style="margin-left: auto; display: flex; gap: 8px;">
@@ -136,9 +137,9 @@
       <select id="tool-mode" style="font-weight: bold; color: #4facfe;">
         <option value="SELECT">👆 选择 / 框选工具 (Select)</option>
         <option value="TAP">🔴 TAP (普通红键)</option>
-        <option value="CHR">🟡 CHR / ExTAP (黄色键)</option>
+        <option value="CHR">🟡 CHR (黄色TAP)</option>
         <option value="HLD">🟠 HLD (地面长按)</option>
-        <option value="FLK">🔵 FLK (拂起 Flick)</option>
+        <option value="FLK">🔵 FLK (滑键 Flick)</option>
         <option value="AIR">🟢 AIR (绿色 空中向上)</option>
         <option value="AUL">🟣 AUL (紫色 空中向左上)</option>
         <option value="AUR">🟣 AUR (紫色 空中向右上)</option>
