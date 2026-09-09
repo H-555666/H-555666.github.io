@@ -2,36 +2,37 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>C2S 谱面演示与编辑工作台 - Pro Studio</title>
+<title>c2s Pro Studio</title>
+<link rel="shortcut icon" href="/wds/gf.png">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0e1017; color: #e2e8f0; display: flex; height: 100vh; overflow: hidden; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #12141a; color: #e2e8f0; display: flex; height: 100vh; overflow: hidden; }
   
   /* 顶部导航栏 */
   #header {
-    position: absolute; top: 0; left: 0; right: 0; height: 46px; background: #181b24; border-bottom: 1px solid #2d3748;
+    position: absolute; top: 0; left: 0; right: 0; height: 46px; background: #1a1d26; border-bottom: 1px solid #2d3748;
     display: flex; align-items: center; padding: 0 16px; gap: 10px; z-index: 100; font-size: 13px;
   }
   .app-title { font-weight: 700; color: #00d2ff; font-size: 15px; margin-right: 8px; display: flex; align-items: center; gap: 6px; }
   
   /* 主体分栏 */
   #app-body { display: flex; width: 100%; height: calc(100vh - 46px - 52px); margin-top: 46px; position: relative; }
-  #sidebar { width: 340px; background: #141720; border-right: 1px solid #282f3f; display: flex; flex-direction: column; padding: 12px; gap: 10px; overflow-y: auto; }
-  #main-viewport { flex: 1; position: relative; background: #08090d; display: flex; justify-content: center; overflow: hidden; }
-  #code-panel { width: 380px; background: #12141c; border-left: 1px solid #282f3f; display: flex; flex-direction: column; }
+  #sidebar { width: 340px; background: #171a23; border-right: 1px solid #2d3748; display: flex; flex-direction: column; padding: 12px; gap: 10px; overflow-y: auto; }
+  #main-viewport { flex: 1; position: relative; background: #0b0c10; display: flex; justify-content: center; overflow: hidden; }
+  #code-panel { width: 380px; background: #141720; border-left: 1px solid #2d3748; display: flex; flex-direction: column; }
   
   /* 底部播放栏 */
   #playback-bar {
-    position: absolute; bottom: 0; left: 0; right: 0; height: 52px; background: #181b24; border-top: 1px solid #2d3748;
+    position: absolute; bottom: 0; left: 0; right: 0; height: 52px; background: #1a1d26; border-top: 1px solid #2d3748;
     display: flex; align-items: center; padding: 0 20px; gap: 12px; font-size: 13px; z-index: 100;
   }
 
-  /* 通用组件与卡片 */
-  .section-card { background: #1c202c; border: 1px solid #2a3346; border-radius: 6px; padding: 10px; }
+  /* 通用组件 */
+  .section-card { background: #202430; border: 1px solid #2d3748; border-radius: 6px; padding: 10px; }
   .section-title { font-size: 12px; font-weight: 700; color: #a0aec0; text-transform: uppercase; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
   label { display: block; font-size: 11px; color: #cbd5e0; margin-bottom: 3px; }
   input, select, button {
-    background: #0f1118; border: 1px solid #4a5568; color: #edf2f7; border-radius: 4px; padding: 5px 8px; font-size: 12px; outline: none;
+    background: #11131a; border: 1px solid #4a5568; color: #edf2f7; border-radius: 4px; padding: 5px 8px; font-size: 12px; outline: none;
   }
   input[type="number"], input[type="text"] { width: 100%; }
   button { background: #2b6cb0; border: none; cursor: pointer; font-weight: 600; transition: 0.15s; }
@@ -48,8 +49,8 @@
   .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
 
   /* Git 风格 Diff 源码面板 */
-  .code-header { height: 36px; background: #181b24; border-bottom: 1px solid #282f3f; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font-size: 12px; font-weight: 600; }
-  #code-list { flex: 1; overflow-y: auto; font-family: "JetBrains Mono", Consolas, Monaco, monospace; font-size: 11px; background: #0c0d12; }
+  .code-header { height: 36px; background: #1c202a; border-bottom: 1px solid #2d3748; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font-size: 12px; font-weight: 600; }
+  #code-list { flex: 1; overflow-y: auto; font-family: "JetBrains Mono", Consolas, Monaco, monospace; font-size: 11px; background: #0f1117; }
   .diff-row { display: flex; padding: 2px 4px; border-bottom: 1px solid rgba(255,255,255,0.02); cursor: pointer; line-height: 1.4; user-select: text; }
   .diff-row:hover { filter: brightness(1.2); }
   .diff-row.highlight { outline: 1px solid #00d2ff; font-weight: bold; }
@@ -60,42 +61,23 @@
   .diff-sign { width: 14px; font-weight: bold; text-align: center; user-select: none; }
   .diff-lineno { width: 36px; color: #718096; user-select: none; text-align: right; margin-right: 8px; }
   .diff-text { flex: 1; white-space: pre; }
-  #raw-code-textarea { flex: 1; width: 100%; height: 100%; background: #0c0d12; color: #e2e8f0; border: none; padding: 8px; font-family: monospace; font-size: 11px; resize: none; display: none; }
+
+  #raw-code-textarea { flex: 1; width: 100%; height: 100%; background: #0f1117; color: #e2e8f0; border: none; padding: 8px; font-family: monospace; font-size: 11px; resize: none; display: none; }
 
   /* 画布区域 */
-  #track-canvas { background: #08090d; box-shadow: 0 0 25px rgba(0,0,0,0.8); cursor: crosshair; }
-  .legend-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 3px 6px; border-radius: 3px; background: #11131a; cursor: pointer; transition: 0.2s; }
-  .legend-badge:hover { background: #283042; }
+  #track-canvas { background: #0b0c10; box-shadow: 0 0 25px rgba(0,0,0,0.8); cursor: crosshair; }
+  .legend-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 2px 5px; border-radius: 3px; background: #11131a; }
   .dot { width: 8px; height: 8px; border-radius: 2px; }
 
   /* 提示框 */
   #paste-tip { position: absolute; top: 10px; background: rgba(0,210,255,0.9); color: #000; font-weight: bold; font-size: 12px; padding: 4px 12px; border-radius: 20px; pointer-events: none; display: none; z-index: 50; }
-
-  /* 详细图例模态弹窗 */
-  #modal-mask {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
-    display: none; align-items: center; justify-content: center; z-index: 1000;
-  }
-  #legend-modal {
-    background: #181b26; border: 1px solid #333d52; border-radius: 8px; width: 90%; max-width: 720px;
-    max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.9);
-  }
-  .modal-header { padding: 14px 18px; border-bottom: 1px solid #2d3748; display: flex; justify-content: space-between; align-items: center; }
-  .modal-header h3 { font-size: 15px; color: #00d2ff; }
-  .modal-close { background: transparent; border: none; font-size: 18px; cursor: pointer; color: #aaa; }
-  .modal-close:hover { color: #fff; }
-  .modal-body { padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; font-size: 12px; line-height: 1.6; }
-  .legend-detail-card { background: #1f2433; border: 1px solid #2d3748; padding: 10px; border-radius: 6px; display: flex; gap: 12px; }
-  .legend-preview-box { width: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #10131a; border-radius: 4px; padding: 6px; }
-  .legend-info { flex: 1; }
-  .legend-cmd { font-family: monospace; font-weight: bold; color: #4facfe; font-size: 13px; }
 </style>
 </head>
 <body>
 
 <!-- 顶部工具栏 -->
 <div id="header">
-  <div class="app-title">⚡ C2S Pro Studio</div>
+  <div class="app-title">⚡c2s Studio</div>
   
   <button id="btn-undo" title="撤回 (Ctrl+Z)" disabled>⮌ 撤回 (0)</button>
   <button id="btn-redo" title="重做 (Ctrl+Y)" disabled>⮎ 重做 (0)</button>
@@ -104,7 +86,7 @@
   
   <span>垂直缩放:</span>
   <button id="btn-zoom-out" style="width:24px;">-</button>
-  <input type="range" id="zoom-slider" min="80" max="4800" value="384" step="20" style="width:100px;">
+  <input type="range" id="zoom-slider" min="80" max="4800" value="384" step="20" style="width:110px;">
   <button id="btn-zoom-in" style="width:24px;">+</button>
   <span id="zoom-val" style="width:55px; font-family:monospace;">384px</span>
 
@@ -112,24 +94,16 @@
 
   <span>吸附网格:</span>
   <select id="grid-snap" style="width: 86px;">
-    <option value="1" selected>自由 (1 Tick)</option>
-    <option value="96">1/4 拍 (96)</option>
-    <option value="48">1/8 拍 (48)</option>
-    <option value="24">1/16 拍 (24)</option>
-    <option value="16">1/24 拍 (16)</option>
-    <option value="12">1/32 拍 (12)</option>
-    <option value="6">1/64 拍 (6)</option>
+    <option value="1" selected>1 Tick</option>
+    <option value="96">1/4拍(96)</option>
+    <option value="48">1/8拍(48)</option>
+    <option value="24">1/16拍(24)</option>
+    <option value="16">1/24拍(16)</option>
+    <option value="12">1/32拍(12)</option>
+    <option value="6">1/64拍(6)</option>
   </select>
 
-  <div style="width: 1px; height: 20px; background: #4a5568; margin: 0 4px;"></div>
-
-  <!-- 音量调节与实时 Cookie 保存 -->
-  <span title="音量设定自动实时保存在 Cookie 中">🔊 音量:</span>
-  <input type="range" id="vol-slider" min="0" max="1" step="0.01" value="0.8" style="width: 75px;" title="滑动调节音量">
-  <span id="vol-val" style="width: 32px; font-family: monospace;">80%</span>
-
   <div style="margin-left: auto; display: flex; gap: 8px;">
-    <button id="btn-open-legend" style="background:#4a5568;">📖 图解与指令说明</button>
     <button id="btn-export" style="background:#2b6cb0;">💾 导出 .c2s</button>
   </div>
 </div>
@@ -141,7 +115,7 @@
     <!-- 文件载入 -->
     <div class="section-card">
       <div class="section-title">文件载入</div>
-      <label>1. 载入 .c2s 谱面文本</label>
+      <label>1. 载入 .c2s 谱面</label>
       <input type="file" id="c2s-input" accept=".c2s,.txt,.xml">
       <label style="margin-top:4px;">2. 载入音频 (MP3/WAV/OGG)</label>
       <input type="file" id="audio-input" accept="audio/*">
@@ -151,7 +125,7 @@
     <div class="section-card">
       <div class="section-title">谱面参数</div>
       <div class="grid-3">
-        <div><label>BPM</label><input type="number" id="cfg-bpm" value="192" step="0.001"></div>
+        <div><label>BPM</label><input type="number" id="cfg-bpm" value="150" step="0.001"></div>
         <div><label>Tick/小节</label><input type="number" id="cfg-res" value="384"></div>
         <div><label>Offset(秒)</label><input type="number" id="cfg-offset" value="0.0" step="0.01"></div>
       </div>
@@ -162,17 +136,15 @@
       <div class="section-title">工具箱</div>
       <select id="tool-mode" style="font-weight: bold; color: #4facfe;">
         <option value="SELECT">👆 选择 / 框选工具 (Select)</option>
-        <option value="TAP">🔴 TAP (地面普通红键)</option>
-        <option value="CHR">🟡 CHR / ExTAP (地面高分黄键)</option>
-        <option value="HLD">🟠 HLD (普通长按)</option>
-        <option value="HXD">🟨 HXD (Ex 长按)</option>
-        <option value="FLK">🔵 FLK (拂起 Flick)</option>
-        <option value="AIR">🟢 AIR (绿色空中向上)</option>
-        <option value="AUL">🟣 AUL (紫色空中向左上)</option>
-        <option value="AUR">🟣 AUR (紫色空中向右上)</option>
-        <option value="SLD">🟦 SLD / SLC (普通滑键轨道)</option>
-        <option value="SXD">🟨 SXD / SXC (Ex 滑键轨道)</option>
-        <option value="ASD">🪂 ASD (空中滑条 Air Slide)</option>
+        <option value="TAP">🔴 TAP (普通红键)</option>
+        <option value="CHR">🟡 CHR (黄色TAP)</option>
+        <option value="HLD">🟠 HLD (地面长按)</option>
+        <option value="FLK">🔵 FLK (滑键 Flick)</option>
+        <option value="AIR">🟢 AIR (绿色 空中向上)</option>
+        <option value="AUL">🟣 AUL (紫色 空中向左上)</option>
+        <option value="AUR">🟣 AUR (紫色 空中向右上)</option>
+        <option value="SLD">🟦 SLD / SLC (普通滑键长条)</option>
+        <option value="SXD">🟨 SXD / SXC (Ex 滑键长条)</option>
       </select>
 
       <div class="grid-2" style="margin-top:6px;">
@@ -211,22 +183,18 @@
         <div class="grid-2">
           <div><label>类型 (Type)</label>
             <select id="ins-type">
-              <option value="TAP">TAP (红键)</option>
-              <option value="CHR">CHR (黄键ExTAP)</option>
-              <option value="HLD">HLD (普通长按)</option>
-              <option value="HXD">HXD (Ex长按)</option>
-              <option value="FLK">FLK (拂起)</option>
-              <option value="AIR">AIR (空中直上)</option>
-              <option value="AUL">AUL (空中左上)</option>
-              <option value="AUR">AUR (空中右上)</option>
-              <option value="SLD">SLD (滑键首末端)</option>
-              <option value="SLC">SLC (滑键中继点)</option>
-              <option value="SXD">SXD (Ex滑键端点)</option>
+              <option value="TAP">TAP</option>
+              <option value="CHR">CHR (ExTAP)</option>
+              <option value="HLD">HLD (长按)</option>
+              <option value="FLK">FLK</option>
+              <option value="AIR">AIR</option>
+              <option value="AUL">AUL</option>
+              <option value="AUR">AUR</option>
+              <option value="SLD">SLD (滑键)</option>
+              <option value="SLC">SLC (滑键中继)</option>
+              <option value="SXD">SXD (Ex滑键)</option>
               <option value="SXC">SXC (Ex滑键中继)</option>
-              <option value="ASD">ASD (空中滑条)</option>
-              <option value="ASC">ASC (空中滑条中继)</option>
-              <option value="ALD">ALD (空中引线)</option>
-              <option value="SLP">SLP (变速线)</option>
+              <option value="SLP">SLP (变速)</option>
             </select>
           </div>
           <div><label>小节 (Measure)</label><input type="number" id="ins-measure"></div>
@@ -237,22 +205,22 @@
           <div><label>起点宽度(1-16)</label><input type="number" id="ins-width" min="1" max="16"></div>
         </div>
 
-        <!-- 针对 HLD 与 SLD/SLC/SXD/SXC 的时长 -->
+        <!-- 针对 HLD 与 SLD/SLC 的时长 -->
         <div id="ins-dur-container" style="margin-top:4px; display:none;">
           <label>时长 (Duration Ticks)</label>
           <input type="number" id="ins-dur" min="1">
         </div>
 
-        <!-- 仅 SLD / SLC / SXD / SXC / ASD 显示终点轨道与终点宽度 -->
-        <div id="ins-slide-end-container" class="grid-2" style="margin-top:4px; display:none; background:#161922; padding:5px; border-radius:4px;">
+        <!-- 仅 SLD / SLC / SXD / SXC 显示终点轨道与终点宽度 -->
+        <div id="ins-slide-end-container" class="grid-2" style="margin-top:4px; display:none; background:#181b24; padding:5px; border-radius:4px;">
           <div><label>终点轨道(0-15)</label><input type="number" id="ins-next-lane" min="0" max="15"></div>
           <div><label>终点宽度(1-16)</label><input type="number" id="ins-next-width" min="1" max="16"></div>
         </div>
 
-        <!-- 长条尾部追加按键 (自定义按键类型，默认 FLK) -->
+        <!-- 长条尾部追加按键 (支持自定义按键类型，默认 FLK) -->
         <div id="ins-tail-append-container" style="margin-top:6px; display:none;">
           <div style="display:flex; gap:4px;">
-            <button id="btn-append-tail-note" class="success" style="flex:1;">➕ 在结尾接按键</button>
+            <button id="btn-append-tail-note" class="success" style="flex:1;">➕ 在长条结尾添加</button>
             <select id="tail-note-type" style="width:75px; font-weight:bold;">
               <option value="FLK" selected>FLK</option>
               <option value="TAP">TAP</option>
@@ -267,34 +235,29 @@
         <!-- 方向与附着属性 (CHR/AIR等) -->
         <div id="ins-dir-fields" class="grid-2" style="margin-top:4px; display:none;">
           <div><label>方向/参数</label><input type="text" id="ins-dir" placeholder="UP/DW/CE"></div>
-          <div><label>附着类型</label><input type="text" id="ins-parent" placeholder="TAP/SLD/CHR/DEF"></div>
+          <div><label>附着类型</label><input type="text" id="ins-parent" placeholder="TAP/SLD/CHR"></div>
         </div>
 
         <button id="btn-delete-single" class="danger" style="margin-top:8px; width:100%;">🗑️ 删除此音符 (Del)</button>
       </div>
 
       <div id="none-inspector" style="color:#718096; font-size:11px; text-align:center; padding:10px 0;">
-        点击音符查看属性<br>快捷键：Ctrl+C/V 复制粘贴 | ↑↓←→ 微调音符 | 空格 播放/暂停
+        点击音符查看属性<br>快捷键：Ctrl+C/V 复制粘贴 | ↑↓←→ 移动音符 | 空格 播放/暂停
       </div>
     </div>
 
-    <!-- 简明图例面板 (点击打开完整图解) -->
+    <!-- 图例 -->
     <div class="section-card">
-      <div class="section-title">
-        <span>快捷图例 (点击看详解)</span>
-        <button id="btn-view-legend-detail" style="font-size:10px; padding:2px 5px;">查看全部</button>
-      </div>
+      <div class="section-title">图例说明</div>
       <div style="display:flex; flex-wrap:wrap; gap:4px;">
-        <span class="legend-badge" onclick="openLegendModal('TAP')"><span class="dot" style="background:#ff3366;"></span>TAP</span>
-        <span class="legend-badge" onclick="openLegendModal('CHR')"><span class="dot" style="background:#ffd700;"></span>CHR(Ex)</span>
-        <span class="legend-badge" onclick="openLegendModal('HLD')"><span class="dot" style="background:#ff9900;"></span>HLD</span>
-        <span class="legend-badge" onclick="openLegendModal('HXD')"><span class="dot" style="background:#ffea00;"></span>HXD</span>
-        <span class="legend-badge" onclick="openLegendModal('FLK')"><span class="dot" style="background:#00d2ff;"></span>FLK</span>
-        <span class="legend-badge" onclick="openLegendModal('AIR')"><span class="dot" style="background:#00ff88;"></span>AIR(绿)</span>
-        <span class="legend-badge" onclick="openLegendModal('AUL')"><span class="dot" style="background:#f72585;"></span>AUL/AUR(紫)</span>
-        <span class="legend-badge" onclick="openLegendModal('SLD')"><span class="dot" style="background:#00b4d8;"></span>SLD/SLC</span>
-        <span class="legend-badge" onclick="openLegendModal('ASD')"><span class="dot" style="background:#c77dff;"></span>ASD(空滑)</span>
-        <span class="legend-badge" onclick="openLegendModal('SLP')"><span class="dot" style="background:#d946ef;"></span>SLP</span>
+        <span class="legend-badge"><span class="dot" style="background:#ff3366;"></span>TAP</span>
+        <span class="legend-badge"><span class="dot" style="background:#ffd700;"></span>CHR(Ex)</span>
+        <span class="legend-badge"><span class="dot" style="background:#ff9900;"></span>HLD</span>
+        <span class="legend-badge"><span class="dot" style="background:#00d2ff;"></span>FLK</span>
+        <span class="legend-badge"><span class="dot" style="background:#00ff88;"></span>AIR(绿)</span>
+        <span class="legend-badge"><span class="dot" style="background:#f72585;"></span>AIR(紫)</span>
+        <span class="legend-badge"><span class="dot" style="background:#00b4d8;"></span>SLD</span>
+        <span class="legend-badge"><span class="dot" style="background:#d946ef;"></span>SLP</span>
       </div>
     </div>
   </div>
@@ -336,57 +299,21 @@
   </select>
 </div>
 
-<!-- 详细图解弹窗 Modal -->
-<div id="modal-mask">
-  <div id="legend-modal">
-    <div class="modal-header">
-      <h3>📖 谱面音符与指令全面图解指南</h3>
-      <button class="modal-close" id="btn-close-modal">✕</button>
-    </div>
-    <div class="modal-body" id="modal-content">
-      <!-- 动态/静态填充详细说明 -->
-    </div>
-  </div>
-</div>
-
 <script>
-// ==================== Cookie 与音量持久化存储 ====================
-function setCookie(name, val, days=365) {
-  try {
-    const d = new Date();
-    d.setTime(d.getTime() + (days*24*60*60*1000));
-    document.cookie = `${name}=${encodeURIComponent(val)};expires=${d.toUTCString()};path=/;SameSite=Lax`;
-  } catch(e){}
-  try { localStorage.setItem(name, val); } catch(e){}
-}
-
-function getCookie(name) {
-  try {
-    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-    if (match) return decodeURIComponent(match[2]);
-  } catch(e){}
-  try {
-    const ls = localStorage.getItem(name);
-    if (ls !== null) return ls;
-  } catch(e){}
-  return null;
-}
-
-// ==================== 核心全局数据 ====================
+// ==================== 核心状态 ====================
 let notes = []; 
-let bpm = 192.0;
+let bpm = 150.0;
 let resolution = 384;
 let audioOffset = 0.0;
 let headerLines = [];
 let originalSourceLines = []; 
 
 let audio = new Audio();
-let audioGain = 0.8;
 let isPlaying = false;
 let currentTime = 0;
-let maxMeasures = 140;
+let maxMeasures = 85;
 
-// 历史栈 (最多 10 步)
+// 撤销 / 重做
 const MAX_HISTORY = 10;
 let historyStack = [];
 let redoStack = [];
@@ -398,20 +325,20 @@ let isSelectingBox = false;
 let selectBoxStart = { x: 0, y: 0 };
 let selectBoxEnd = { x: 0, y: 0 };
 
-// 复制 / 粘贴
+// 复制 / 粘贴 系统
 let clipboard = []; 
 let isPasting = false;
 let pasteGhostPos = { measure: 0, tick: 0, lane: 0 };
 
-// 画布视图与缩放
+// 画布渲染参数
 const canvas = document.getElementById("track-canvas");
 const ctx = canvas.getContext("2d");
 const LANES = 16;
 let laneWidth = 22;
 let trackWidth = laneWidth * LANES;
-let pixelsPerMeasure = 384; // 80 ~ 4800px
+let pixelsPerMeasure = 384; 
 
-// ==================== 历史记录管理 ====================
+// ==================== 历史记录 (Undo/Redo) ====================
 function pushHistory() {
   historyStack.push(JSON.stringify(notes));
   if (historyStack.length > MAX_HISTORY) historyStack.shift();
@@ -451,7 +378,7 @@ function updateHistoryUI() {
   document.getElementById("btn-redo").innerText = `⮎ 重做 (${redoStack.length})`;
 }
 
-// ==================== 谱面全特性解析器 ====================
+// ==================== .c2s 解析器 ====================
 function parseC2S(text) {
   pushHistory();
   notes = [];
@@ -482,14 +409,13 @@ function parseC2S(text) {
         lane: parseInt(parts[3]) || 0, width: parseInt(parts[4]) || 4,
         dur: 0, next_lane: 0, next_width: 0, dir: "", parent: "", flag: ""
       });
-    } else if (cmd === "HLD" || cmd === "HXD") {
+    } else if (cmd === "HLD") {
       notes.push({
         id: idGen++, type: cmd,
         measure: parseInt(parts[1]) || 0, tick: parseInt(parts[2]) || 0,
         lane: parseInt(parts[3]) || 0, width: parseInt(parts[4]) || 4,
-        dur: parseInt(parts[5]) || 28,
-        next_lane: parseInt(parts[3]) || 0, next_width: parseInt(parts[4]) || 4,
-        dir: parts[6] || (cmd === "HXD" ? "UP" : ""), parent: "", flag: ""
+        dur: parseInt(parts[5]) || 28, next_lane: parseInt(parts[3]) || 0, next_width: parseInt(parts[4]) || 4,
+        dir: "", parent: "", flag: ""
       });
     } else if (cmd === "CHR") {
       notes.push({
@@ -506,7 +432,6 @@ function parseC2S(text) {
         dur: 0, next_lane: 0, next_width: 0, dir: "", parent: parts[5] || "DEF", flag: parts[6] || ""
       });
     } else if (["SLD", "SLC", "SXD", "SXC"].includes(cmd)) {
-      // 曲线滑轨
       notes.push({
         id: idGen++, type: cmd,
         measure: parseInt(parts[1]) || 0, tick: parseInt(parts[2]) || 0,
@@ -515,31 +440,6 @@ function parseC2S(text) {
         next_lane: parseInt(parts[6]) !== undefined ? parseInt(parts[6]) : parseInt(parts[3]) || 0,
         next_width: parseInt(parts[7]) !== undefined ? parseInt(parts[7]) : parseInt(parts[4]) || 4,
         parent: parts[8] || "SLD", dir: parts[9] || ""
-      });
-    } else if (["ASD", "ASC"].includes(cmd)) {
-      // 空中滑动 Air Slide
-      // ASD/ASC measure tick lane width parent h1 dur next_lane next_width h2 flag
-      notes.push({
-        id: idGen++, type: cmd,
-        measure: parseInt(parts[1]) || 0, tick: parseInt(parts[2]) || 0,
-        lane: parseInt(parts[3]) || 0, width: parseInt(parts[4]) || 4,
-        parent: parts[5] || "SLD", h1: parseFloat(parts[6]) || 5.0,
-        dur: parseInt(parts[7]) || 96,
-        next_lane: parseInt(parts[8]) !== undefined ? parseInt(parts[8]) : parseInt(parts[3]) || 0,
-        next_width: parseInt(parts[9]) !== undefined ? parseInt(parts[9]) : parseInt(parts[4]) || 4,
-        h2: parseFloat(parts[10]) || 5.0, flag: parts[11] || "DEF"
-      });
-    } else if (cmd === "ALD") {
-      // ALD measure tick lane width dur h1 step next_lane next_width h2 flag
-      notes.push({
-        id: idGen++, type: cmd,
-        measure: parseInt(parts[1]) || 0, tick: parseInt(parts[2]) || 0,
-        lane: parseInt(parts[3]) || 0, width: parseInt(parts[4]) || 4,
-        dur: parseInt(parts[5]) || 48, h1: parseFloat(parts[6]) || 5.0,
-        step: parseInt(parts[7]) || 24,
-        next_lane: parseInt(parts[8]) !== undefined ? parseInt(parts[8]) : parseInt(parts[3]) || 0,
-        next_width: parseInt(parts[9]) !== undefined ? parseInt(parts[9]) : parseInt(parts[4]) || 4,
-        h2: parseFloat(parts[10]) || 1.0, flag: parts[11] || "DEF"
       });
     } else if (cmd === "SLP") {
       notes.push({
@@ -559,7 +459,7 @@ function parseC2S(text) {
   render();
 }
 
-// ==================== C2S 代码构建输出 ====================
+// ==================== .c2s 代码生成 ====================
 function generateC2SLines() {
   let out = [];
   if (headerLines.length > 0) {
@@ -583,7 +483,6 @@ function generateC2SLines() {
   for (const n of sorted) {
     if (n.type === "TAP") out.push(`TAP\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}`);
     else if (n.type === "HLD") out.push(`HLD\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.dur}`);
-    else if (n.type === "HXD") out.push(`HXD\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.dur}\t${n.dir || "UP"}`);
     else if (n.type === "FLK") out.push(`FLK\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}`);
     else if (n.type === "CHR") out.push(`CHR\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.dir || "UP"}`);
     else if (["AIR", "AUL", "AUR"].includes(n.type)) out.push(`${n.type}\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.parent || "TAP"}\t${n.flag || "DEF"}`);
@@ -592,10 +491,6 @@ function generateC2SLines() {
       const nLane = n.next_lane !== undefined ? n.next_lane : n.lane;
       const nWidth = n.next_width !== undefined ? n.next_width : n.width;
       out.push(`${n.type}\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.dur}\t${nLane}\t${nWidth}\t${n.parent || "SLD"}${extra}`);
-    } else if (["ASD", "ASC"].includes(n.type)) {
-      out.push(`${n.type}\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.parent || "SLD"}\t${n.h1 || "5.0"}\t${n.dur}\t${n.next_lane !== undefined ? n.next_lane : n.lane}\t${n.next_width !== undefined ? n.next_width : n.width}\t${n.h2 || "5.0"}\t${n.flag || "DEF"}`);
-    } else if (n.type === "ALD") {
-      out.push(`ALD\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.dur}\t${n.h1 || "5.0"}\t${n.step || 24}\t${n.next_lane !== undefined ? n.next_lane : n.lane}\t${n.next_width !== undefined ? n.next_width : n.width}\t${n.h2 || "1.0"}\t${n.flag || "DEF"}`);
     } else if (n.type === "SLP") {
       out.push(`SLP\t${n.measure}\t${n.tick}\t${n.dur}\t${n.speed ? n.speed.toFixed(6) : "1.000000"}\t${n.flag || "0"}`);
     }
@@ -612,7 +507,7 @@ function exportC2S() {
   a.click();
 }
 
-// ==================== Diff 引擎与源码面板 ====================
+// ==================== Git 风格 Diff ====================
 function computeLCSDiff(orig, curr) {
   const n = orig.length;
   const m = curr.length;
@@ -734,7 +629,7 @@ document.getElementById("btn-apply-raw").addEventListener("click", () => {
   parseC2S(document.getElementById("raw-code-textarea").value);
 });
 
-// ==================== 时间与坐标计算 ====================
+// ==================== 时间与像素换算 ====================
 function timeToTotalTicks(t) {
   const adjusted = Math.max(0, t - audioOffset);
   return (adjusted * bpm * resolution) / 240;
@@ -748,22 +643,6 @@ function updateTotalMeasures() {
   notes.forEach(n => {
     if (n.measure + 8 > maxMeasures) maxMeasures = n.measure + 8;
   });
-}
-
-// ==================== 滑条链路与头判判定系统 ====================
-// 检测某个 SLD/SXD/SLC 是否是某条滑键的真正起点 (有头判)
-function isSlideChainHead(targetNote) {
-  if (targetNote.type === "SLC" || targetNote.type === "SXC") return false; // 中继点绝无头判
-  const targetStart = targetNote.measure * resolution + targetNote.tick;
-  
-  // 检查是否有前置节点正好在当前时刻与轨道相接
-  const hasPredecessor = notes.some(n => {
-    if (!["SLD", "SLC", "SXD", "SXC"].includes(n.type) || n.id === targetNote.id) return false;
-    const nEnd = n.measure * resolution + n.tick + (n.dur || 0);
-    const nEndLane = n.next_lane !== undefined ? n.next_lane : n.lane;
-    return (nEnd === targetStart && nEndLane === targetNote.lane);
-  });
-  return !hasPredecessor;
 }
 
 // ==================== 画布渲染核心 ====================
@@ -783,14 +662,14 @@ function render() {
   const currentTicks = timeToTotalTicks(currentTime);
   const currentScrollY = (currentTicks / resolution) * pixelsPerMeasure;
 
-  // 1. 16 轨底板
-  ctx.fillStyle = "#0c0e14";
+  // 1. 轨道背景
+  ctx.fillStyle = "#10131a";
   ctx.fillRect(originX, 0, trackWidth, canvas.height);
 
-  // 2. 分轨线 (16 轨)
+  // 2. 16 轨分轨线
   for (let i = 0; i <= LANES; i++) {
     const x = originX + i * laneWidth;
-    ctx.strokeStyle = (i % 4 === 0) ? "#4a5568" : "#1b202c";
+    ctx.strokeStyle = (i % 4 === 0) ? "#4a5568" : "#1f2430";
     ctx.lineWidth = (i % 4 === 0) ? 2 : 1;
     ctx.beginPath();
     ctx.moveTo(x, 0);
@@ -819,7 +698,7 @@ function render() {
 
     for (let b = 1; b < 4; b++) {
       const bY = mY - (b * pixelsPerMeasure) / 4;
-      ctx.strokeStyle = "#1f2635";
+      ctx.strokeStyle = "#232a38";
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(originX, bY);
@@ -828,7 +707,7 @@ function render() {
     }
   }
 
-  // 4. 变速事件 SLP
+  // 4. 绘制 SLP (变速事件)
   for (const n of notes) {
     if (n.type === "SLP") {
       const t = n.measure * resolution + n.tick;
@@ -850,7 +729,7 @@ function render() {
     }
   }
 
-  // 5. 绘制滑条轨道身体与长按条 (SLD, SLC, SXD, SXC, HLD, HXD)
+  // 5. 绘制滑键与长按长条身体
   for (const n of notes) {
     const isSelected = selectedNoteIds.has(n.id);
     const startTicks = n.measure * resolution + n.tick;
@@ -865,7 +744,7 @@ function render() {
       const endW = (n.next_width !== undefined ? n.next_width : n.width) * laneWidth;
 
       const isEx = (n.type === "SXD" || n.type === "SXC");
-      ctx.fillStyle = isEx ? "rgba(255, 215, 0, 0.35)" : "rgba(0, 210, 255, 0.32)";
+      ctx.fillStyle = isEx ? "rgba(255, 215, 0, 0.38)" : "rgba(0, 210, 255, 0.35)";
       ctx.strokeStyle = isEx ? "#ffd700" : "#00d2ff";
       ctx.lineWidth = isSelected ? 3 : 2;
 
@@ -878,64 +757,26 @@ function render() {
       ctx.fill();
       ctx.stroke();
 
-      // 连接节点小短线
       ctx.fillStyle = isEx ? "#ffd700" : "#00d2ff";
-      ctx.fillRect(endX, endY - 1, endW, 2);
+      ctx.fillRect(endX, endY - 2, endW, 4);
 
-    } else if (n.type === "HLD" || n.type === "HXD") {
+    } else if (n.type === "HLD") {
       const durPx = ((n.dur || 28) / resolution) * pixelsPerMeasure;
       const endY = startY - durPx;
-      const isEx = (n.type === "HXD");
 
-      ctx.fillStyle = isEx ? "rgba(255, 234, 0, 0.45)" : "rgba(255, 153, 0, 0.38)";
-      ctx.strokeStyle = isEx ? "#ffea00" : "#ff9900";
+      ctx.fillStyle = "rgba(255, 170, 0, 0.4)";
+      ctx.strokeStyle = "#ffaa00";
       ctx.lineWidth = isSelected ? 3 : 2;
 
       ctx.fillRect(startX + 2, endY, startW - 4, durPx);
       ctx.strokeRect(startX + 2, endY, startW - 4, durPx);
 
-      // 长按尾部收笔线
-      ctx.fillStyle = isEx ? "#ffea00" : "#ff9900";
-      ctx.fillRect(startX + 2, endY - 1, startW - 4, 3);
+      ctx.fillStyle = "#ffaa00";
+      ctx.fillRect(startX + 1, startY - 4, startW - 2, 8);
     }
   }
 
-  // 6. 绘制空中滑条 ASD / ASC / ALD
-  for (const n of notes) {
-    if (["ASD", "ASC"].includes(n.type)) {
-      const startTicks = n.measure * resolution + n.tick;
-      const startY = judgeY - ((startTicks / resolution) * pixelsPerMeasure - currentScrollY);
-      const startX = originX + n.lane * laneWidth;
-      const startW = n.width * laneWidth;
-      const endTicks = startTicks + (n.dur || 96);
-      const endY = judgeY - ((endTicks / resolution) * pixelsPerMeasure - currentScrollY);
-      const endX = originX + (n.next_lane !== undefined ? n.next_lane : n.lane) * laneWidth;
-      const endW = (n.next_width !== undefined ? n.next_width : n.width) * laneWidth;
-
-      // 空中透明紫粉发光带
-      ctx.save();
-      ctx.fillStyle = "rgba(217, 70, 239, 0.35)";
-      ctx.strokeStyle = "#e879f9";
-      ctx.lineWidth = selectedNoteIds.has(n.id) ? 3 : 2;
-      ctx.setLineDash([6, 3]);
-
-      ctx.beginPath();
-      ctx.moveTo(startX, startY);
-      ctx.lineTo(endX, endY);
-      ctx.lineTo(endX + endW, endY);
-      ctx.lineTo(startX + startW, startY);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-
-      // 空中节点标牌
-      ctx.fillStyle = "#f0abfc";
-      ctx.fillRect(startX, startY - 2, startW, 4);
-    }
-  }
-
-  // 7. 绘制打击头与点状音符 (精准区分头判)
+  // 6. 绘制音符头部与点状音符
   for (const n of notes) {
     const isSelected = selectedNoteIds.has(n.id);
     const startTicks = n.measure * resolution + n.tick;
@@ -945,7 +786,6 @@ function render() {
 
     if (y < -80 || y > canvas.height + 80) continue;
 
-    // 选中光晕
     if (isSelected) {
       ctx.strokeStyle = "#ffffff";
       ctx.lineWidth = 3;
@@ -967,24 +807,6 @@ function render() {
         ctx.font = "bold 9px monospace";
         ctx.fillText(n.dir, x + w / 2 - 6, y + 3);
       }
-    } else if (n.type === "HLD") {
-      ctx.fillStyle = "#ff9900";
-      ctx.fillRect(x + 1, y - 4, w - 2, 8);
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(x + 3, y - 1, w - 6, 2);
-    } else if (n.type === "HXD") {
-      ctx.fillStyle = "#ffea00";
-      ctx.fillRect(x + 1, y - 5, w - 2, 10);
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(x + 3, y - 1.5, w - 6, 3);
-    } else if (["SLD", "SXD"].includes(n.type)) {
-      // 关键：仅首节点有头判，中继与续接段不画实心 Tap 头部
-      if (isSlideChainHead(n)) {
-        ctx.fillStyle = (n.type === "SXD") ? "#ffd700" : "#00d2ff";
-        ctx.fillRect(x + 1, y - 5, w - 2, 10);
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(x + 3, y - 1.5, w - 6, 3);
-      }
     } else if (n.type === "FLK") {
       ctx.fillStyle = "#00d2ff";
       ctx.fillRect(x + 1, y - 5, w - 2, 10);
@@ -995,7 +817,6 @@ function render() {
       ctx.lineTo(x + w / 2 - 6, y - 2);
       ctx.fill();
     } else if (n.type === "AIR") {
-      // 绿色 Air 向上箭头
       ctx.fillStyle = "#00ff88";
       ctx.beginPath();
       ctx.moveTo(x + w / 2, y - 14);
@@ -1024,7 +845,7 @@ function render() {
     }
   }
 
-  // 8. 绘制 Ctrl+V 粘贴预览
+  // 7. 绘制 Ctrl+V 粘贴预览
   if (isPasting && clipboard.length > 0) {
     ctx.save();
     ctx.globalAlpha = 0.55;
@@ -1042,13 +863,35 @@ function render() {
       ctx.strokeRect(gx, gy - 6, gw, 12);
       ctx.setLineDash([]);
 
-      ctx.fillStyle = "#00ff88";
-      ctx.fillRect(gx, gy - 4, gw, 8);
+      if (item.type === "TAP") {
+        ctx.fillStyle = "#ff3366";
+        ctx.fillRect(gx, gy - 4, gw, 8);
+      } else if (item.type === "CHR") {
+        ctx.fillStyle = "#ffd700";
+        ctx.fillRect(gx, gy - 5, gw, 10);
+      } else if (["SLD", "SXD"].includes(item.type)) {
+        const endTicks = targetTicks + (item.dur || 48);
+        const endY = judgeY - ((endTicks / resolution) * pixelsPerMeasure - currentScrollY);
+        const endX = originX + Math.min(16 - item.next_width, Math.max(0, targetLane + item.next_lane_rel)) * laneWidth;
+        const endW = item.next_width * laneWidth;
+
+        ctx.fillStyle = item.type === "SXD" ? "rgba(255,215,0,0.5)" : "rgba(0,210,255,0.5)";
+        ctx.beginPath();
+        ctx.moveTo(gx, gy);
+        ctx.lineTo(endX, endY);
+        ctx.lineTo(endX + endW, endY);
+        ctx.lineTo(gx + gw, gy);
+        ctx.closePath();
+        ctx.fill();
+      } else {
+        ctx.fillStyle = "#00ff88";
+        ctx.fillRect(gx, gy - 4, gw, 8);
+      }
     }
     ctx.restore();
   }
 
-  // 9. 多选选框
+  // 8. 多选选框
   if (isSelectingBox) {
     ctx.strokeStyle = "#00d2ff";
     ctx.lineWidth = 1;
@@ -1061,7 +904,7 @@ function render() {
     ctx.strokeRect(bx, by, bw, bh);
   }
 
-  // 10. 底部基准判定线
+  // 9. 底部判定线
   ctx.strokeStyle = "#ff0055";
   ctx.lineWidth = 3;
   ctx.shadowColor = "#ff0055";
@@ -1145,11 +988,16 @@ function confirmPaste() {
     const newNote = {
       id: Date.now() + Math.random(),
       type: item.type,
-      measure: m, tick: t, lane: l,
-      width: item.width, dur: item.dur,
+      measure: m,
+      tick: t,
+      lane: l,
+      width: item.width,
+      dur: item.dur,
       next_lane: Math.min(16 - item.next_width, Math.max(0, l + item.next_lane_rel)),
       next_width: item.next_width,
-      dir: item.dir, parent: item.parent, flag: item.flag
+      dir: item.dir,
+      parent: item.parent,
+      flag: item.flag
     };
 
     notes.push(newNote);
@@ -1190,11 +1038,11 @@ function moveSelectedNotes(dMeasure, dTick, dLane) {
   render();
 }
 
-// ==================== 长条尾部追加音符 ====================
+// ==================== 快捷长条尾部添加自定义音符 (默认 FLK) ====================
 document.getElementById("btn-append-tail-note").addEventListener("click", () => {
   if (selectedNoteIds.size !== 1) return;
   const note = notes.find(n => selectedNoteIds.has(n.id));
-  if (!note || !["HLD", "HXD", "SLD", "SLC", "SXD", "SXC", "ASD", "ASC"].includes(note.type)) return;
+  if (!note || !["HLD", "SLD", "SLC", "SXD", "SXC"].includes(note.type)) return;
 
   pushHistory();
   const endTicks = note.measure * resolution + note.tick + (note.dur || 0);
@@ -1207,11 +1055,15 @@ document.getElementById("btn-append-tail-note").addEventListener("click", () => 
   const newNote = {
     id: Date.now(),
     type: appendType,
-    measure: endM, tick: endT,
-    lane: endLane, width: endWidth,
-    dur: 0, next_lane: endLane, next_width: endWidth,
+    measure: endM,
+    tick: endT,
+    lane: endLane,
+    width: endWidth,
+    dur: 0,
+    next_lane: endLane,
+    next_width: endWidth,
     dir: appendType === "CHR" ? "UP" : "",
-    parent: ["AIR", "AUL", "AUR"].includes(appendType) ? "SLD" : "",
+    parent: appendType === "AIR" || appendType === "AUL" || appendType === "AUR" ? "SLD" : "",
     flag: "DEF"
   };
 
@@ -1225,7 +1077,7 @@ document.getElementById("btn-append-tail-note").addEventListener("click", () => 
   render();
 });
 
-// ==================== 交互与按键响应 ====================
+// ==================== 交互与监听 ====================
 canvas.addEventListener("wheel", (e) => {
   e.preventDefault();
   if (e.ctrlKey) {
@@ -1315,9 +1167,8 @@ canvas.addEventListener("mousedown", (e) => {
       dur: defDur,
       next_lane: Math.min(16 - defW, lane),
       next_width: defW,
-      dir: (toolMode === "CHR" || toolMode === "HXD") ? "UP" : "",
-      parent: ["AIR", "AUL", "AUR"].includes(toolMode) ? "TAP" : "",
-      flag: "DEF"
+      dir: toolMode === "CHR" ? "UP" : "",
+      parent: "TAP", flag: "DEF"
     };
 
     notes.push(newNote);
@@ -1380,15 +1231,17 @@ window.addEventListener("mouseup", () => {
   }
 });
 
-// 全局按键绑定（空格优先控制播放并解除输入框聚焦）
+// 全局按键绑定（包含非直编模式下空格键优先控制播放）
 window.addEventListener("keydown", (e) => {
+  // 空格键控制播放/暂停
   if (e.code === "Space") {
+    // 只有在直编模式且光标在代码输入框中时，才允许输入空格
     if (isRawCodeEdit && document.activeElement === document.getElementById("raw-code-textarea")) {
-      return; // 直编模式下光标在 textarea 内则允许打空格
+      return;
     }
     e.preventDefault();
     if (document.activeElement && document.activeElement.blur) {
-      document.activeElement.blur();
+      document.activeElement.blur(); // 自动取消输入框焦点
     }
     togglePlay();
     return;
@@ -1455,9 +1308,9 @@ function updateInspector() {
     document.getElementById("ins-lane").value = note.lane;
     document.getElementById("ins-width").value = note.width;
 
-    // HLD / HXD / SLD / SLC / ASD 字段显示控制
-    const isSlide = ["SLD", "SLC", "SXD", "SXC", "ASD", "ASC"].includes(note.type);
-    const isHold = ["HLD", "HXD"].includes(note.type);
+    // HLD / SLD / SLC 逻辑区分
+    const isSlide = ["SLD", "SLC", "SXD", "SXC"].includes(note.type);
+    const isHold = (note.type === "HLD");
     const hasDur = isSlide || isHold || (note.type === "SLP");
 
     document.getElementById("ins-dur-container").style.display = hasDur ? "block" : "none";
@@ -1465,18 +1318,18 @@ function updateInspector() {
       document.getElementById("ins-dur").value = note.dur || 0;
     }
 
-    // 终点轨道和终点宽度仅对 Slide / ASD 显示
+    // 终点轨道和终点宽度仅对 Slide 显示
     document.getElementById("ins-slide-end-container").style.display = isSlide ? "grid" : "none";
     if (isSlide) {
       document.getElementById("ins-next-lane").value = (note.next_lane !== undefined) ? note.next_lane : note.lane;
       document.getElementById("ins-next-width").value = (note.next_width !== undefined) ? note.next_width : note.width;
     }
 
-    // 尾部追加面板
+    // 尾部追加按钮面板 (对 HLD 和 Slide 均开放)
     document.getElementById("ins-tail-append-container").style.display = (isSlide || isHold) ? "block" : "none";
 
     // 方向与附着字段
-    const hasDirOrParent = ["CHR", "AIR", "AUL", "AUR", "HXD"].includes(note.type);
+    const hasDirOrParent = ["CHR", "AIR", "AUL", "AUR"].includes(note.type);
     document.getElementById("ins-dir-fields").style.display = hasDirOrParent ? "grid" : "none";
     if (hasDirOrParent) {
       document.getElementById("ins-dir").value = note.dir || "";
@@ -1490,6 +1343,7 @@ function updateInspector() {
   }
 }
 
+// 属性修改与智能补全
 function bindInspectorChange() {
   const fields = ["type", "measure", "tick", "lane", "width", "dur", "next-lane", "next-width", "dir", "parent"];
   fields.forEach(f => {
@@ -1504,12 +1358,12 @@ function bindInspectorChange() {
         const oldType = note.type;
         note.type = el.value;
 
-        // 若从 HLD 改为 SLD/SLC，自动用起点轨道与宽度初始化终点
-        if (["SLD", "SLC", "SXD", "SXC", "ASD", "ASC"].includes(note.type)) {
-          if (note.next_lane === undefined || oldType === "HLD" || oldType === "HXD") note.next_lane = note.lane;
-          if (note.next_width === undefined || oldType === "HLD" || oldType === "HXD") note.next_width = note.width;
+        // 如果由 HLD 或其他点音符改为 SLD/SLC/SXD/SXC，自动补齐终点参数
+        if (["SLD", "SLC", "SXD", "SXC"].includes(note.type)) {
+          if (note.next_lane === undefined || oldType === "HLD") note.next_lane = note.lane;
+          if (note.next_width === undefined || oldType === "HLD") note.next_width = note.width;
           if (!note.dur) note.dur = 48;
-        } else if (note.type === "HLD" || note.type === "HXD") {
+        } else if (note.type === "HLD") {
           if (!note.dur) note.dur = 28;
         }
       }
@@ -1517,11 +1371,13 @@ function bindInspectorChange() {
       else if (f === "tick") note.tick = parseInt(el.value) || 0;
       else if (f === "lane") {
         note.lane = parseInt(el.value) || 0;
-        if (["HLD", "HXD"].includes(note.type)) note.next_lane = note.lane;
+        // 如果是 HLD，终点轨道自动跟随
+        if (note.type === "HLD") note.next_lane = note.lane;
       }
       else if (f === "width") {
         note.width = parseInt(el.value) || 1;
-        if (["HLD", "HXD"].includes(note.type)) note.next_width = note.width;
+        // 如果是 HLD，终点宽度自动跟随
+        if (note.type === "HLD") note.next_width = note.width;
       }
       else if (f === "dur") note.dur = parseInt(el.value) || 0;
       else if (f === "next-lane") note.next_lane = parseInt(el.value) || 0;
@@ -1537,7 +1393,7 @@ function bindInspectorChange() {
 }
 bindInspectorChange();
 
-// 批量类型转换
+// 批量类型转换智能补全
 document.getElementById("btn-batch-change").addEventListener("click", () => {
   if (selectedNoteIds.size === 0) return;
   pushHistory();
@@ -1547,11 +1403,13 @@ document.getElementById("btn-batch-change").addEventListener("click", () => {
       const oldType = n.type;
       n.type = targetType;
       if (["SLD", "SLC", "SXD", "SXC"].includes(targetType)) {
-        if (n.next_lane === undefined || oldType === "HLD" || oldType === "HXD") n.next_lane = n.lane;
-        if (n.next_width === undefined || oldType === "HLD" || oldType === "HXD") n.next_width = n.width;
+        if (n.next_lane === undefined || oldType === "HLD") n.next_lane = n.lane;
+        if (n.next_width === undefined || oldType === "HLD") n.next_width = n.width;
         if (!n.dur) n.dur = 48;
       } else if (targetType === "HLD") {
         if (!n.dur) n.dur = 28;
+        n.next_lane = n.lane;
+        n.next_width = n.width;
       }
       if (targetType === "CHR" && !n.dir) n.dir = "UP";
     }
@@ -1574,31 +1432,7 @@ function deleteSelectedNotes() {
 document.getElementById("btn-delete-single").addEventListener("click", deleteSelectedNotes);
 document.getElementById("btn-delete-selected").addEventListener("click", deleteSelectedNotes);
 
-// ==================== 音量控制与 Cookie 加载 ====================
-const volSlider = document.getElementById("vol-slider");
-const volVal = document.getElementById("vol-val");
-
-function setVolume(v) {
-  audioGain = Math.max(0, Math.min(1, v));
-  audio.volume = audioGain;
-  volSlider.value = audioGain;
-  volVal.innerText = `${Math.round(audioGain * 100)}%`;
-  setCookie("c2s_vol", audioGain.toFixed(2));
-}
-
-volSlider.addEventListener("input", (e) => {
-  setVolume(parseFloat(e.target.value));
-});
-
-// 初始化加载 Cookie
-const savedVol = getCookie("c2s_vol");
-if (savedVol !== null && !isNaN(parseFloat(savedVol))) {
-  setVolume(parseFloat(savedVol));
-} else {
-  setVolume(0.8);
-}
-
-// ==================== 播放循环 ====================
+// 播放循环
 function updateLoop() {
   if (isPlaying) {
     currentTime = audio.currentTime;
@@ -1664,57 +1498,9 @@ document.getElementById("audio-input").addEventListener("change", (e) => {
 document.getElementById("btn-export").addEventListener("click", exportC2S);
 document.getElementById("btn-undo").addEventListener("click", undo);
 document.getElementById("btn-redo").addEventListener("click", redo);
-document.getElementById("cfg-bpm").addEventListener("change", (e) => { bpm = parseFloat(e.target.value) || 192; render(); });
+document.getElementById("cfg-bpm").addEventListener("change", (e) => { bpm = parseFloat(e.target.value) || 150; render(); });
 document.getElementById("cfg-res").addEventListener("change", (e) => { resolution = parseInt(e.target.value) || 384; render(); });
 document.getElementById("cfg-offset").addEventListener("change", (e) => { audioOffset = parseFloat(e.target.value) || 0; render(); });
-
-// ==================== 详细图例弹窗逻辑 ====================
-const modalMask = document.getElementById("modal-mask");
-const modalContent = document.getElementById("modal-content");
-const legendData = [
-  { cmd: "TAP", color: "#ff3366", name: "地面标准打击音符 (Red Tap)", desc: "最基础的地面打击红键。当音符落入红判定线时按下对应轨道进行判定。" },
-  { cmd: "CHR", color: "#ffd700", name: "地面黄色音符 / ExTAP", desc: "高得分权重的关键音符（暴击音符）。在谱面中常带有 UP/DW/CE 方向标注，亦可作为空中动作 (Air Action) 节点。" },
-  { cmd: "HLD", color: "#ff9900", name: "地面普通长按 (Hold)", desc: "需持续按住的橙色条带，带有起止时间。在终点到达时松开手。C2S 仅需指定时长 dur。" },
-  { cmd: "HXD", color: "#ffea00", name: "地面 Ex 长按 (ExHold)", desc: "带有黄色打击头的高亮长按条带，具备更高的判定与特效权重，常带有空中向上等触发标识。" },
-  { cmd: "FLK", color: "#00d2ff", name: "拂起音符 (Flick)", desc: "青色音符带白色拂起标。到达判定线时不仅需要接触，还需要左右划动手指完成触发。" },
-  { cmd: "SLD / SLC", color: "#00b4d8", name: "滑键轨道 (Slide / Curve Control)", desc: "青色半透明滑键引导带。首节点(SLD)带有实心头判；中间曲线中继点(SLC)无头判，按顺序串联构成优美平滑的多边形折线曲线。" },
-  { cmd: "SXD / SXC", color: "#ffd700", name: "Ex 滑键轨道 (Ex Slide)", desc: "金色高亮滑条。首节点带有 ExTAP 级金色打击头，支持多段 SLC/SXC 自由曲率弯曲。" },
-  { cmd: "AIR", color: "#00ff88", name: "空中向上 (Air Up)", desc: "附着于地面音符（TAP/CHR/长按结尾）上方的绿色向上箭头。击中音符的同时将手臂抬升至传感器区域。" },
-  { cmd: "AUL / AUR", color: "#f72585", name: "空中斜向拂击 (Air Up Left / Right)", desc: "紫色向左上或右上倾斜的空中箭头，要求在击打音符的同时手臂斜向挥起。" },
-  { cmd: "ASD / ASC", color: "#c77dff", name: "空中滑条 (Air Slide)", desc: "悬浮于空中的紫粉色引导光带。玩家抬手后在空中感应区持续平移跟随光带游走。" },
-  { cmd: "ALD", color: "#a855f7", name: "空中引线 / 动作引导 (Air Down Line)", desc: "由空中延伸向地面的下落或动作手势引导虚线。" },
-  { cmd: "SLP", color: "#d946ef", name: "谱面变速 / 镜头事件", desc: "紫色虚线标线。定义谱面滚动速度或视线缩放比率的特殊指令。" },
-  { cmd: "BPM / MET", color: "#60a5fa", name: "歌曲节拍与拍号定义", desc: "定义全局与局部速度(BPM)以及各小节拍号(MET)。全谱采用每小节 384 Ticks 精准对齐时间轴。" }
-];
-
-function openLegendModal(highlightCmd = null) {
-  modalContent.innerHTML = "";
-  legendData.forEach(item => {
-    const card = document.createElement("div");
-    card.className = "legend-detail-card";
-    if (highlightCmd && item.cmd.includes(highlightCmd)) {
-      card.style.borderColor = "#00d2ff";
-      card.style.background = "#232b3d";
-    }
-    card.innerHTML = `
-      <div class="legend-preview-box">
-        <span class="dot" style="background:${item.color}; width:20px; height:12px; margin-bottom:4px;"></span>
-        <span style="font-size:10px; color:#aaa; font-weight:bold;">${item.cmd.split('/')[0]}</span>
-      </div>
-      <div class="legend-info">
-        <div class="legend-cmd">${item.name} (${item.cmd})</div>
-        <div style="color:#cbd5e0; margin-top:2px;">${item.desc}</div>
-      </div>
-    `;
-    modalContent.appendChild(card);
-  });
-  modalMask.style.display = "flex";
-}
-
-document.getElementById("btn-open-legend").addEventListener("click", () => openLegendModal());
-document.getElementById("btn-view-legend-detail").addEventListener("click", () => openLegendModal());
-document.getElementById("btn-close-modal").addEventListener("click", () => { modalMask.style.display = "none"; });
-modalMask.addEventListener("click", (e) => { if (e.target === modalMask) modalMask.style.display = "none"; });
 
 // 初始化
 resizeCanvas();

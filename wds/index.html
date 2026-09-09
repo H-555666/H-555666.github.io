@@ -1,1724 +1,717 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<title>C2S 谱面演示与编辑工作台 - Pro Studio</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0e1017; color: #e2e8f0; display: flex; height: 100vh; overflow: hidden; }
-  
-  /* 顶部导航栏 */
-  #header {
-    position: absolute; top: 0; left: 0; right: 0; height: 46px; background: #181b24; border-bottom: 1px solid #2d3748;
-    display: flex; align-items: center; padding: 0 16px; gap: 10px; z-index: 100; font-size: 13px;
-  }
-  .app-title { font-weight: 700; color: #00d2ff; font-size: 15px; margin-right: 8px; display: flex; align-items: center; gap: 6px; }
-  
-  /* 主体分栏 */
-  #app-body { display: flex; width: 100%; height: calc(100vh - 46px - 52px); margin-top: 46px; position: relative; }
-  #sidebar { width: 340px; background: #141720; border-right: 1px solid #282f3f; display: flex; flex-direction: column; padding: 12px; gap: 10px; overflow-y: auto; }
-  #main-viewport { flex: 1; position: relative; background: #08090d; display: flex; justify-content: center; overflow: hidden; }
-  #code-panel { width: 380px; background: #12141c; border-left: 1px solid #282f3f; display: flex; flex-direction: column; }
-  
-  /* 底部播放栏 */
-  #playback-bar {
-    position: absolute; bottom: 0; left: 0; right: 0; height: 52px; background: #181b24; border-top: 1px solid #2d3748;
-    display: flex; align-items: center; padding: 0 20px; gap: 12px; font-size: 13px; z-index: 100;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>wds 谱面演示器</title>
+    <link rel="shortcut icon" href="/wds/gf.png">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            background-color: #080911; color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            overflow: hidden; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; height: 100vh;
+        }
+        #game-container {
+            position: relative; width: 100%; max-width: 1100px; height: 78vh;
+            background: #000; box-shadow: 0 16px 50px rgba(0, 0, 0, 0.95);
+            border-radius: 14px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.12);
+            display: flex; align-items: center; justify-content: center;
+        }
+        canvas { width: 100%; height: 100%; display: block; }
+        
+        #ui-overlay {
+            position: absolute; top: 16px; left: 20px; pointer-events: none;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.9); z-index: 10;
+        }
+        .song-title { font-size: 1.35rem; font-weight: 800; color: #f2346a; }
+        .song-meta { font-size: 0.85rem; color: #d0d2db; margin-top: 4px; }
+        
+        #status-panel {
+            position: absolute; top: 16px; right: 20px; display: flex;
+            flex-direction: column; gap: 4px; align-items: flex-end; z-index: 10;
+        }
+        .tag-status {
+            font-size: 0.78rem; padding: 4px 10px; border-radius: 6px;
+            background: rgba(18, 22, 38, 0.85); border: 1px solid rgba(255, 255, 255, 0.15); color: #aaa;
+        }
+        .tag-status.active { color: #4ade80; border-color: rgba(74, 222, 128, 0.4); }
 
-  /* 通用组件与卡片 */
-  .section-card { background: #1c202c; border: 1px solid #2a3346; border-radius: 6px; padding: 10px; }
-  .section-title { font-size: 12px; font-weight: 700; color: #a0aec0; text-transform: uppercase; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
-  label { display: block; font-size: 11px; color: #cbd5e0; margin-bottom: 3px; }
-  input, select, button {
-    background: #0f1118; border: 1px solid #4a5568; color: #edf2f7; border-radius: 4px; padding: 5px 8px; font-size: 12px; outline: none;
-  }
-  input[type="number"], input[type="text"] { width: 100%; }
-  button { background: #2b6cb0; border: none; cursor: pointer; font-weight: 600; transition: 0.15s; }
-  button:hover { background: #3182ce; }
-  button.active { background: #38a169; }
-  button.danger { background: #e53e3e; }
-  button.danger:hover { background: #f56565; }
-  button.success { background: #2f855a; }
-  button.success:hover { background: #38a169; }
-  button:disabled { background: #4a5568; cursor: not-allowed; opacity: 0.5; }
-  .btn-group { display: flex; gap: 6px; }
-  .btn-group button { flex: 1; }
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+        /* 启动与设置面板 */
+        #setup-mask {
+            position: absolute; inset: 0; background: rgba(11, 13, 23, 0.92);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 20; transition: opacity 0.4s; padding: 20px;
+        }
+        #setup-mask.hide { opacity: 0; pointer-events: none; }
+        .setup-box {
+            background: rgba(20, 24, 40, 0.95); padding: 30px; border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 500px;
+        }
+        .setup-box h2 { margin-bottom: 20px; color: #f2346a; text-align: center; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 0.85rem; color: #aaa; margin-bottom: 5px; }
+        .input-group input[type="text"] {
+            width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #444;
+            background: #111; color: #fff; font-size: 0.9rem;
+        }
+        .setup-box button {
+            width: 100%; padding: 12px; background: #f2346a; border: none; border-radius: 6px;
+            color: #fff; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.2s;
+        }
+        .setup-box button:hover { background: #ff4785; }
+        .setup-box button:disabled { background: #555; cursor: not-allowed; }
+        #load-log {
+            margin-top: 15px; font-size: 0.85rem; color: #4ade80; text-align: center; min-height: 20px;
+        }
+        .local-drop-tip { margin-top: 15px; font-size: 0.8rem; color: #888; text-align: center; }
 
-  /* Git 风格 Diff 源码面板 */
-  .code-header { height: 36px; background: #181b24; border-bottom: 1px solid #282f3f; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font-size: 12px; font-weight: 600; }
-  #code-list { flex: 1; overflow-y: auto; font-family: "JetBrains Mono", Consolas, Monaco, monospace; font-size: 11px; background: #0c0d12; }
-  .diff-row { display: flex; padding: 2px 4px; border-bottom: 1px solid rgba(255,255,255,0.02); cursor: pointer; line-height: 1.4; user-select: text; }
-  .diff-row:hover { filter: brightness(1.2); }
-  .diff-row.highlight { outline: 1px solid #00d2ff; font-weight: bold; }
-  
-  .diff-same { color: #a0aec0; }
-  .diff-add { background: rgba(56, 161, 105, 0.22); color: #68d391; }
-  .diff-del { background: rgba(229, 62, 62, 0.22); color: #fc8181; text-decoration: line-through; }
-  .diff-sign { width: 14px; font-weight: bold; text-align: center; user-select: none; }
-  .diff-lineno { width: 36px; color: #718096; user-select: none; text-align: right; margin-right: 8px; }
-  .diff-text { flex: 1; white-space: pre; }
-  #raw-code-textarea { flex: 1; width: 100%; height: 100%; background: #0c0d12; color: #e2e8f0; border: none; padding: 8px; font-family: monospace; font-size: 11px; resize: none; display: none; }
-
-  /* 画布区域 */
-  #track-canvas { background: #08090d; box-shadow: 0 0 25px rgba(0,0,0,0.8); cursor: crosshair; }
-  .legend-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 3px 6px; border-radius: 3px; background: #11131a; cursor: pointer; transition: 0.2s; }
-  .legend-badge:hover { background: #283042; }
-  .dot { width: 8px; height: 8px; border-radius: 2px; }
-
-  /* 提示框 */
-  #paste-tip { position: absolute; top: 10px; background: rgba(0,210,255,0.9); color: #000; font-weight: bold; font-size: 12px; padding: 4px 12px; border-radius: 20px; pointer-events: none; display: none; z-index: 50; }
-
-  /* 详细图例模态弹窗 */
-  #modal-mask {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
-    display: none; align-items: center; justify-content: center; z-index: 1000;
-  }
-  #legend-modal {
-    background: #181b26; border: 1px solid #333d52; border-radius: 8px; width: 90%; max-width: 720px;
-    max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.9);
-  }
-  .modal-header { padding: 14px 18px; border-bottom: 1px solid #2d3748; display: flex; justify-content: space-between; align-items: center; }
-  .modal-header h3 { font-size: 15px; color: #00d2ff; }
-  .modal-close { background: transparent; border: none; font-size: 18px; cursor: pointer; color: #aaa; }
-  .modal-close:hover { color: #fff; }
-  .modal-body { padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; font-size: 12px; line-height: 1.6; }
-  .legend-detail-card { background: #1f2433; border: 1px solid #2d3748; padding: 10px; border-radius: 6px; display: flex; gap: 12px; }
-  .legend-preview-box { width: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #10131a; border-radius: 4px; padding: 6px; }
-  .legend-info { flex: 1; }
-  .legend-cmd { font-family: monospace; font-weight: bold; color: #4facfe; font-size: 13px; }
-</style>
+        /* 控制面板 */
+        #controls {
+            width: 100%; max-width: 1100px; height: 18vh; padding: 12px 24px;
+            background: rgba(18, 22, 38, 0.98); border-radius: 14px; margin-top: 8px;
+            display: flex; flex-direction: column; justify-content: space-around;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .progress-bar-container { display: flex; align-items: center; gap: 12px; }
+        .time-text { font-size: 0.9rem; font-family: monospace; min-width: 50px; color: #aaa; }
+        input[type="range"] { flex: 1; accent-color: #f2346a; cursor: pointer; }
+        .buttons-container { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+        .btn-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        button.ctrl-btn, .file-btn {
+            background: #2b3254; border: 1px solid rgba(255, 255, 255, 0.15); color: #fff;
+            padding: 7px 14px; border-radius: 7px; cursor: pointer; font-weight: 600;
+            font-size: 0.85rem; transition: all 0.2s; display: inline-flex; align-items: center;
+        }
+        button.ctrl-btn:hover, .file-btn:hover { background: #f2346a; border-color: #f2346a; }
+        .ctrl-label {
+            font-size: 0.85rem; color: #ccd; display: flex; align-items: center; gap: 6px;
+            background: rgba(0, 0, 0, 0.35); padding: 5px 10px; border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        input[type="file"] { display: none; }
+    </style>
 </head>
 <body>
 
-<!-- 顶部工具栏 -->
-<div id="header">
-  <div class="app-title">⚡ C2S Pro Studio</div>
-  
-  <button id="btn-undo" title="撤回 (Ctrl+Z)" disabled>⮌ 撤回 (0)</button>
-  <button id="btn-redo" title="重做 (Ctrl+Y)" disabled>⮎ 重做 (0)</button>
-  
-  <div style="width: 1px; height: 20px; background: #4a5568; margin: 0 4px;"></div>
-  
-  <span>垂直缩放:</span>
-  <button id="btn-zoom-out" style="width:24px;">-</button>
-  <input type="range" id="zoom-slider" min="80" max="4800" value="384" step="20" style="width:100px;">
-  <button id="btn-zoom-in" style="width:24px;">+</button>
-  <span id="zoom-val" style="width:55px; font-family:monospace;">384px</span>
+<div id="game-container">
+    <canvas id="stage"></canvas>
+    
+    <div id="ui-overlay">
+        <div class="song-title" id="disp-title">等待载入</div>
+        <div class="song-meta" id="disp-meta"></div>
+    </div>
 
-  <div style="width: 1px; height: 20px; background: #4a5568; margin: 0 4px;"></div>
+    <div id="status-panel">
+        <span class="tag-status" id="st-chart">谱面: 未加载</span>
+        <span class="tag-status" id="st-audio">音频: 未加载</span>
+        <span class="tag-status" id="st-bg">背景: 默认</span>
+    </div>
 
-  <span>吸附网格:</span>
-  <select id="grid-snap" style="width: 86px;">
-    <option value="1" selected>自由 (1 Tick)</option>
-    <option value="96">1/4 拍 (96)</option>
-    <option value="48">1/8 拍 (48)</option>
-    <option value="24">1/16 拍 (24)</option>
-    <option value="16">1/24 拍 (16)</option>
-    <option value="12">1/32 拍 (12)</option>
-    <option value="6">1/64 拍 (6)</option>
-  </select>
-
-  <div style="width: 1px; height: 20px; background: #4a5568; margin: 0 4px;"></div>
-
-  <!-- 音量调节与实时 Cookie 保存 -->
-  <span title="音量设定自动实时保存在 Cookie 中">🔊 音量:</span>
-  <input type="range" id="vol-slider" min="0" max="1" step="0.01" value="0.8" style="width: 75px;" title="滑动调节音量">
-  <span id="vol-val" style="width: 32px; font-family: monospace;">80%</span>
-
-  <div style="margin-left: auto; display: flex; gap: 8px;">
-    <button id="btn-open-legend" style="background:#4a5568;">📖 图解与指令说明</button>
-    <button id="btn-export" style="background:#2b6cb0;">💾 导出 .c2s</button>
-  </div>
+    <div id="setup-mask">
+        <div class="setup-box">
+            <h2>☁️ 云端直接拉取</h2>
+            <div class="input-group">
+                <label>Sonolus 关卡链接</label>
+                <input type="text" id="level-url" placeholder="例: https://wds. ** /levels/xxxxxx-xxx">
+            </div>
+            <button id="btn-fetch">解析并载入</button>
+            <div id="load-log">就绪... (点击按钮一键解析)</div>
+            <div class="local-drop-tip">无网环境支持：直接将本地 .json、音频、图片拖入此窗口</div>
+        </div>
+    </div>
 </div>
 
-<!-- 主体工作区 -->
-<div id="app-body">
-  <!-- 左侧控制面板 -->
-  <div id="sidebar">
-    <!-- 文件载入 -->
-    <div class="section-card">
-      <div class="section-title">文件载入</div>
-      <label>1. 载入 .c2s 谱面文本</label>
-      <input type="file" id="c2s-input" accept=".c2s,.txt,.xml">
-      <label style="margin-top:4px;">2. 载入音频 (MP3/WAV/OGG)</label>
-      <input type="file" id="audio-input" accept="audio/*">
+<div id="controls">
+    <div class="progress-bar-container">
+        <span class="time-text" id="current-time">00:00</span>
+        <input type="range" id="seek-bar" min="0" max="100" step="0.01" value="0">
+        <span class="time-text" id="total-time">00:00</span>
     </div>
-
-    <!-- 谱面参数 -->
-    <div class="section-card">
-      <div class="section-title">谱面参数</div>
-      <div class="grid-3">
-        <div><label>BPM</label><input type="number" id="cfg-bpm" value="192" step="0.001"></div>
-        <div><label>Tick/小节</label><input type="number" id="cfg-res" value="384"></div>
-        <div><label>Offset(秒)</label><input type="number" id="cfg-offset" value="0.0" step="0.01"></div>
-      </div>
-    </div>
-
-    <!-- 工具与模式 -->
-    <div class="section-card">
-      <div class="section-title">工具箱</div>
-      <select id="tool-mode" style="font-weight: bold; color: #4facfe;">
-        <option value="SELECT">👆 选择 / 框选工具 (Select)</option>
-        <option value="TAP">🔴 TAP (地面普通红键)</option>
-        <option value="CHR">🟡 CHR / ExTAP (地面高分黄键)</option>
-        <option value="HLD">🟠 HLD (普通长按)</option>
-        <option value="HXD">🟨 HXD (Ex 长按)</option>
-        <option value="FLK">🔵 FLK (拂起 Flick)</option>
-        <option value="AIR">🟢 AIR (绿色空中向上)</option>
-        <option value="AUL">🟣 AUL (紫色空中向左上)</option>
-        <option value="AUR">🟣 AUR (紫色空中向右上)</option>
-        <option value="SLD">🟦 SLD / SLC (普通滑键轨道)</option>
-        <option value="SXD">🟨 SXD / SXC (Ex 滑键轨道)</option>
-        <option value="ASD">🪂 ASD (空中滑条 Air Slide)</option>
-      </select>
-
-      <div class="grid-2" style="margin-top:6px;">
-        <div><label>默认宽度</label><input type="number" id="def-width" min="1" max="16" value="4"></div>
-        <div><label>长条时长(Tick)</label><input type="number" id="def-dur" min="1" value="48"></div>
-      </div>
-    </div>
-
-    <!-- 属性检查器 -->
-    <div class="section-card" id="inspector-card">
-      <div class="section-title">
-        <span>属性检查器</span>
-        <span id="select-count" style="color:#00d2ff;">未选中</span>
-      </div>
-      
-      <!-- 多选面板 -->
-      <div id="multi-inspector" style="display:none;">
-        <p style="font-size:11px; color:#a0aec0; margin-bottom:6px;">已选中多个音符：</p>
+    <div class="buttons-container">
         <div class="btn-group">
-          <select id="batch-type">
-            <option value="TAP">转为 TAP</option>
-            <option value="CHR">转为 CHR(ExTAP)</option>
-            <option value="FLK">转为 FLK</option>
-            <option value="HLD">转为 HLD</option>
-            <option value="SLD">转为 SLD</option>
-            <option value="AIR">转为 AIR</option>
-          </select>
-          <button id="btn-batch-change">转换类型</button>
+            <button class="ctrl-btn" id="btn-play">▶ 播放</button>
+            <button class="ctrl-btn" id="btn-restart">↺ 重播</button>
+            <button class="ctrl-btn" id="btn-return">📥 重新拉取</button>
+            <label class="file-btn">
+                📄 选谱面
+                <input type="file" id="input-chart" accept=".json,*">
+            </label>
+            <label class="file-btn">
+                🎵 选音频
+                <input type="file" id="input-audio">
+            </label>
         </div>
-        <button id="btn-delete-selected" class="danger" style="margin-top:6px; width:100%;">🗑️ 批量删除选中音符 (Del)</button>
-      </div>
-
-      <!-- 单选详细面板 -->
-      <div id="single-inspector" style="display:none;">
-        <div style="font-size:11px; color:#718096; margin-bottom:4px;">唯一标识: <b id="ins-line" style="color:#cbd5e0;">-</b></div>
-        <div class="grid-2">
-          <div><label>类型 (Type)</label>
-            <select id="ins-type">
-              <option value="TAP">TAP (红键)</option>
-              <option value="CHR">CHR (黄键ExTAP)</option>
-              <option value="HLD">HLD (普通长按)</option>
-              <option value="HXD">HXD (Ex长按)</option>
-              <option value="FLK">FLK (拂起)</option>
-              <option value="AIR">AIR (空中直上)</option>
-              <option value="AUL">AUL (空中左上)</option>
-              <option value="AUR">AUR (空中右上)</option>
-              <option value="SLD">SLD (滑键首末端)</option>
-              <option value="SLC">SLC (滑键中继点)</option>
-              <option value="SXD">SXD (Ex滑键端点)</option>
-              <option value="SXC">SXC (Ex滑键中继)</option>
-              <option value="ASD">ASD (空中滑条)</option>
-              <option value="ASC">ASC (空中滑条中继)</option>
-              <option value="ALD">ALD (空中引线)</option>
-              <option value="SLP">SLP (变速线)</option>
-            </select>
-          </div>
-          <div><label>小节 (Measure)</label><input type="number" id="ins-measure"></div>
+        <div class="btn-group">
+            <label class="ctrl-label">
+                流速:
+                <input type="range" id="speed-bar" min="1.0" max="16.0" step="0.1" value="10.0" style="width: 90px;">
+                <span id="speed-val">10.0</span>
+            </label>
+            <label class="ctrl-label">
+                音量:
+                <input type="range" id="vol-bar" min="0" max="1" step="0.05" value="0.8" style="width: 60px;">
+            </label>
         </div>
-        <div class="grid-3" style="margin-top:4px;">
-          <div><label>Tick</label><input type="number" id="ins-tick"></div>
-          <div><label>起点轨道(0-15)</label><input type="number" id="ins-lane" min="0" max="15"></div>
-          <div><label>起点宽度(1-16)</label><input type="number" id="ins-width" min="1" max="16"></div>
-        </div>
-
-        <!-- 针对 HLD 与 SLD/SLC/SXD/SXC 的时长 -->
-        <div id="ins-dur-container" style="margin-top:4px; display:none;">
-          <label>时长 (Duration Ticks)</label>
-          <input type="number" id="ins-dur" min="1">
-        </div>
-
-        <!-- 仅 SLD / SLC / SXD / SXC / ASD 显示终点轨道与终点宽度 -->
-        <div id="ins-slide-end-container" class="grid-2" style="margin-top:4px; display:none; background:#161922; padding:5px; border-radius:4px;">
-          <div><label>终点轨道(0-15)</label><input type="number" id="ins-next-lane" min="0" max="15"></div>
-          <div><label>终点宽度(1-16)</label><input type="number" id="ins-next-width" min="1" max="16"></div>
-        </div>
-
-        <!-- 长条尾部追加按键 (自定义按键类型，默认 FLK) -->
-        <div id="ins-tail-append-container" style="margin-top:6px; display:none;">
-          <div style="display:flex; gap:4px;">
-            <button id="btn-append-tail-note" class="success" style="flex:1;">➕ 在结尾接按键</button>
-            <select id="tail-note-type" style="width:75px; font-weight:bold;">
-              <option value="FLK" selected>FLK</option>
-              <option value="TAP">TAP</option>
-              <option value="CHR">CHR</option>
-              <option value="AIR">AIR</option>
-              <option value="AUL">AUL</option>
-              <option value="AUR">AUR</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- 方向与附着属性 (CHR/AIR等) -->
-        <div id="ins-dir-fields" class="grid-2" style="margin-top:4px; display:none;">
-          <div><label>方向/参数</label><input type="text" id="ins-dir" placeholder="UP/DW/CE"></div>
-          <div><label>附着类型</label><input type="text" id="ins-parent" placeholder="TAP/SLD/CHR/DEF"></div>
-        </div>
-
-        <button id="btn-delete-single" class="danger" style="margin-top:8px; width:100%;">🗑️ 删除此音符 (Del)</button>
-      </div>
-
-      <div id="none-inspector" style="color:#718096; font-size:11px; text-align:center; padding:10px 0;">
-        点击音符查看属性<br>快捷键：Ctrl+C/V 复制粘贴 | ↑↓←→ 微调音符 | 空格 播放/暂停
-      </div>
     </div>
-
-    <!-- 简明图例面板 (点击打开完整图解) -->
-    <div class="section-card">
-      <div class="section-title">
-        <span>快捷图例 (点击看详解)</span>
-        <button id="btn-view-legend-detail" style="font-size:10px; padding:2px 5px;">查看全部</button>
-      </div>
-      <div style="display:flex; flex-wrap:wrap; gap:4px;">
-        <span class="legend-badge" onclick="openLegendModal('TAP')"><span class="dot" style="background:#ff3366;"></span>TAP</span>
-        <span class="legend-badge" onclick="openLegendModal('CHR')"><span class="dot" style="background:#ffd700;"></span>CHR(Ex)</span>
-        <span class="legend-badge" onclick="openLegendModal('HLD')"><span class="dot" style="background:#ff9900;"></span>HLD</span>
-        <span class="legend-badge" onclick="openLegendModal('HXD')"><span class="dot" style="background:#ffea00;"></span>HXD</span>
-        <span class="legend-badge" onclick="openLegendModal('FLK')"><span class="dot" style="background:#00d2ff;"></span>FLK</span>
-        <span class="legend-badge" onclick="openLegendModal('AIR')"><span class="dot" style="background:#00ff88;"></span>AIR(绿)</span>
-        <span class="legend-badge" onclick="openLegendModal('AUL')"><span class="dot" style="background:#f72585;"></span>AUL/AUR(紫)</span>
-        <span class="legend-badge" onclick="openLegendModal('SLD')"><span class="dot" style="background:#00b4d8;"></span>SLD/SLC</span>
-        <span class="legend-badge" onclick="openLegendModal('ASD')"><span class="dot" style="background:#c77dff;"></span>ASD(空滑)</span>
-        <span class="legend-badge" onclick="openLegendModal('SLP')"><span class="dot" style="background:#d946ef;"></span>SLP</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- 中间画布区域 -->
-  <div id="main-viewport">
-    <div id="paste-tip">📋 粘贴预览中：在目标位置点击左键确认放置 (ESC 取消)</div>
-    <canvas id="track-canvas"></canvas>
-  </div>
-
-  <!-- 右侧代码同步面板 (Git Diff 风格) -->
-  <div id="code-panel">
-    <div class="code-header">
-      <span>📄 源码 Git Diff 变动对比</span>
-      <div style="display:flex; gap:6px;">
-        <button id="btn-toggle-raw-edit" style="font-size:11px; padding:2px 6px;">直编模式</button>
-        <button id="btn-apply-raw" style="font-size:11px; padding:2px 6px; display:none; background:#38a169;">应用代码</button>
-      </div>
-    </div>
-    <div id="code-list"></div>
-    <textarea id="raw-code-textarea" placeholder="在此直接编辑或粘贴 c2s 代码..."></textarea>
-  </div>
-</div>
-
-<!-- 底部播放栏 -->
-<div id="playback-bar">
-  <button id="btn-play" style="width:74px; font-weight:bold;">▶ 播放</button>
-  <span id="time-display" style="font-family:monospace; min-width:110px;">00:00.00 / 00:00.00</span>
-  <input type="range" id="progress-range" min="0" max="100" step="0.01" value="0" style="flex:1;">
-  <span style="font-size:12px;">小节: <b id="measure-display" style="color:#00d2ff; font-family:monospace;">0</b></span>
-  <span style="font-size:12px;">倍速:</span>
-  <select id="play-speed" style="width:65px;">
-    <option value="0.5">0.5x</option>
-    <option value="0.75">0.75x</option>
-    <option value="1.0" selected>1.0x</option>
-    <option value="1.25">1.25x</option>
-    <option value="1.5">1.5x</option>
-    <option value="2.0">2.0x</option>
-  </select>
-</div>
-
-<!-- 详细图解弹窗 Modal -->
-<div id="modal-mask">
-  <div id="legend-modal">
-    <div class="modal-header">
-      <h3>📖 谱面音符与指令全面图解指南</h3>
-      <button class="modal-close" id="btn-close-modal">✕</button>
-    </div>
-    <div class="modal-body" id="modal-content">
-      <!-- 动态/静态填充详细说明 -->
-    </div>
-  </div>
 </div>
 
 <script>
-// ==================== Cookie 与音量持久化存储 ====================
-function setCookie(name, val, days=365) {
-  try {
-    const d = new Date();
-    d.setTime(d.getTime() + (days*24*60*60*1000));
-    document.cookie = `${name}=${encodeURIComponent(val)};expires=${d.toUTCString()};path=/;SameSite=Lax`;
-  } catch(e){}
-  try { localStorage.setItem(name, val); } catch(e){}
-}
-
-function getCookie(name) {
-  try {
-    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-    if (match) return decodeURIComponent(match[2]);
-  } catch(e){}
-  try {
-    const ls = localStorage.getItem(name);
-    if (ls !== null) return ls;
-  } catch(e){}
-  return null;
-}
-
-// ==================== 核心全局数据 ====================
-let notes = []; 
-let bpm = 192.0;
-let resolution = 384;
-let audioOffset = 0.0;
-let headerLines = [];
-let originalSourceLines = []; 
-
-let audio = new Audio();
-let audioGain = 0.8;
-let isPlaying = false;
-let currentTime = 0;
-let maxMeasures = 140;
-
-// 历史栈 (最多 10 步)
-const MAX_HISTORY = 10;
-let historyStack = [];
-let redoStack = [];
-
-// 选中与交互
-let selectedNoteIds = new Set();
-let toolMode = "SELECT";
-let isSelectingBox = false;
-let selectBoxStart = { x: 0, y: 0 };
-let selectBoxEnd = { x: 0, y: 0 };
-
-// 复制 / 粘贴
-let clipboard = []; 
-let isPasting = false;
-let pasteGhostPos = { measure: 0, tick: 0, lane: 0 };
-
-// 画布视图与缩放
-const canvas = document.getElementById("track-canvas");
-const ctx = canvas.getContext("2d");
-const LANES = 16;
-let laneWidth = 22;
-let trackWidth = laneWidth * LANES;
-let pixelsPerMeasure = 384; // 80 ~ 4800px
-
-// ==================== 历史记录管理 ====================
-function pushHistory() {
-  historyStack.push(JSON.stringify(notes));
-  if (historyStack.length > MAX_HISTORY) historyStack.shift();
-  redoStack = [];
-  updateHistoryUI();
-}
-
-function undo() {
-  if (historyStack.length === 0) return;
-  redoStack.push(JSON.stringify(notes));
-  if (redoStack.length > MAX_HISTORY) redoStack.shift();
-  notes = JSON.parse(historyStack.pop());
-  selectedNoteIds.clear();
-  exitPasteMode();
-  updateInspector();
-  syncCodeView();
-  render();
-  updateHistoryUI();
-}
-
-function redo() {
-  if (redoStack.length === 0) return;
-  historyStack.push(JSON.stringify(notes));
-  notes = JSON.parse(redoStack.pop());
-  selectedNoteIds.clear();
-  exitPasteMode();
-  updateInspector();
-  syncCodeView();
-  render();
-  updateHistoryUI();
-}
-
-function updateHistoryUI() {
-  document.getElementById("btn-undo").disabled = (historyStack.length === 0);
-  document.getElementById("btn-undo").innerText = `⮌ 撤回 (${historyStack.length})`;
-  document.getElementById("btn-redo").disabled = (redoStack.length === 0);
-  document.getElementById("btn-redo").innerText = `⮎ 重做 (${redoStack.length})`;
-}
-
-// ==================== 谱面全特性解析器 ====================
-function parseC2S(text) {
-  pushHistory();
-  notes = [];
-  headerLines = [];
-  const lines = text.split(/\r?\n/);
-  originalSourceLines = lines.map(l => l.trim()).filter(l => l.length > 0);
-
-  let idGen = 1;
-  for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
-    const rawLine = lines[lineIdx];
-    const line = rawLine.trim();
-    if (!line) continue;
-
-    const parts = line.split(/\s+/);
-    const cmd = parts[0];
-
-    if (cmd === "BPM_DEF" || cmd === "BPM") {
-      if (parts.length >= 4) bpm = parseFloat(parts[3]) || bpm;
-      else if (parts.length >= 2) bpm = parseFloat(parts[1]) || bpm;
-      headerLines.push(rawLine);
-    } else if (cmd === "RESOLUTION") {
-      resolution = parseInt(parts[1]) || 384;
-      headerLines.push(rawLine);
-    } else if (["TAP", "FLK"].includes(cmd)) {
-      notes.push({
-        id: idGen++, type: cmd,
-        measure: parseInt(parts[1]) || 0, tick: parseInt(parts[2]) || 0,
-        lane: parseInt(parts[3]) || 0, width: parseInt(parts[4]) || 4,
-        dur: 0, next_lane: 0, next_width: 0, dir: "", parent: "", flag: ""
-      });
-    } else if (cmd === "HLD" || cmd === "HXD") {
-      notes.push({
-        id: idGen++, type: cmd,
-        measure: parseInt(parts[1]) || 0, tick: parseInt(parts[2]) || 0,
-        lane: parseInt(parts[3]) || 0, width: parseInt(parts[4]) || 4,
-        dur: parseInt(parts[5]) || 28,
-        next_lane: parseInt(parts[3]) || 0, next_width: parseInt(parts[4]) || 4,
-        dir: parts[6] || (cmd === "HXD" ? "UP" : ""), parent: "", flag: ""
-      });
-    } else if (cmd === "CHR") {
-      notes.push({
-        id: idGen++, type: cmd,
-        measure: parseInt(parts[1]) || 0, tick: parseInt(parts[2]) || 0,
-        lane: parseInt(parts[3]) || 0, width: parseInt(parts[4]) || 4,
-        dur: 0, next_lane: 0, next_width: 0, dir: parts[5] || "UP", parent: "", flag: ""
-      });
-    } else if (["AIR", "AUL", "AUR"].includes(cmd)) {
-      notes.push({
-        id: idGen++, type: cmd,
-        measure: parseInt(parts[1]) || 0, tick: parseInt(parts[2]) || 0,
-        lane: parseInt(parts[3]) || 0, width: parseInt(parts[4]) || 4,
-        dur: 0, next_lane: 0, next_width: 0, dir: "", parent: parts[5] || "DEF", flag: parts[6] || ""
-      });
-    } else if (["SLD", "SLC", "SXD", "SXC"].includes(cmd)) {
-      // 曲线滑轨
-      notes.push({
-        id: idGen++, type: cmd,
-        measure: parseInt(parts[1]) || 0, tick: parseInt(parts[2]) || 0,
-        lane: parseInt(parts[3]) || 0, width: parseInt(parts[4]) || 4,
-        dur: parseInt(parts[5]) || 48,
-        next_lane: parseInt(parts[6]) !== undefined ? parseInt(parts[6]) : parseInt(parts[3]) || 0,
-        next_width: parseInt(parts[7]) !== undefined ? parseInt(parts[7]) : parseInt(parts[4]) || 4,
-        parent: parts[8] || "SLD", dir: parts[9] || ""
-      });
-    } else if (["ASD", "ASC"].includes(cmd)) {
-      // 空中滑动 Air Slide
-      // ASD/ASC measure tick lane width parent h1 dur next_lane next_width h2 flag
-      notes.push({
-        id: idGen++, type: cmd,
-        measure: parseInt(parts[1]) || 0, tick: parseInt(parts[2]) || 0,
-        lane: parseInt(parts[3]) || 0, width: parseInt(parts[4]) || 4,
-        parent: parts[5] || "SLD", h1: parseFloat(parts[6]) || 5.0,
-        dur: parseInt(parts[7]) || 96,
-        next_lane: parseInt(parts[8]) !== undefined ? parseInt(parts[8]) : parseInt(parts[3]) || 0,
-        next_width: parseInt(parts[9]) !== undefined ? parseInt(parts[9]) : parseInt(parts[4]) || 4,
-        h2: parseFloat(parts[10]) || 5.0, flag: parts[11] || "DEF"
-      });
-    } else if (cmd === "ALD") {
-      // ALD measure tick lane width dur h1 step next_lane next_width h2 flag
-      notes.push({
-        id: idGen++, type: cmd,
-        measure: parseInt(parts[1]) || 0, tick: parseInt(parts[2]) || 0,
-        lane: parseInt(parts[3]) || 0, width: parseInt(parts[4]) || 4,
-        dur: parseInt(parts[5]) || 48, h1: parseFloat(parts[6]) || 5.0,
-        step: parseInt(parts[7]) || 24,
-        next_lane: parseInt(parts[8]) !== undefined ? parseInt(parts[8]) : parseInt(parts[3]) || 0,
-        next_width: parseInt(parts[9]) !== undefined ? parseInt(parts[9]) : parseInt(parts[4]) || 4,
-        h2: parseFloat(parts[10]) || 1.0, flag: parts[11] || "DEF"
-      });
-    } else if (cmd === "SLP") {
-      notes.push({
-        id: idGen++, type: cmd,
-        measure: parseInt(parts[1]) || 0, tick: parseInt(parts[2]) || 0,
-        lane: 0, width: 16, dur: parseInt(parts[3]) || 0, speed: parseFloat(parts[4]) || 1.0, flag: parts[5] || "0"
-      });
-    } else {
-      headerLines.push(rawLine);
-    }
-  }
-
-  document.getElementById("cfg-bpm").value = bpm;
-  document.getElementById("cfg-res").value = resolution;
-  updateTotalMeasures();
-  syncCodeView();
-  render();
-}
-
-// ==================== C2S 代码构建输出 ====================
-function generateC2SLines() {
-  let out = [];
-  if (headerLines.length > 0) {
-    out.push(...headerLines);
-  } else {
-    out.push("VERSION\t1.13.00\t1.13.00");
-    out.push("MUSIC\t0");
-    out.push(`BPM_DEF\t${bpm.toFixed(3)}\t${bpm.toFixed(3)}\t${bpm.toFixed(3)}\t${bpm.toFixed(3)}`);
-    out.push("MET_DEF\t4\t4");
-    out.push(`RESOLUTION\t${resolution}`);
-    out.push(`CLK_DEF\t${resolution}`);
-    out.push("PROGJUDGE_BPM\t240.000");
-    out.push("PROGJUDGE_AER\t  0.999");
-    out.push("TUTORIAL\t0");
-    out.push(`BPM\t0\t0\t${bpm.toFixed(3)}`);
-    out.push("MET\t0\t0\t4\t4");
-  }
-
-  const sorted = [...notes].sort((a,b) => (a.measure * resolution + a.tick) - (b.measure * resolution + b.tick));
-
-  for (const n of sorted) {
-    if (n.type === "TAP") out.push(`TAP\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}`);
-    else if (n.type === "HLD") out.push(`HLD\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.dur}`);
-    else if (n.type === "HXD") out.push(`HXD\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.dur}\t${n.dir || "UP"}`);
-    else if (n.type === "FLK") out.push(`FLK\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}`);
-    else if (n.type === "CHR") out.push(`CHR\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.dir || "UP"}`);
-    else if (["AIR", "AUL", "AUR"].includes(n.type)) out.push(`${n.type}\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.parent || "TAP"}\t${n.flag || "DEF"}`);
-    else if (["SLD", "SLC", "SXD", "SXC"].includes(n.type)) {
-      const extra = n.dir ? `\t${n.dir}` : "";
-      const nLane = n.next_lane !== undefined ? n.next_lane : n.lane;
-      const nWidth = n.next_width !== undefined ? n.next_width : n.width;
-      out.push(`${n.type}\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.dur}\t${nLane}\t${nWidth}\t${n.parent || "SLD"}${extra}`);
-    } else if (["ASD", "ASC"].includes(n.type)) {
-      out.push(`${n.type}\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.parent || "SLD"}\t${n.h1 || "5.0"}\t${n.dur}\t${n.next_lane !== undefined ? n.next_lane : n.lane}\t${n.next_width !== undefined ? n.next_width : n.width}\t${n.h2 || "5.0"}\t${n.flag || "DEF"}`);
-    } else if (n.type === "ALD") {
-      out.push(`ALD\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.dur}\t${n.h1 || "5.0"}\t${n.step || 24}\t${n.next_lane !== undefined ? n.next_lane : n.lane}\t${n.next_width !== undefined ? n.next_width : n.width}\t${n.h2 || "1.0"}\t${n.flag || "DEF"}`);
-    } else if (n.type === "SLP") {
-      out.push(`SLP\t${n.measure}\t${n.tick}\t${n.dur}\t${n.speed ? n.speed.toFixed(6) : "1.000000"}\t${n.flag || "0"}`);
-    }
-  }
-  return out;
-}
-
-function exportC2S() {
-  const text = generateC2SLines().join("\n");
-  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "chart.c2s";
-  a.click();
-}
-
-// ==================== Diff 引擎与源码面板 ====================
-function computeLCSDiff(orig, curr) {
-  const n = orig.length;
-  const m = curr.length;
-  const dp = Array.from({ length: n + 1 }, () => new Int32Array(m + 1));
-
-  for (let i = 0; i < n; i++) {
-    for (let j = 0; j < m; j++) {
-      if (orig[i] === curr[j]) dp[i+1][j+1] = dp[i][j] + 1;
-      else dp[i+1][j+1] = Math.max(dp[i+1][j], dp[i][j+1]);
-    }
-  }
-
-  const diff = [];
-  let i = n, j = m;
-  while (i > 0 || j > 0) {
-    if (i > 0 && j > 0 && orig[i-1] === curr[j-1]) {
-      diff.push({ type: 'same', text: orig[i-1], lineIdx: j });
-      i--; j--;
-    } else if (j > 0 && (i === 0 || dp[i][j-1] >= dp[i-1][j])) {
-      diff.push({ type: 'add', text: curr[j-1], lineIdx: j });
-      j--;
-    } else if (i > 0 && (j === 0 || dp[i][j-1] < dp[i-1][j])) {
-      diff.push({ type: 'del', text: orig[i-1], lineIdx: null });
-      i--;
-    }
-  }
-  return diff.reverse();
-}
-
-function syncCodeView() {
-  const codeList = document.getElementById("code-list");
-  const rawTextarea = document.getElementById("raw-code-textarea");
-  const currLines = generateC2SLines();
-  rawTextarea.value = currLines.join("\n");
-
-  const diffs = computeLCSDiff(originalSourceLines.length > 0 ? originalSourceLines : currLines, currLines);
-  codeList.innerHTML = "";
-
-  diffs.forEach(d => {
-    const row = document.createElement("div");
-    row.className = `diff-row diff-${d.type}`;
-    if (d.lineIdx !== null) row.dataset.lineNo = d.lineIdx;
-
-    const sign = document.createElement("span");
-    sign.className = "diff-sign";
-    sign.textContent = d.type === 'add' ? '+' : (d.type === 'del' ? '-' : ' ');
-
-    const lineNo = document.createElement("span");
-    lineNo.className = "diff-lineno";
-    lineNo.textContent = d.lineIdx !== null ? d.lineIdx : '';
-
-    const text = document.createElement("span");
-    text.className = "diff-text";
-    text.textContent = d.text;
-
-    row.appendChild(sign);
-    row.appendChild(lineNo);
-    row.appendChild(text);
-
-    if (d.type !== 'del') {
-      row.addEventListener("click", () => {
-        jumpToCodeLine(d.text);
-      });
-    }
-
-    codeList.appendChild(row);
-  });
-
-  highlightCodeLines();
-}
-
-function highlightCodeLines() {
-  document.querySelectorAll(".diff-row").forEach(r => r.classList.remove("highlight"));
-  if (selectedNoteIds.size === 0) return;
-
-  const first = notes.find(n => selectedNoteIds.has(n.id));
-  if (!first) return;
-
-  const rows = document.querySelectorAll(".diff-row");
-  for (let r of rows) {
-    const text = r.querySelector(".diff-text").textContent;
-    if (text.startsWith(first.type) && text.includes(`\t${first.measure}\t${first.tick}\t${first.lane}`)) {
-      r.classList.add("highlight");
-      r.scrollIntoView({ block: "nearest", behavior: "smooth" });
-      break;
-    }
-  }
-}
-
-function jumpToCodeLine(lineText) {
-  const parts = lineText.trim().split(/\s+/);
-  if (parts.length >= 3) {
-    const m = parseInt(parts[1]);
-    const t = parseInt(parts[2]);
-    if (!isNaN(m) && !isNaN(t)) {
-      currentTime = totalTicksToTime(m * resolution + t);
-      if (audio.src) audio.currentTime = currentTime;
-      const target = notes.find(n => n.measure === m && n.tick === t && n.type === parts[0]);
-      if (target) {
-        selectedNoteIds.clear();
-        selectedNoteIds.add(target.id);
-        updateInspector();
-      }
-      render();
-    }
-  }
-}
-
-// 切换直编模式
-let isRawCodeEdit = false;
-document.getElementById("btn-toggle-raw-edit").addEventListener("click", () => {
-  isRawCodeEdit = !isRawCodeEdit;
-  document.getElementById("code-list").style.display = isRawCodeEdit ? "none" : "block";
-  document.getElementById("raw-code-textarea").style.display = isRawCodeEdit ? "block" : "none";
-  document.getElementById("btn-apply-raw").style.display = isRawCodeEdit ? "inline-block" : "none";
-  document.getElementById("btn-toggle-raw-edit").innerText = isRawCodeEdit ? "Diff 模式" : "直编模式";
-});
-document.getElementById("btn-apply-raw").addEventListener("click", () => {
-  parseC2S(document.getElementById("raw-code-textarea").value);
-});
-
-// ==================== 时间与坐标计算 ====================
-function timeToTotalTicks(t) {
-  const adjusted = Math.max(0, t - audioOffset);
-  return (adjusted * bpm * resolution) / 240;
-}
-
-function totalTicksToTime(ticks) {
-  return (ticks * 240) / (bpm * resolution) + audioOffset;
-}
-
-function updateTotalMeasures() {
-  notes.forEach(n => {
-    if (n.measure + 8 > maxMeasures) maxMeasures = n.measure + 8;
-  });
-}
-
-// ==================== 滑条链路与头判判定系统 ====================
-// 检测某个 SLD/SXD/SLC 是否是某条滑键的真正起点 (有头判)
-function isSlideChainHead(targetNote) {
-  if (targetNote.type === "SLC" || targetNote.type === "SXC") return false; // 中继点绝无头判
-  const targetStart = targetNote.measure * resolution + targetNote.tick;
-  
-  // 检查是否有前置节点正好在当前时刻与轨道相接
-  const hasPredecessor = notes.some(n => {
-    if (!["SLD", "SLC", "SXD", "SXC"].includes(n.type) || n.id === targetNote.id) return false;
-    const nEnd = n.measure * resolution + n.tick + (n.dur || 0);
-    const nEndLane = n.next_lane !== undefined ? n.next_lane : n.lane;
-    return (nEnd === targetStart && nEndLane === targetNote.lane);
-  });
-  return !hasPredecessor;
-}
-
-// ==================== 画布渲染核心 ====================
-function resizeCanvas() {
-  const container = document.getElementById("main-viewport");
-  canvas.width = trackWidth + 120;
-  canvas.height = container.clientHeight;
-  render();
-}
-window.addEventListener("resize", resizeCanvas);
-
-function render() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const originX = 60;
-  const judgeY = canvas.height - 90;
-
-  const currentTicks = timeToTotalTicks(currentTime);
-  const currentScrollY = (currentTicks / resolution) * pixelsPerMeasure;
-
-  // 1. 16 轨底板
-  ctx.fillStyle = "#0c0e14";
-  ctx.fillRect(originX, 0, trackWidth, canvas.height);
-
-  // 2. 分轨线 (16 轨)
-  for (let i = 0; i <= LANES; i++) {
-    const x = originX + i * laneWidth;
-    ctx.strokeStyle = (i % 4 === 0) ? "#4a5568" : "#1b202c";
-    ctx.lineWidth = (i % 4 === 0) ? 2 : 1;
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, canvas.height);
-    ctx.stroke();
-  }
-
-  // 3. 小节与拍线
-  const startMeasure = Math.max(0, Math.floor((currentScrollY - canvas.height) / pixelsPerMeasure));
-  const endMeasure = Math.floor((currentScrollY + judgeY) / pixelsPerMeasure) + 2;
-
-  for (let m = startMeasure; m <= endMeasure; m++) {
-    const mY = judgeY - (m * pixelsPerMeasure - currentScrollY);
-    if (mY < -50 || mY > canvas.height + 50) continue;
-
-    ctx.strokeStyle = "#00d2ff";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(originX, mY);
-    ctx.lineTo(originX + trackWidth, mY);
-    ctx.stroke();
-
-    ctx.fillStyle = "#718096";
-    ctx.font = "bold 11px monospace";
-    ctx.fillText(`M ${m}`, originX - 44, mY + 4);
-
-    for (let b = 1; b < 4; b++) {
-      const bY = mY - (b * pixelsPerMeasure) / 4;
-      ctx.strokeStyle = "#1f2635";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(originX, bY);
-      ctx.lineTo(originX + trackWidth, bY);
-      ctx.stroke();
-    }
-  }
-
-  // 4. 变速事件 SLP
-  for (const n of notes) {
-    if (n.type === "SLP") {
-      const t = n.measure * resolution + n.tick;
-      const y = judgeY - ((t / resolution) * pixelsPerMeasure - currentScrollY);
-      if (y < -30 || y > canvas.height + 30) continue;
-
-      ctx.strokeStyle = "#d946ef";
-      ctx.lineWidth = 2;
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath();
-      ctx.moveTo(originX, y);
-      ctx.lineTo(originX + trackWidth, y);
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      ctx.fillStyle = "#d946ef";
-      ctx.font = "10px monospace";
-      ctx.fillText(`⚡ SLP Speed: ${n.speed}x`, originX + 6, y - 4);
-    }
-  }
-
-  // 5. 绘制滑条轨道身体与长按条 (SLD, SLC, SXD, SXC, HLD, HXD)
-  for (const n of notes) {
-    const isSelected = selectedNoteIds.has(n.id);
-    const startTicks = n.measure * resolution + n.tick;
-    const startY = judgeY - ((startTicks / resolution) * pixelsPerMeasure - currentScrollY);
-    const startX = originX + n.lane * laneWidth;
-    const startW = n.width * laneWidth;
-
-    if (["SLD", "SLC", "SXD", "SXC"].includes(n.type)) {
-      const endTicks = startTicks + (n.dur || 48);
-      const endY = judgeY - ((endTicks / resolution) * pixelsPerMeasure - currentScrollY);
-      const endX = originX + (n.next_lane !== undefined ? n.next_lane : n.lane) * laneWidth;
-      const endW = (n.next_width !== undefined ? n.next_width : n.width) * laneWidth;
-
-      const isEx = (n.type === "SXD" || n.type === "SXC");
-      ctx.fillStyle = isEx ? "rgba(255, 215, 0, 0.35)" : "rgba(0, 210, 255, 0.32)";
-      ctx.strokeStyle = isEx ? "#ffd700" : "#00d2ff";
-      ctx.lineWidth = isSelected ? 3 : 2;
-
-      ctx.beginPath();
-      ctx.moveTo(startX, startY);
-      ctx.lineTo(endX, endY);
-      ctx.lineTo(endX + endW, endY);
-      ctx.lineTo(startX + startW, startY);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-
-      // 连接节点小短线
-      ctx.fillStyle = isEx ? "#ffd700" : "#00d2ff";
-      ctx.fillRect(endX, endY - 1, endW, 2);
-
-    } else if (n.type === "HLD" || n.type === "HXD") {
-      const durPx = ((n.dur || 28) / resolution) * pixelsPerMeasure;
-      const endY = startY - durPx;
-      const isEx = (n.type === "HXD");
-
-      ctx.fillStyle = isEx ? "rgba(255, 234, 0, 0.45)" : "rgba(255, 153, 0, 0.38)";
-      ctx.strokeStyle = isEx ? "#ffea00" : "#ff9900";
-      ctx.lineWidth = isSelected ? 3 : 2;
-
-      ctx.fillRect(startX + 2, endY, startW - 4, durPx);
-      ctx.strokeRect(startX + 2, endY, startW - 4, durPx);
-
-      // 长按尾部收笔线
-      ctx.fillStyle = isEx ? "#ffea00" : "#ff9900";
-      ctx.fillRect(startX + 2, endY - 1, startW - 4, 3);
-    }
-  }
-
-  // 6. 绘制空中滑条 ASD / ASC / ALD
-  for (const n of notes) {
-    if (["ASD", "ASC"].includes(n.type)) {
-      const startTicks = n.measure * resolution + n.tick;
-      const startY = judgeY - ((startTicks / resolution) * pixelsPerMeasure - currentScrollY);
-      const startX = originX + n.lane * laneWidth;
-      const startW = n.width * laneWidth;
-      const endTicks = startTicks + (n.dur || 96);
-      const endY = judgeY - ((endTicks / resolution) * pixelsPerMeasure - currentScrollY);
-      const endX = originX + (n.next_lane !== undefined ? n.next_lane : n.lane) * laneWidth;
-      const endW = (n.next_width !== undefined ? n.next_width : n.width) * laneWidth;
-
-      // 空中透明紫粉发光带
-      ctx.save();
-      ctx.fillStyle = "rgba(217, 70, 239, 0.35)";
-      ctx.strokeStyle = "#e879f9";
-      ctx.lineWidth = selectedNoteIds.has(n.id) ? 3 : 2;
-      ctx.setLineDash([6, 3]);
-
-      ctx.beginPath();
-      ctx.moveTo(startX, startY);
-      ctx.lineTo(endX, endY);
-      ctx.lineTo(endX + endW, endY);
-      ctx.lineTo(startX + startW, startY);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-
-      // 空中节点标牌
-      ctx.fillStyle = "#f0abfc";
-      ctx.fillRect(startX, startY - 2, startW, 4);
-    }
-  }
-
-  // 7. 绘制打击头与点状音符 (精准区分头判)
-  for (const n of notes) {
-    const isSelected = selectedNoteIds.has(n.id);
-    const startTicks = n.measure * resolution + n.tick;
-    const y = judgeY - ((startTicks / resolution) * pixelsPerMeasure - currentScrollY);
-    const x = originX + n.lane * laneWidth;
-    const w = n.width * laneWidth;
-
-    if (y < -80 || y > canvas.height + 80) continue;
-
-    // 选中光晕
-    if (isSelected) {
-      ctx.strokeStyle = "#ffffff";
-      ctx.lineWidth = 3;
-      ctx.strokeRect(x - 2, y - 7, w + 4, 14);
-    }
-
-    if (n.type === "TAP") {
-      ctx.fillStyle = "#ff3366";
-      ctx.fillRect(x + 1, y - 4, w - 2, 8);
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(x + 3, y - 1, w - 6, 2);
-    } else if (n.type === "CHR") {
-      ctx.fillStyle = "#ffd700";
-      ctx.fillRect(x + 1, y - 5, w - 2, 10);
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(x + 3, y - 1.5, w - 6, 3);
-      if (n.dir) {
-        ctx.fillStyle = "#1a202c";
-        ctx.font = "bold 9px monospace";
-        ctx.fillText(n.dir, x + w / 2 - 6, y + 3);
-      }
-    } else if (n.type === "HLD") {
-      ctx.fillStyle = "#ff9900";
-      ctx.fillRect(x + 1, y - 4, w - 2, 8);
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(x + 3, y - 1, w - 6, 2);
-    } else if (n.type === "HXD") {
-      ctx.fillStyle = "#ffea00";
-      ctx.fillRect(x + 1, y - 5, w - 2, 10);
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(x + 3, y - 1.5, w - 6, 3);
-    } else if (["SLD", "SXD"].includes(n.type)) {
-      // 关键：仅首节点有头判，中继与续接段不画实心 Tap 头部
-      if (isSlideChainHead(n)) {
-        ctx.fillStyle = (n.type === "SXD") ? "#ffd700" : "#00d2ff";
-        ctx.fillRect(x + 1, y - 5, w - 2, 10);
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(x + 3, y - 1.5, w - 6, 3);
-      }
-    } else if (n.type === "FLK") {
-      ctx.fillStyle = "#00d2ff";
-      ctx.fillRect(x + 1, y - 5, w - 2, 10);
-      ctx.fillStyle = "#ffffff";
-      ctx.beginPath();
-      ctx.moveTo(x + w / 2, y - 8);
-      ctx.lineTo(x + w / 2 + 6, y - 2);
-      ctx.lineTo(x + w / 2 - 6, y - 2);
-      ctx.fill();
-    } else if (n.type === "AIR") {
-      // 绿色 Air 向上箭头
-      ctx.fillStyle = "#00ff88";
-      ctx.beginPath();
-      ctx.moveTo(x + w / 2, y - 14);
-      ctx.lineTo(x + w / 2 + 8, y - 2);
-      ctx.lineTo(x + w / 2 - 8, y - 2);
-      ctx.closePath();
-      ctx.fill();
-      ctx.strokeStyle = "#008f4c";
-      ctx.stroke();
-    } else if (n.type === "AUL") {
-      ctx.fillStyle = "#f72585";
-      ctx.beginPath();
-      ctx.moveTo(x + w / 2 - 8, y - 14);
-      ctx.lineTo(x + w / 2 + 6, y - 8);
-      ctx.lineTo(x + w / 2 - 2, y + 2);
-      ctx.closePath();
-      ctx.fill();
-    } else if (n.type === "AUR") {
-      ctx.fillStyle = "#f72585";
-      ctx.beginPath();
-      ctx.moveTo(x + w / 2 + 8, y - 14);
-      ctx.lineTo(x + w / 2 + 2, y + 2);
-      ctx.lineTo(x + w / 2 - 6, y - 8);
-      ctx.closePath();
-      ctx.fill();
-    }
-  }
-
-  // 8. 绘制 Ctrl+V 粘贴预览
-  if (isPasting && clipboard.length > 0) {
-    ctx.save();
-    ctx.globalAlpha = 0.55;
-
-    const baseTicks = pasteGhostPos.measure * resolution + pasteGhostPos.tick;
-    for (const item of clipboard) {
-      const targetTicks = baseTicks + item.relTicks;
-      const targetLane = Math.min(16 - item.width, Math.max(0, pasteGhostPos.lane + item.relLane));
-      const gy = judgeY - ((targetTicks / resolution) * pixelsPerMeasure - currentScrollY);
-      const gx = originX + targetLane * laneWidth;
-      const gw = item.width * laneWidth;
-
-      ctx.strokeStyle = "#00d2ff";
-      ctx.setLineDash([3, 3]);
-      ctx.strokeRect(gx, gy - 6, gw, 12);
-      ctx.setLineDash([]);
-
-      ctx.fillStyle = "#00ff88";
-      ctx.fillRect(gx, gy - 4, gw, 8);
-    }
-    ctx.restore();
-  }
-
-  // 9. 多选选框
-  if (isSelectingBox) {
-    ctx.strokeStyle = "#00d2ff";
-    ctx.lineWidth = 1;
-    ctx.fillStyle = "rgba(0, 210, 255, 0.15)";
-    const bx = Math.min(selectBoxStart.x, selectBoxEnd.x);
-    const by = Math.min(selectBoxStart.y, selectBoxEnd.y);
-    const bw = Math.abs(selectBoxEnd.x - selectBoxStart.x);
-    const bh = Math.abs(selectBoxEnd.y - selectBoxStart.y);
-    ctx.fillRect(bx, by, bw, bh);
-    ctx.strokeRect(bx, by, bw, bh);
-  }
-
-  // 10. 底部基准判定线
-  ctx.strokeStyle = "#ff0055";
-  ctx.lineWidth = 3;
-  ctx.shadowColor = "#ff0055";
-  ctx.shadowBlur = 10;
-  ctx.beginPath();
-  ctx.moveTo(originX - 10, judgeY);
-  ctx.lineTo(originX + trackWidth + 10, judgeY);
-  ctx.stroke();
-  ctx.shadowBlur = 0;
-
-  document.getElementById("measure-display").innerText = Math.floor(currentTicks / resolution);
-}
-
-// ==================== 缩放控制 (80px ~ 4800px) ====================
-function setZoom(val) {
-  pixelsPerMeasure = Math.max(80, Math.min(4800, val));
-  document.getElementById("zoom-slider").value = pixelsPerMeasure;
-  document.getElementById("zoom-val").innerText = `${pixelsPerMeasure}px`;
-  render();
-}
-
-document.getElementById("zoom-slider").addEventListener("input", (e) => setZoom(parseInt(e.target.value)));
-document.getElementById("btn-zoom-in").addEventListener("click", () => setZoom(pixelsPerMeasure * 1.25));
-document.getElementById("btn-zoom-out").addEventListener("click", () => setZoom(pixelsPerMeasure * 0.8));
-
-// ==================== 复制与粘贴 ====================
-function copySelectedNotes() {
-  if (selectedNoteIds.size === 0) return;
-  const list = notes.filter(n => selectedNoteIds.has(n.id));
-  if (list.length === 0) return;
-
-  let minTime = Infinity;
-  let minLane = Infinity;
-
-  list.forEach(n => {
-    const t = n.measure * resolution + n.tick;
-    if (t < minTime) minTime = t;
-    if (n.lane < minLane) minLane = n.lane;
-  });
-
-  clipboard = list.map(n => ({
-    relTicks: (n.measure * resolution + n.tick) - minTime,
-    relLane: n.lane - minLane,
-    width: n.width,
-    type: n.type,
-    dur: n.dur || 0,
-    next_lane_rel: (n.next_lane !== undefined ? n.next_lane : n.lane) - n.lane,
-    next_width: n.next_width || n.width,
-    dir: n.dir || "",
-    parent: n.parent || "",
-    flag: n.flag || ""
-  }));
-}
-
-function enterPasteMode() {
-  if (clipboard.length === 0) return;
-  isPasting = true;
-  document.getElementById("paste-tip").style.display = "block";
-  render();
-}
-
-function exitPasteMode() {
-  isPasting = false;
-  document.getElementById("paste-tip").style.display = "none";
-  render();
-}
-
-function confirmPaste() {
-  if (!isPasting || clipboard.length === 0) return;
-  pushHistory();
-
-  const baseTicks = pasteGhostPos.measure * resolution + pasteGhostPos.tick;
-  selectedNoteIds.clear();
-
-  clipboard.forEach(item => {
-    const noteTotalTicks = Math.max(0, baseTicks + item.relTicks);
-    const m = Math.floor(noteTotalTicks / resolution);
-    const t = noteTotalTicks % resolution;
-    const l = Math.min(16 - item.width, Math.max(0, pasteGhostPos.lane + item.relLane));
-
-    const newNote = {
-      id: Date.now() + Math.random(),
-      type: item.type,
-      measure: m, tick: t, lane: l,
-      width: item.width, dur: item.dur,
-      next_lane: Math.min(16 - item.next_width, Math.max(0, l + item.next_lane_rel)),
-      next_width: item.next_width,
-      dir: item.dir, parent: item.parent, flag: item.flag
-    };
-
-    notes.push(newNote);
-    selectedNoteIds.add(newNote.id);
-  });
-
-  exitPasteMode();
-  updateTotalMeasures();
-  updateInspector();
-  syncCodeView();
-  render();
-}
-
-// ==================== 音符移动 (方向键微调) ====================
-function moveSelectedNotes(dMeasure, dTick, dLane) {
-  if (selectedNoteIds.size === 0) return;
-  pushHistory();
-
-  notes.forEach(n => {
-    if (selectedNoteIds.has(n.id)) {
-      let total = n.measure * resolution + n.tick + dMeasure * resolution + dTick;
-      total = Math.max(0, total);
-      n.measure = Math.floor(total / resolution);
-      n.tick = total % resolution;
-
-      if (dLane !== 0) {
-        n.lane = Math.min(16 - n.width, Math.max(0, n.lane + dLane));
-        if (n.next_lane !== undefined) {
-          n.next_lane = Math.min(16 - (n.next_width || n.width), Math.max(0, n.next_lane + dLane));
-        }
-      }
-    }
-  });
-
-  updateTotalMeasures();
-  updateInspector();
-  syncCodeView();
-  render();
-}
-
-// ==================== 长条尾部追加音符 ====================
-document.getElementById("btn-append-tail-note").addEventListener("click", () => {
-  if (selectedNoteIds.size !== 1) return;
-  const note = notes.find(n => selectedNoteIds.has(n.id));
-  if (!note || !["HLD", "HXD", "SLD", "SLC", "SXD", "SXC", "ASD", "ASC"].includes(note.type)) return;
-
-  pushHistory();
-  const endTicks = note.measure * resolution + note.tick + (note.dur || 0);
-  const endM = Math.floor(endTicks / resolution);
-  const endT = endTicks % resolution;
-  const endLane = (note.next_lane !== undefined) ? note.next_lane : note.lane;
-  const endWidth = (note.next_width !== undefined) ? note.next_width : note.width;
-  const appendType = document.getElementById("tail-note-type").value || "FLK";
-
-  const newNote = {
-    id: Date.now(),
-    type: appendType,
-    measure: endM, tick: endT,
-    lane: endLane, width: endWidth,
-    dur: 0, next_lane: endLane, next_width: endWidth,
-    dir: appendType === "CHR" ? "UP" : "",
-    parent: ["AIR", "AUL", "AUR"].includes(appendType) ? "SLD" : "",
-    flag: "DEF"
-  };
-
-  notes.push(newNote);
-  selectedNoteIds.clear();
-  selectedNoteIds.add(newNote.id);
-
-  updateTotalMeasures();
-  updateInspector();
-  syncCodeView();
-  render();
-});
-
-// ==================== 交互与按键响应 ====================
-canvas.addEventListener("wheel", (e) => {
-  e.preventDefault();
-  if (e.ctrlKey) {
-    setZoom(pixelsPerMeasure - Math.sign(e.deltaY) * (pixelsPerMeasure * 0.15));
-  } else {
-    const deltaTicks = (e.deltaY / pixelsPerMeasure) * resolution * 0.4;
-    const currentTicks = timeToTotalTicks(currentTime);
-    currentTime = Math.max(0, totalTicksToTime(currentTicks + deltaTicks));
-    if (audio.src) audio.currentTime = currentTime;
-    updateProgressUI();
-    render();
-  }
-}, { passive: false });
-
-canvas.addEventListener("mousedown", (e) => {
-  if (isPasting) {
-    confirmPaste();
-    return;
-  }
-
-  const rect = canvas.getBoundingClientRect();
-  const clickX = e.clientX - rect.left;
-  const clickY = e.clientY - rect.top;
-  const originX = 60;
-  const judgeY = canvas.height - 90;
-
-  if (toolMode === "SELECT") {
-    const currentTicks = timeToTotalTicks(currentTime);
-    const currentScrollY = (currentTicks / resolution) * pixelsPerMeasure;
-
-    let hitNote = null;
-    for (let i = notes.length - 1; i >= 0; i--) {
-      const n = notes[i];
-      const startTicks = n.measure * resolution + n.tick;
-      const ny = judgeY - ((startTicks / resolution) * pixelsPerMeasure - currentScrollY);
-      const nx = originX + n.lane * laneWidth;
-      const nw = n.width * laneWidth;
-
-      if (clickX >= nx && clickX <= nx + nw && Math.abs(clickY - ny) <= 12) {
-        hitNote = n;
-        break;
-      }
-    }
-
-    if (hitNote) {
-      if (e.shiftKey || e.ctrlKey) {
-        if (selectedNoteIds.has(hitNote.id)) selectedNoteIds.delete(hitNote.id);
-        else selectedNoteIds.add(hitNote.id);
-      } else {
-        selectedNoteIds.clear();
-        selectedNoteIds.add(hitNote.id);
-      }
-      updateInspector();
-      syncCodeView();
-      render();
-    } else {
-      if (!e.shiftKey && !e.ctrlKey) selectedNoteIds.clear();
-      isSelectingBox = true;
-      selectBoxStart = { x: clickX, y: clickY };
-      selectBoxEnd = { x: clickX, y: clickY };
-      updateInspector();
-      render();
-    }
-  } else {
-    if (clickX < originX || clickX > originX + trackWidth) return;
-    
-    pushHistory();
-    const currentTicks = timeToTotalTicks(currentTime);
-    const currentScrollY = (currentTicks / resolution) * pixelsPerMeasure;
-    const snap = parseInt(document.getElementById("grid-snap").value) || 1;
-
-    const rawTicks = Math.round(((judgeY - clickY + currentScrollY) / pixelsPerMeasure) * resolution);
-    const snappedTicks = Math.max(0, Math.round(rawTicks / snap) * snap);
-    const measure = Math.floor(snappedTicks / resolution);
-    const tick = snappedTicks % resolution;
-
-    const lane = Math.max(0, Math.min(15, Math.floor((clickX - originX) / laneWidth)));
-    const defW = parseInt(document.getElementById("def-width").value) || 4;
-    const defDur = parseInt(document.getElementById("def-dur").value) || 48;
-
-    const newNote = {
-      id: Date.now(),
-      type: toolMode,
-      measure, tick,
-      lane: Math.min(16 - defW, lane),
-      width: defW,
-      dur: defDur,
-      next_lane: Math.min(16 - defW, lane),
-      next_width: defW,
-      dir: (toolMode === "CHR" || toolMode === "HXD") ? "UP" : "",
-      parent: ["AIR", "AUL", "AUR"].includes(toolMode) ? "TAP" : "",
-      flag: "DEF"
-    };
-
-    notes.push(newNote);
-    selectedNoteIds.clear();
-    selectedNoteIds.add(newNote.id);
-    updateTotalMeasures();
-    updateInspector();
-    syncCodeView();
-    render();
-  }
-});
-
-canvas.addEventListener("mousemove", (e) => {
-  const rect = canvas.getBoundingClientRect();
-  const mouseX = e.clientX - rect.left;
-  const mouseY = e.clientY - rect.top;
-  const originX = 60;
-  const judgeY = canvas.height - 90;
-
-  const currentTicks = timeToTotalTicks(currentTime);
-  const currentScrollY = (currentTicks / resolution) * pixelsPerMeasure;
-
-  if (isPasting) {
-    const snap = parseInt(document.getElementById("grid-snap").value) || 1;
-    const rawTicks = Math.round(((judgeY - mouseY + currentScrollY) / pixelsPerMeasure) * resolution);
-    const snappedTicks = Math.max(0, Math.round(rawTicks / snap) * snap);
-
-    pasteGhostPos.measure = Math.floor(snappedTicks / resolution);
-    pasteGhostPos.tick = snappedTicks % resolution;
-    pasteGhostPos.lane = Math.max(0, Math.min(15, Math.floor((mouseX - originX) / laneWidth)));
-    render();
-  } else if (isSelectingBox) {
-    selectBoxEnd = { x: mouseX, y: mouseY };
-    const bx = Math.min(selectBoxStart.x, selectBoxEnd.x);
-    const by = Math.min(selectBoxStart.y, selectBoxEnd.y);
-    const bw = Math.abs(selectBoxEnd.x - selectBoxStart.x);
-    const bh = Math.abs(selectBoxEnd.y - selectBoxStart.y);
-
-    notes.forEach(n => {
-      const startTicks = n.measure * resolution + n.tick;
-      const ny = judgeY - ((startTicks / resolution) * pixelsPerMeasure - currentScrollY);
-      const nx = originX + n.lane * laneWidth;
-      const nw = n.width * laneWidth;
-
-      if (nx + nw >= bx && nx <= bx + bw && ny + 6 >= by && ny - 6 <= by + bh) {
-        selectedNoteIds.add(n.id);
-      }
-    });
-
-    updateInspector();
-    render();
-  }
-});
-
-window.addEventListener("mouseup", () => {
-  if (isSelectingBox) {
-    isSelectingBox = false;
-    syncCodeView();
-    render();
-  }
-});
-
-// 全局按键绑定（空格优先控制播放并解除输入框聚焦）
-window.addEventListener("keydown", (e) => {
-  if (e.code === "Space") {
-    if (isRawCodeEdit && document.activeElement === document.getElementById("raw-code-textarea")) {
-      return; // 直编模式下光标在 textarea 内则允许打空格
-    }
-    e.preventDefault();
-    if (document.activeElement && document.activeElement.blur) {
-      document.activeElement.blur();
-    }
-    togglePlay();
-    return;
-  }
-
-  if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
-
-  if (e.code === "Escape") {
-    exitPasteMode();
-  } else if (e.ctrlKey && e.code === "KeyC") {
-    copySelectedNotes();
-  } else if (e.ctrlKey && e.code === "KeyV") {
-    enterPasteMode();
-  } else if (e.code === "Delete" || e.code === "Backspace") {
-    deleteSelectedNotes();
-  } else if (e.ctrlKey && e.code === "KeyZ") {
-    e.preventDefault();
-    if (e.shiftKey) redo();
-    else undo();
-  } else if (e.ctrlKey && e.code === "KeyY") {
-    e.preventDefault();
-    redo();
-  } else if (e.code === "ArrowUp") {
-    e.preventDefault();
-    moveSelectedNotes(0, e.shiftKey ? (parseInt(document.getElementById("grid-snap").value) || 24) : 1, 0);
-  } else if (e.code === "ArrowDown") {
-    e.preventDefault();
-    moveSelectedNotes(0, e.shiftKey ? -(parseInt(document.getElementById("grid-snap").value) || 24) : -1, 0);
-  } else if (e.code === "ArrowLeft") {
-    e.preventDefault();
-    moveSelectedNotes(0, 0, e.shiftKey ? -2 : -1);
-  } else if (e.code === "ArrowRight") {
-    e.preventDefault();
-    moveSelectedNotes(0, 0, e.shiftKey ? 2 : 1);
-  }
-});
-
-// ==================== 属性检查器与智能转换 ====================
-function updateInspector() {
-  const selectCount = selectedNoteIds.size;
-  const badge = document.getElementById("select-count");
-  const nonePanel = document.getElementById("none-inspector");
-  const singlePanel = document.getElementById("single-inspector");
-  const multiPanel = document.getElementById("multi-inspector");
-
-  if (selectCount === 0) {
-    badge.innerText = "未选中";
-    nonePanel.style.display = "block";
-    singlePanel.style.display = "none";
-    multiPanel.style.display = "none";
-  } else if (selectCount === 1) {
-    badge.innerText = "单选 1 个";
-    nonePanel.style.display = "none";
-    singlePanel.style.display = "block";
-    multiPanel.style.display = "none";
-
-    const note = notes.find(n => selectedNoteIds.has(n.id));
-    if (!note) return;
-
-    document.getElementById("ins-line").innerText = note.id;
-    document.getElementById("ins-type").value = note.type;
-    document.getElementById("ins-measure").value = note.measure;
-    document.getElementById("ins-tick").value = note.tick;
-    document.getElementById("ins-lane").value = note.lane;
-    document.getElementById("ins-width").value = note.width;
-
-    // HLD / HXD / SLD / SLC / ASD 字段显示控制
-    const isSlide = ["SLD", "SLC", "SXD", "SXC", "ASD", "ASC"].includes(note.type);
-    const isHold = ["HLD", "HXD"].includes(note.type);
-    const hasDur = isSlide || isHold || (note.type === "SLP");
-
-    document.getElementById("ins-dur-container").style.display = hasDur ? "block" : "none";
-    if (hasDur) {
-      document.getElementById("ins-dur").value = note.dur || 0;
-    }
-
-    // 终点轨道和终点宽度仅对 Slide / ASD 显示
-    document.getElementById("ins-slide-end-container").style.display = isSlide ? "grid" : "none";
-    if (isSlide) {
-      document.getElementById("ins-next-lane").value = (note.next_lane !== undefined) ? note.next_lane : note.lane;
-      document.getElementById("ins-next-width").value = (note.next_width !== undefined) ? note.next_width : note.width;
-    }
-
-    // 尾部追加面板
-    document.getElementById("ins-tail-append-container").style.display = (isSlide || isHold) ? "block" : "none";
-
-    // 方向与附着字段
-    const hasDirOrParent = ["CHR", "AIR", "AUL", "AUR", "HXD"].includes(note.type);
-    document.getElementById("ins-dir-fields").style.display = hasDirOrParent ? "grid" : "none";
-    if (hasDirOrParent) {
-      document.getElementById("ins-dir").value = note.dir || "";
-      document.getElementById("ins-parent").value = note.parent || "";
-    }
-  } else {
-    badge.innerText = `已选 ${selectCount} 个`;
-    nonePanel.style.display = "none";
-    singlePanel.style.display = "none";
-    multiPanel.style.display = "block";
-  }
-}
-
-function bindInspectorChange() {
-  const fields = ["type", "measure", "tick", "lane", "width", "dur", "next-lane", "next-width", "dir", "parent"];
-  fields.forEach(f => {
-    const el = document.getElementById(`ins-${f}`);
-    el.addEventListener("change", () => {
-      if (selectedNoteIds.size !== 1) return;
-      const note = notes.find(n => selectedNoteIds.has(n.id));
-      if (!note) return;
-
-      pushHistory();
-      if (f === "type") {
-        const oldType = note.type;
-        note.type = el.value;
-
-        // 若从 HLD 改为 SLD/SLC，自动用起点轨道与宽度初始化终点
-        if (["SLD", "SLC", "SXD", "SXC", "ASD", "ASC"].includes(note.type)) {
-          if (note.next_lane === undefined || oldType === "HLD" || oldType === "HXD") note.next_lane = note.lane;
-          if (note.next_width === undefined || oldType === "HLD" || oldType === "HXD") note.next_width = note.width;
-          if (!note.dur) note.dur = 48;
-        } else if (note.type === "HLD" || note.type === "HXD") {
-          if (!note.dur) note.dur = 28;
-        }
-      }
-      else if (f === "measure") note.measure = parseInt(el.value) || 0;
-      else if (f === "tick") note.tick = parseInt(el.value) || 0;
-      else if (f === "lane") {
-        note.lane = parseInt(el.value) || 0;
-        if (["HLD", "HXD"].includes(note.type)) note.next_lane = note.lane;
-      }
-      else if (f === "width") {
-        note.width = parseInt(el.value) || 1;
-        if (["HLD", "HXD"].includes(note.type)) note.next_width = note.width;
-      }
-      else if (f === "dur") note.dur = parseInt(el.value) || 0;
-      else if (f === "next-lane") note.next_lane = parseInt(el.value) || 0;
-      else if (f === "next-width") note.next_width = parseInt(el.value) || 1;
-      else if (f === "dir") note.dir = el.value;
-      else if (f === "parent") note.parent = el.value;
-
-      updateInspector();
-      syncCodeView();
-      render();
-    });
-  });
-}
-bindInspectorChange();
-
-// 批量类型转换
-document.getElementById("btn-batch-change").addEventListener("click", () => {
-  if (selectedNoteIds.size === 0) return;
-  pushHistory();
-  const targetType = document.getElementById("batch-type").value;
-  notes.forEach(n => {
-    if (selectedNoteIds.has(n.id)) {
-      const oldType = n.type;
-      n.type = targetType;
-      if (["SLD", "SLC", "SXD", "SXC"].includes(targetType)) {
-        if (n.next_lane === undefined || oldType === "HLD" || oldType === "HXD") n.next_lane = n.lane;
-        if (n.next_width === undefined || oldType === "HLD" || oldType === "HXD") n.next_width = n.width;
-        if (!n.dur) n.dur = 48;
-      } else if (targetType === "HLD") {
-        if (!n.dur) n.dur = 28;
-      }
-      if (targetType === "CHR" && !n.dir) n.dir = "UP";
-    }
-  });
-  updateInspector();
-  syncCodeView();
-  render();
-});
-
-function deleteSelectedNotes() {
-  if (selectedNoteIds.size === 0) return;
-  pushHistory();
-  notes = notes.filter(n => !selectedNoteIds.has(n.id));
-  selectedNoteIds.clear();
-  updateInspector();
-  syncCodeView();
-  render();
-}
-
-document.getElementById("btn-delete-single").addEventListener("click", deleteSelectedNotes);
-document.getElementById("btn-delete-selected").addEventListener("click", deleteSelectedNotes);
-
-// ==================== 音量控制与 Cookie 加载 ====================
-const volSlider = document.getElementById("vol-slider");
-const volVal = document.getElementById("vol-val");
-
-function setVolume(v) {
-  audioGain = Math.max(0, Math.min(1, v));
-  audio.volume = audioGain;
-  volSlider.value = audioGain;
-  volVal.innerText = `${Math.round(audioGain * 100)}%`;
-  setCookie("c2s_vol", audioGain.toFixed(2));
-}
-
-volSlider.addEventListener("input", (e) => {
-  setVolume(parseFloat(e.target.value));
-});
-
-// 初始化加载 Cookie
-const savedVol = getCookie("c2s_vol");
-if (savedVol !== null && !isNaN(parseFloat(savedVol))) {
-  setVolume(parseFloat(savedVol));
-} else {
-  setVolume(0.8);
-}
-
-// ==================== 播放循环 ====================
-function updateLoop() {
-  if (isPlaying) {
-    currentTime = audio.currentTime;
-    updateProgressUI();
-    render();
-    requestAnimationFrame(updateLoop);
-  }
-}
-
-function updateProgressUI() {
-  const dur = audio.duration || 120;
-  document.getElementById("progress-range").value = (currentTime / dur) * 100;
-  document.getElementById("time-display").innerText = `${formatTime(currentTime)} / ${formatTime(dur)}`;
-}
+// ==================== 0. 全局工具与核心变量 ====================
+const PROXY_BASE = "https://wdstar.pages.dev";
+const logEl = document.getElementById("load-log");
+
+// 确保滑动条拖拽状态被安全声明
+let isDraggingSeek = false; 
 
 function formatTime(sec) {
-  const m = Math.floor(sec / 60).toString().padStart(2, '0');
-  const s = (sec % 60).toFixed(2).padStart(5, '0');
-  return `${m}:${s}`;
+    if (isNaN(sec) || sec < 0) sec = 0;
+    const m = Math.floor(sec / 60).toString().padStart(2, '0');
+    const s = Math.floor(sec % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
 }
 
-const btnPlay = document.getElementById("btn-play");
-btnPlay.addEventListener("click", togglePlay);
-
-function togglePlay() {
-  isPlaying = !isPlaying;
-  if (isPlaying) {
-    btnPlay.innerText = "⏸ 暂停";
-    btnPlay.classList.add("active");
-    if (audio.src) audio.play();
-    requestAnimationFrame(updateLoop);
-  } else {
-    btnPlay.innerText = "▶ 播放";
-    btnPlay.classList.remove("active");
-    if (audio.src) audio.pause();
-  }
+function log(msg, error=false) {
+    logEl.style.color = error ? "#ff4444" : "#4ade80";
+    logEl.innerText = msg;
+    console.log("[Status]:", msg);
 }
 
-document.getElementById("play-speed").addEventListener("change", (e) => { audio.playbackRate = parseFloat(e.target.value); });
-document.getElementById("progress-range").addEventListener("input", (e) => {
-  const dur = audio.duration || 120;
-  currentTime = (e.target.value / 100) * dur;
-  if (audio.src) audio.currentTime = currentTime;
-  updateProgressUI();
-  render();
-});
+// 谱面与渲染引擎变量
+let bpmTimeline = [{ beat: 0, bpm: 60.0, time: 0 }];
+let notes = [];
+let holds = [];
+let syncLines = [];
+let totalDuration = 60.0;
+const bgImg = new Image();
 
-document.getElementById("tool-mode").addEventListener("change", (e) => { toolMode = e.target.value; });
-document.getElementById("c2s-input").addEventListener("change", (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (evt) => parseC2S(evt.target.result);
-  reader.readAsText(file);
-});
-document.getElementById("audio-input").addEventListener("change", (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  audio.src = URL.createObjectURL(file);
-  audio.load();
-});
+// 音频系统变量
+let audioCtx = null;
+let audioBuffer = null;
+let audioSourceNode = null;
+let gainNode = null;
+let isPlaying = false;
+let startTimeOffset = 0;
+let playStartContextTime = 0;
 
-document.getElementById("btn-export").addEventListener("click", exportC2S);
-document.getElementById("btn-undo").addEventListener("click", undo);
-document.getElementById("btn-redo").addEventListener("click", redo);
-document.getElementById("cfg-bpm").addEventListener("change", (e) => { bpm = parseFloat(e.target.value) || 192; render(); });
-document.getElementById("cfg-res").addEventListener("change", (e) => { resolution = parseInt(e.target.value) || 384; render(); });
-document.getElementById("cfg-offset").addEventListener("change", (e) => { audioOffset = parseFloat(e.target.value) || 0; render(); });
-
-// ==================== 详细图例弹窗逻辑 ====================
-const modalMask = document.getElementById("modal-mask");
-const modalContent = document.getElementById("modal-content");
-const legendData = [
-  { cmd: "TAP", color: "#ff3366", name: "地面标准打击音符 (Red Tap)", desc: "最基础的地面打击红键。当音符落入红判定线时按下对应轨道进行判定。" },
-  { cmd: "CHR", color: "#ffd700", name: "地面黄色音符 / ExTAP", desc: "高得分权重的关键音符（暴击音符）。在谱面中常带有 UP/DW/CE 方向标注，亦可作为空中动作 (Air Action) 节点。" },
-  { cmd: "HLD", color: "#ff9900", name: "地面普通长按 (Hold)", desc: "需持续按住的橙色条带，带有起止时间。在终点到达时松开手。C2S 仅需指定时长 dur。" },
-  { cmd: "HXD", color: "#ffea00", name: "地面 Ex 长按 (ExHold)", desc: "带有黄色打击头的高亮长按条带，具备更高的判定与特效权重，常带有空中向上等触发标识。" },
-  { cmd: "FLK", color: "#00d2ff", name: "拂起音符 (Flick)", desc: "青色音符带白色拂起标。到达判定线时不仅需要接触，还需要左右划动手指完成触发。" },
-  { cmd: "SLD / SLC", color: "#00b4d8", name: "滑键轨道 (Slide / Curve Control)", desc: "青色半透明滑键引导带。首节点(SLD)带有实心头判；中间曲线中继点(SLC)无头判，按顺序串联构成优美平滑的多边形折线曲线。" },
-  { cmd: "SXD / SXC", color: "#ffd700", name: "Ex 滑键轨道 (Ex Slide)", desc: "金色高亮滑条。首节点带有 ExTAP 级金色打击头，支持多段 SLC/SXC 自由曲率弯曲。" },
-  { cmd: "AIR", color: "#00ff88", name: "空中向上 (Air Up)", desc: "附着于地面音符（TAP/CHR/长按结尾）上方的绿色向上箭头。击中音符的同时将手臂抬升至传感器区域。" },
-  { cmd: "AUL / AUR", color: "#f72585", name: "空中斜向拂击 (Air Up Left / Right)", desc: "紫色向左上或右上倾斜的空中箭头，要求在击打音符的同时手臂斜向挥起。" },
-  { cmd: "ASD / ASC", color: "#c77dff", name: "空中滑条 (Air Slide)", desc: "悬浮于空中的紫粉色引导光带。玩家抬手后在空中感应区持续平移跟随光带游走。" },
-  { cmd: "ALD", color: "#a855f7", name: "空中引线 / 动作引导 (Air Down Line)", desc: "由空中延伸向地面的下落或动作手势引导虚线。" },
-  { cmd: "SLP", color: "#d946ef", name: "谱面变速 / 镜头事件", desc: "紫色虚线标线。定义谱面滚动速度或视线缩放比率的特殊指令。" },
-  { cmd: "BPM / MET", color: "#60a5fa", name: "歌曲节拍与拍号定义", desc: "定义全局与局部速度(BPM)以及各小节拍号(MET)。全谱采用每小节 384 Ticks 精准对齐时间轴。" }
-];
-
-function openLegendModal(highlightCmd = null) {
-  modalContent.innerHTML = "";
-  legendData.forEach(item => {
-    const card = document.createElement("div");
-    card.className = "legend-detail-card";
-    if (highlightCmd && item.cmd.includes(highlightCmd)) {
-      card.style.borderColor = "#00d2ff";
-      card.style.background = "#232b3d";
+// ==================== 1. Web Audio 引擎 ====================
+function initAudioContext() {
+    if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContextClass();
+        gainNode = audioCtx.createGain();
+        gainNode.gain.value = parseFloat(document.getElementById("vol-bar").value);
+        gainNode.connect(audioCtx.destination);
     }
-    card.innerHTML = `
-      <div class="legend-preview-box">
-        <span class="dot" style="background:${item.color}; width:20px; height:12px; margin-bottom:4px;"></span>
-        <span style="font-size:10px; color:#aaa; font-weight:bold;">${item.cmd.split('/')[0]}</span>
-      </div>
-      <div class="legend-info">
-        <div class="legend-cmd">${item.name} (${item.cmd})</div>
-        <div style="color:#cbd5e0; margin-top:2px;">${item.desc}</div>
-      </div>
-    `;
-    modalContent.appendChild(card);
-  });
-  modalMask.style.display = "flex";
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
 }
 
-document.getElementById("btn-open-legend").addEventListener("click", () => openLegendModal());
-document.getElementById("btn-view-legend-detail").addEventListener("click", () => openLegendModal());
-document.getElementById("btn-close-modal").addEventListener("click", () => { modalMask.style.display = "none"; });
-modalMask.addEventListener("click", (e) => { if (e.target === modalMask) modalMask.style.display = "none"; });
+function playAudio(offset) {
+    initAudioContext();
+    if (audioSourceNode) {
+        try { audioSourceNode.stop(); } catch(e){}
+        audioSourceNode.disconnect();
+    }
+    if (audioBuffer) {
+        audioSourceNode = audioCtx.createBufferSource();
+        audioSourceNode.buffer = audioBuffer;
+        audioSourceNode.connect(gainNode);
+        audioSourceNode.start(0, offset);
+    }
+    playStartContextTime = audioCtx ? audioCtx.currentTime : (performance.now() / 1000);
+    startTimeOffset = offset;
+}
 
-// 初始化
-resizeCanvas();
-updateHistoryUI();
+function stopAudio() {
+    if (audioSourceNode) {
+        try { audioSourceNode.stop(); } catch(e){}
+        audioSourceNode.disconnect();
+        audioSourceNode = null;
+    }
+}
+
+function getCurrentPlayTime() {
+    if (!isPlaying) return startTimeOffset;
+    if (audioCtx) return startTimeOffset + (audioCtx.currentTime - playStartContextTime);
+    return startTimeOffset + (performance.now() - playStartContextTime * 1000) / 1000;
+}
+
+// ==================== 2. 谱面解析引擎 (支持多节长条与同步线) ====================
+function parseChartJSON(jsonObj, filename) {
+    if (!jsonObj || !Array.isArray(jsonObj.entities)) {
+        throw new Error("无效的 Sirius chart.json 结构");
+    }
+
+    notes = []; holds = []; syncLines = []; bpmTimeline = [];
+
+    const bpmEntities = jsonObj.entities.filter(e => e.archetype === "#BPM_CHANGE");
+    bpmEntities.forEach(e => {
+        let b = 0, bpm = 60;
+        e.data.forEach(d => {
+            if (d.name === "#BEAT") b = d.value;
+            if (d.name === "#BPM") bpm = d.value;
+        });
+        bpmTimeline.push({ beat: b, bpm: bpm, time: 0 });
+    });
+    if (bpmTimeline.length === 0) bpmTimeline.push({ beat: 0, bpm: 60.0, time: 0 });
+    bpmTimeline.sort((a, b) => a.beat - b.beat);
+
+    for (let i = 0; i < bpmTimeline.length; i++) {
+        if (i === 0) bpmTimeline[i].time = 0;
+        else {
+            const prev = bpmTimeline[i - 1];
+            bpmTimeline[i].time = prev.time + ((bpmTimeline[i].beat - prev.beat) * (60.0 / prev.bpm));
+        }
+    }
+
+    function beatToSeconds(beat) {
+        let seg = bpmTimeline[0];
+        for (let i = bpmTimeline.length - 1; i >= 0; i--) {
+            if (beat >= bpmTimeline[i].beat) { seg = bpmTimeline[i]; break; }
+        }
+        return seg.time + (beat - seg.beat) * (60.0 / seg.bpm);
+    }
+
+    let maxTime = 0;
+    const activeHoldPool = []; 
+
+    jsonObj.entities.forEach(ent => {
+        const d = {};
+        if (ent.data) ent.data.forEach(item => { d[item.name] = item.value; });
+        const type = ent.archetype;
+        const time = beatToSeconds(d.beat || 0);
+        if (time > maxTime) maxTime = time;
+
+        let noteType = "normal";
+        if (type.includes("Critical")) noteType = "critical";
+        if (type.includes("Scratch")) noteType = "scratch";
+        if (type.includes("Flick")) noteType = "flick";
+
+        if (type === "Sirius Sync Line") {
+            syncLines.push({ time: time, left: d.left, right: d.right });
+        }
+        // 长按起点
+        else if (type.includes("Hold Start") || type.includes("Scratch Hold Start")) {
+            // 如果不是特殊类型，就标记为专门的长条节点类型
+            let startType = noteType === "normal" ? "hold_node" : noteType;
+            activeHoldPool.push({ beat: d.beat, time: time, lane: d.lane, laneLength: d.laneLength, type: startType });
+            notes.push({ time, lane: d.lane, laneLength: d.laneLength, type: startType });
+        }
+        // 长按终点 / 转折点
+        else if (type.includes("Hold End") || type.includes("Scratch Hold End")) {
+            const stBeat = d.stBeat;
+            let head = null;
+            if (stBeat !== undefined) {
+                head = activeHoldPool.find(h => Math.abs(h.beat - stBeat) < 0.001 && h.lane === d.lane) || activeHoldPool.find(h => Math.abs(h.beat - stBeat) < 0.001);
+            }
+
+            if (head) {
+                holds.push({
+                    stTime: head.time, endTime: time,
+                    lane: d.lane, laneLength: d.laneLength,
+                    type: head.type === "critical" ? "critical" : (type.includes("Scratch") ? "scratch" : "normal")
+                });
+            }
+
+            // 继承头部的颜色类型，否则默认用蓝色的 hold_node
+            let endType = head ? head.type : (noteType === "normal" ? "hold_node" : noteType);
+
+            if (d.scratchLength !== undefined && d.scratchLength !== 0) {
+                const sLen = d.scratchLength;
+                let flickLane = d.lane;
+                let flickLength = Math.max(d.laneLength, Math.abs(sLen));
+                if (sLen < 0) flickLane = Math.max(1, d.lane + d.laneLength + sLen);
+                notes.push({ time, lane: flickLane, laneLength: flickLength, type: "flick" });
+            } else {
+                notes.push({ time, lane: d.lane, laneLength: d.laneLength, type: endType });
+            }
+
+            activeHoldPool.push({ beat: d.beat, time: time, lane: d.lane, laneLength: d.laneLength, type: endType });
+        }
+        else if (type.includes("Note") || type.includes("Flick")) {
+            notes.push({ time, lane: d.lane, laneLength: d.laneLength, type: noteType });
+        }
+    });
+
+    totalDuration = Math.max(maxTime + 3.0, 30.0);
+    document.getElementById("st-chart").innerText = `谱面: ${notes.length + holds.length} 实体`;
+    document.getElementById("st-chart").classList.add("active");
+    
+    if (!document.getElementById("disp-title").innerText || document.getElementById("disp-title").innerText === "等待载入") {
+        document.getElementById("disp-title").innerText = filename || "已载入谱面";
+    }
+}
+
+function parseMetadataJSON(meta) {
+    if (meta.item) meta = meta.item;
+    if (meta.title) document.getElementById("disp-title").innerText = meta.title;
+    
+    let sub = [];
+    if (meta.artists) sub.push("Artist: " + meta.artists);
+    if (meta.rating) sub.push("Lv." + meta.rating);
+    if (meta.tags && meta.tags[0]) sub.push(meta.tags[0].title);
+    if (sub.length > 0) document.getElementById("disp-meta").innerText = sub.join(" | ");
+}
+
+// ==================== 3. 云端代理拉取与脱壳引擎 ====================
+async function decompressIfNeeded(buffer) {
+    const view = new Uint8Array(buffer);
+    if (view[0] === 0x1F && view[1] === 0x8B) {
+        log("检测到 GZip 压缩，正在解压...");
+        try {
+            const ds = new DecompressionStream('gzip');
+            const writer = ds.writable.getWriter();
+            writer.write(buffer);
+            writer.close();
+            const response = new Response(ds.readable);
+            return await response.text();
+        } catch (e) {
+            throw new Error("GZip 解压失败，您的浏览器可能不支持原生解压");
+        }
+    }
+    return new TextDecoder().decode(buffer);
+}
+
+document.getElementById("btn-fetch").addEventListener("click", async () => {
+    console.log("[DEBUG] Fetch button triggered.");
+    
+    let levelUrl = document.getElementById("level-url").value.trim();
+    if (!levelUrl) { 
+        log("请填写关卡链接！", true); 
+        return; 
+    }
+    
+    let apiUrl = levelUrl;
+    if (!apiUrl.includes("/sonolus/")) {
+        try {
+            const urlObj = new URL(levelUrl);
+            apiUrl = `${urlObj.origin}/sonolus${urlObj.pathname}`;
+        } catch(e) {
+            log("非法的 URL 格式", true); 
+            return;
+        }
+    }
+
+    try {
+        initAudioContext();
+        document.getElementById("btn-fetch").disabled = true;
+        document.getElementById("btn-fetch").innerText = "解析中...";
+        log("1/4 正在通过代理拉取元数据...");
+        
+        const fetchUrl = `${PROXY_BASE}?url=${encodeURIComponent(apiUrl)}`;
+        console.log("[DEBUG] Proxy Request URL:", fetchUrl);
+        
+        const metaRes = await fetch(fetchUrl);
+        if (!metaRes.ok) throw new Error(`HTTP ${metaRes.status}`);
+        const metaJson = await metaRes.json();
+        
+        const item = metaJson.item;
+        if (!item) throw new Error("代理服务器没有返回有效的关卡信息");
+        
+        parseMetadataJSON(item);
+        
+        const dataUrl = item.data?.url;
+        const bgmUrl = item.bgm?.url;
+        let bgUrl = null;
+        if (item.useBackground?.item?.image?.url) bgUrl = item.useBackground.item.image.url;
+        else if (item.engine?.background?.image?.url) bgUrl = item.engine.background.image.url;
+        else if (item.cover?.url) bgUrl = item.cover.url;
+
+        if (!dataUrl) throw new Error("该关卡没有提供谱面数据文件");
+
+        log("2/4 正在并发下载 谱面/音频/背景...");
+        const fetchTasks = [
+            fetch(`${PROXY_BASE}?url=${encodeURIComponent(dataUrl)}`).then(r => r.arrayBuffer()),
+            bgmUrl ? fetch(`${PROXY_BASE}?url=${encodeURIComponent(bgmUrl)}`).then(r => r.arrayBuffer()) : Promise.resolve(null),
+            bgUrl ? fetch(`${PROXY_BASE}?url=${encodeURIComponent(bgUrl)}`).then(r => r.blob()) : Promise.resolve(null)
+        ];
+
+        const [chartBuf, bgmBuf, bgBlob] = await Promise.all(fetchTasks);
+
+        log("3/4 正在构建谱面物理追踪树...");
+        const chartStr = await decompressIfNeeded(chartBuf);
+        parseChartJSON(JSON.parse(chartStr), item.title || "未知曲目");
+
+        if (bgBlob) { 
+            bgImg.src = URL.createObjectURL(bgBlob); 
+            document.getElementById("st-bg").innerText = "背景: 已加载";
+            document.getElementById("st-bg").classList.add("active");
+        }
+
+        if (bgmBuf) {
+            log("4/4 正在转码高保真音频流 (可能耗时数秒)...");
+            audioBuffer = await audioCtx.decodeAudioData(bgmBuf);
+            totalDuration = audioBuffer.duration;
+            document.getElementById("total-time").innerText = formatTime(totalDuration);
+            document.getElementById("st-audio").innerText = "音频: 已解码";
+            document.getElementById("st-audio").classList.add("active");
+        }
+
+        log("✅ 所有依赖加载完毕！");
+        setTimeout(() => { 
+            document.getElementById("setup-mask").classList.add("hide"); 
+            document.getElementById("btn-fetch").innerText = "解析并载入";
+        }, 600);
+
+    } catch (e) {
+        log(`网络请求异常: ${e.message}`, true);
+        console.error(e);
+        document.getElementById("btn-fetch").innerText = "解析失败，请重试";
+    } finally {
+        document.getElementById("btn-fetch").disabled = false;
+    }
+});
+
+// 本地文件兼容处理
+function handleUniversalFile(file) {
+    if (file.name.endsWith(".json")) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            try {
+                const obj = JSON.parse(e.target.result);
+                if (obj.entities) {
+                    parseChartJSON(obj, file.name);
+                    document.getElementById("setup-mask").classList.add("hide");
+                } else parseMetadataJSON(obj);
+            } catch(e) {}
+        };
+        reader.readAsText(file);
+    } else if (file.type.startsWith("image/") || /\.(png|jpe?g|webp|bmp)$/i.test(file.name)) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            bgImg.src = e.target.result;
+            document.getElementById("st-bg").innerText = "背景: 本地";
+            document.getElementById("st-bg").classList.add("active");
+        }
+        reader.readAsDataURL(file);
+    } else {
+        initAudioContext();
+        const reader = new FileReader();
+        reader.onload = e => {
+            audioCtx.decodeAudioData(e.target.result).then(buf => {
+                audioBuffer = buf;
+                totalDuration = buf.duration;
+                document.getElementById("total-time").innerText = formatTime(totalDuration);
+                document.getElementById("st-audio").innerText = "音频: 本地";
+                document.getElementById("st-audio").classList.add("active");
+            });
+        };
+        reader.readAsArrayBuffer(file);
+    }
+}
+
+window.addEventListener("dragover", e => e.preventDefault());
+window.addEventListener("drop", e => {
+    e.preventDefault();
+    Array.from(e.dataTransfer.files).forEach(handleUniversalFile);
+});
+
+document.getElementById("input-chart").addEventListener("change", e => { if(e.target.files[0]) handleUniversalFile(e.target.files[0]); });
+document.getElementById("input-audio").addEventListener("change", e => { if(e.target.files[0]) handleUniversalFile(e.target.files[0]); });
+
+// ==================== 4. 视觉投影与渲染管线 ====================
+const canvas = document.getElementById("stage");
+const ctx = canvas.getContext("2d");
+let hiSpeed = 10.0;
+const accelPower = 2.0;
+
+let viewport = { centerX: 0, topY: 0, botY: 0, topWidth: 0, botWidth: 0 };
+
+function resize() {
+    canvas.width = canvas.parentElement.clientWidth * window.devicePixelRatio;
+    canvas.height = canvas.parentElement.clientHeight * window.devicePixelRatio;
+    const w = canvas.width, h = canvas.height;
+    
+    let botW = w * 0.86;
+    let trackH = botW * 0.75;
+    if (trackH > h * 0.82) { trackH = h * 0.82; botW = trackH / 0.75; }
+    
+    viewport = {
+        centerX: w * 0.5, topY: (h + trackH) / 2 - trackH, botY: (h + trackH) / 2,
+        topWidth: botW / 6.0, botWidth: botW
+    };
+}
+window.addEventListener("resize", resize);
+resize();
+
+function project(lane, length, visualP) {
+    const curY = viewport.topY + (viewport.botY - viewport.topY) * visualP;
+    const curWidth = viewport.topWidth + (viewport.botWidth - viewport.topWidth) * visualP;
+    const laneUnit = curWidth / 12;
+    const x1 = viewport.centerX - (curWidth / 2) + (lane - 1) * laneUnit;
+    return { x1, x2: x1 + length * laneUnit, y: curY, w: length * laneUnit };
+}
+
+function drawStage() {
+    const w = canvas.width, h = canvas.height;
+    ctx.fillStyle = "#080911";
+    ctx.fillRect(0, 0, w, h);
+    if (bgImg.complete && bgImg.naturalWidth > 0) {
+        ctx.globalAlpha = 0.35; ctx.drawImage(bgImg, 0, 0, w, h); ctx.globalAlpha = 1.0;
+    }
+    ctx.save();
+    for (let i = 0; i <= 12; i++) {
+        const pTop = project(i + 1, 0, 0), pBot = project(i + 1, 0, 1);
+        ctx.strokeStyle = (i === 0 || i === 12) ? "rgba(255,255,255,0.75)" : "rgba(255,255,255,0.12)";
+        ctx.lineWidth = (i === 0 || i === 12) ? 3 : 1;
+        ctx.beginPath(); ctx.moveTo(pTop.x1, pTop.y); ctx.lineTo(pBot.x1, pBot.y); ctx.stroke();
+    }
+    const botP1 = project(1, 0, 1), botP2 = project(13, 0, 1);
+    ctx.strokeStyle = "#f2346a"; ctx.lineWidth = 5; ctx.shadowColor = "#f2346a"; ctx.shadowBlur = 12;
+    ctx.beginPath(); ctx.moveTo(botP1.x1, botP1.y); ctx.lineTo(botP2.x1, botP2.y); ctx.stroke();
+    ctx.restore();
+}
+
+function renderChart(currentTime) {
+    const timeSpan = 5.0 / (hiSpeed * 1.2);
+
+    // 1. 同步连线 (Sync Line)
+    syncLines.forEach(sync => {
+        const timeDiff = sync.time - currentTime;
+        if (timeDiff >= 0 && timeDiff <= timeSpan) {
+            const visualProgress = Math.pow(1.0 - (timeDiff / timeSpan), accelPower);
+            const pos1 = project(sync.left, 0, visualProgress);
+            const pos2 = project(sync.right + 1, 0, visualProgress);
+            ctx.save();
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.85)"; ctx.lineWidth = 4;
+            ctx.shadowColor = "rgba(255, 255, 255, 0.8)"; ctx.shadowBlur = 8;
+            ctx.beginPath(); ctx.moveTo(pos1.x1, pos1.y); ctx.lineTo(pos2.x1, pos2.y); ctx.stroke();
+            ctx.restore();
+        }
+    });
+
+    // 2. 长条面 (Hold Bodies)
+    holds.forEach(hold => {
+        if (currentTime < hold.endTime && hold.stTime < currentTime + timeSpan) {
+            const steps = 14;
+            const tStartClamped = Math.max(hold.stTime, currentTime);
+            const tEndClamped = Math.min(hold.endTime, currentTime + timeSpan);
+            const leftPoints = [], rightPoints = [];
+
+            for (let i = 0; i <= steps; i++) {
+                const curT = tStartClamped + (tEndClamped - tStartClamped) * (i / steps);
+                const visualP = Math.pow(1.0 - (curT - currentTime) / timeSpan, accelPower);
+                const pos = project(hold.lane, hold.laneLength, visualP);
+                leftPoints.push({ x: pos.x1, y: pos.y }); rightPoints.push({ x: pos.x2, y: pos.y });
+            }
+
+            if (leftPoints.length > 1) {
+                ctx.save();
+                let fillGrad = ctx.createLinearGradient(0, rightPoints[rightPoints.length - 1].y, 0, leftPoints[0].y);
+                if (hold.type === "scratch") {
+                    fillGrad.addColorStop(0, "rgba(119, 62, 184, 0.45)");
+                    fillGrad.addColorStop(1, "rgba(119, 62, 184, 0.85)");
+                } else if (hold.type === "critical") {
+                    fillGrad.addColorStop(0, "rgba(255, 208, 0, 0.35)");
+                    fillGrad.addColorStop(1, "rgba(255, 208, 0, 0.75)");
+                } else {
+                    fillGrad.addColorStop(0, "rgba(0, 195, 255, 0.4)"); 
+                    fillGrad.addColorStop(1, "rgba(0, 140, 255, 0.85)");
+                }
+                ctx.fillStyle = fillGrad; ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 3.5;
+                ctx.shadowColor = "rgba(255, 255, 255, 0.8)"; ctx.shadowBlur = 4;
+                ctx.beginPath(); ctx.moveTo(leftPoints[0].x, leftPoints[0].y);
+                for (let i = 1; i < leftPoints.length; i++) ctx.lineTo(leftPoints[i].x, leftPoints[i].y);
+                for (let i = rightPoints.length - 1; i >= 0; i--) ctx.lineTo(rightPoints[i].x, rightPoints[i].y);
+                ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+            }
+        }
+    });
+
+    // 3. 点音符与节点 (Notes & Flick)
+    notes.forEach(note => {
+        const timeDiff = note.time - currentTime;
+        if (timeDiff >= 0 && timeDiff <= timeSpan) {
+            const visualProgress = Math.pow(1.0 - (timeDiff / timeSpan), accelPower);
+            const pos = project(note.lane, note.laneLength, visualProgress);
+            const noteHeight = 36 * (0.6 + visualProgress * 0.7); // 3倍厚度加强
+
+            ctx.save();
+            let color = "#f2346a"; // 粉红 (独立单点 Normal Note)
+            if (note.type === "critical") color = "#ffd000"; // 金黄
+            if (note.type === "flick") color = "#b53cf5"; // 深紫
+            if (note.type === "scratch") color = "#773eb8"; // 紫罗兰
+            if (note.type === "hold_node") color = "#00c3ff"; // 普通长条头尾节点 天蓝色
+
+            ctx.shadowColor = color; ctx.shadowBlur = 10; ctx.fillStyle = color;
+            ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 3.0;
+
+            ctx.beginPath(); ctx.roundRect(pos.x1, pos.y - noteHeight / 2, pos.w, noteHeight, 6);
+            ctx.fill(); ctx.stroke();
+
+            // 滑键书名号
+            if (note.type === "flick") {
+                const fontSize = Math.max(14, Math.min(28, pos.w * 0.28));
+                ctx.font = `900 ${fontSize}px sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+                ctx.fillStyle = "#faf3ff"; ctx.shadowColor = "#d8b4fe"; ctx.shadowBlur = 12;
+                ctx.fillText("《《《  》》》", pos.x1 + pos.w * 0.5, pos.y - noteHeight / 2 - 3);
+            }
+            ctx.restore();
+        }
+    });
+}
+
+// 核心渲染循环
+function update() {
+    let curTime = getCurrentPlayTime();
+    if (isPlaying && curTime > totalDuration) {
+        isPlaying = false; stopAudio(); startTimeOffset = 0; document.getElementById("btn-play").innerText = "▶ 播放";
+    }
+    
+    drawStage();
+    renderChart(curTime);
+    
+    document.getElementById("current-time").innerText = formatTime(curTime);
+    if (!isDraggingSeek) {
+        document.getElementById("seek-bar").value = (curTime / totalDuration) * 100;
+    }
+    requestAnimationFrame(update);
+}
+
+// ==================== 5. UI 事件控制器 ====================
+document.getElementById("btn-play").addEventListener("click", (e) => {
+    initAudioContext();
+    if (isPlaying) {
+        startTimeOffset = getCurrentPlayTime(); stopAudio();
+        isPlaying = false; e.target.innerText = "▶ 播放";
+    } else {
+        isPlaying = true; playAudio(startTimeOffset);
+        e.target.innerText = "❚❚ 暂停";
+    }
+});
+
+document.getElementById("btn-restart").addEventListener("click", () => {
+    stopAudio(); startTimeOffset = 0;
+    if (isPlaying) playAudio(0); else document.getElementById("btn-play").innerText = "▶ 播放";
+});
+
+document.getElementById("btn-return").addEventListener("click", () => {
+    stopAudio(); isPlaying = false; document.getElementById("btn-play").innerText = "▶ 播放";
+    document.getElementById("setup-mask").classList.remove("hide");
+});
+
+const seekBar = document.getElementById("seek-bar");
+seekBar.addEventListener("input", () => {
+    isDraggingSeek = true;
+    const targetTime = (seekBar.value / 100) * totalDuration;
+    if (isPlaying) playAudio(targetTime); else startTimeOffset = targetTime;
+});
+seekBar.addEventListener("change", () => { isDraggingSeek = false; });
+
+document.getElementById("speed-bar").addEventListener("input", (e) => {
+    hiSpeed = parseFloat(e.target.value);
+    document.getElementById("speed-val").innerText = hiSpeed.toFixed(1);
+});
+
+document.getElementById("vol-bar").addEventListener("input", (e) => {
+    if (gainNode) gainNode.gain.value = parseFloat(e.target.value);
+});
+
+// 启动渲染循环
+requestAnimationFrame(update);
 </script>
 </body>
 </html>
