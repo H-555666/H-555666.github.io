@@ -5,33 +5,33 @@
 <title>C2S 谱面演示与编辑工作台 - Pro Studio</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0b0d13; color: #e2e8f0; display: flex; height: 100vh; overflow: hidden; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0e1017; color: #e2e8f0; display: flex; height: 100vh; overflow: hidden; }
   
   /* 顶部导航栏 */
   #header {
-    position: absolute; top: 0; left: 0; right: 0; height: 46px; background: #151821; border-bottom: 1px solid #242c3d;
+    position: absolute; top: 0; left: 0; right: 0; height: 46px; background: #181b24; border-bottom: 1px solid #2d3748;
     display: flex; align-items: center; padding: 0 16px; gap: 10px; z-index: 100; font-size: 13px;
   }
   .app-title { font-weight: 700; color: #00d2ff; font-size: 15px; margin-right: 8px; display: flex; align-items: center; gap: 6px; }
   
   /* 主体分栏 */
   #app-body { display: flex; width: 100%; height: calc(100vh - 46px - 52px); margin-top: 46px; position: relative; }
-  #sidebar { width: 340px; background: #11141c; border-right: 1px solid #222938; display: flex; flex-direction: column; padding: 12px; gap: 10px; overflow-y: auto; }
-  #main-viewport { flex: 1; position: relative; background: #06070a; display: flex; justify-content: center; overflow: hidden; }
-  #code-panel { width: 380px; background: #0f1118; border-left: 1px solid #222938; display: flex; flex-direction: column; }
+  #sidebar { width: 340px; background: #141720; border-right: 1px solid #282f3f; display: flex; flex-direction: column; padding: 12px; gap: 10px; overflow-y: auto; }
+  #main-viewport { flex: 1; position: relative; background: #08090d; display: flex; justify-content: center; overflow: hidden; }
+  #code-panel { width: 380px; background: #12141c; border-left: 1px solid #282f3f; display: flex; flex-direction: column; }
   
   /* 底部播放栏 */
   #playback-bar {
-    position: absolute; bottom: 0; left: 0; right: 0; height: 52px; background: #151821; border-top: 1px solid #242c3d;
+    position: absolute; bottom: 0; left: 0; right: 0; height: 52px; background: #181b24; border-top: 1px solid #2d3748;
     display: flex; align-items: center; padding: 0 20px; gap: 12px; font-size: 13px; z-index: 100;
   }
 
-  /* 通用组件 */
-  .section-card { background: #181c27; border: 1px solid #232b3c; border-radius: 6px; padding: 10px; }
+  /* 通用组件与卡片 */
+  .section-card { background: #1c202c; border: 1px solid #2a3346; border-radius: 6px; padding: 10px; }
   .section-title { font-size: 12px; font-weight: 700; color: #a0aec0; text-transform: uppercase; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
   label { display: block; font-size: 11px; color: #cbd5e0; margin-bottom: 3px; }
   input, select, button {
-    background: #0c0e14; border: 1px solid #4a5568; color: #edf2f7; border-radius: 4px; padding: 5px 8px; font-size: 12px; outline: none;
+    background: #0f1118; border: 1px solid #4a5568; color: #edf2f7; border-radius: 4px; padding: 5px 8px; font-size: 12px; outline: none;
   }
   input[type="number"], input[type="text"] { width: 100%; }
   button { background: #2b6cb0; border: none; cursor: pointer; font-weight: 600; transition: 0.15s; }
@@ -47,19 +47,9 @@
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
   .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
 
-  /* 图层控制按钮徽章 */
-  .layer-badge {
-    display: inline-flex; align-items: center; gap: 5px; font-size: 11px; padding: 3px 6px; border-radius: 4px;
-    background: #0f121a; border: 1px solid #2b3548; cursor: pointer; transition: 0.2s; user-select: none;
-  }
-  .layer-badge:hover { filter: brightness(1.2); }
-  .layer-badge.disabled { background: #08090d; border-color: #1a1e29; color: #64748b; }
-  .layer-badge .dot { width: 8px; height: 8px; border-radius: 2px; transition: 0.2s; }
-  .layer-badge.disabled .dot { background: #475569 !important; }
-
   /* Git 风格 Diff 源码面板 */
-  .code-header { height: 36px; background: #151821; border-bottom: 1px solid #222938; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font-size: 12px; font-weight: 600; }
-  #code-list { flex: 1; overflow-y: auto; font-family: "JetBrains Mono", Consolas, Monaco, monospace; font-size: 11px; background: #080a0e; }
+  .code-header { height: 36px; background: #181b24; border-bottom: 1px solid #282f3f; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font-size: 12px; font-weight: 600; }
+  #code-list { flex: 1; overflow-y: auto; font-family: "JetBrains Mono", Consolas, Monaco, monospace; font-size: 11px; background: #0c0d12; }
   .diff-row { display: flex; padding: 2px 4px; border-bottom: 1px solid rgba(255,255,255,0.02); cursor: pointer; line-height: 1.4; user-select: text; }
   .diff-row:hover { filter: brightness(1.2); }
   .diff-row.highlight { outline: 1px solid #00d2ff; font-weight: bold; }
@@ -70,31 +60,35 @@
   .diff-sign { width: 14px; font-weight: bold; text-align: center; user-select: none; }
   .diff-lineno { width: 36px; color: #718096; user-select: none; text-align: right; margin-right: 8px; }
   .diff-text { flex: 1; white-space: pre; }
-  #raw-code-textarea { flex: 1; width: 100%; height: 100%; background: #080a0e; color: #e2e8f0; border: none; padding: 8px; font-family: monospace; font-size: 11px; resize: none; display: none; }
+  #raw-code-textarea { flex: 1; width: 100%; height: 100%; background: #0c0d12; color: #e2e8f0; border: none; padding: 8px; font-family: monospace; font-size: 11px; resize: none; display: none; }
 
   /* 画布区域 */
-  #track-canvas { background: #06070a; box-shadow: 0 0 25px rgba(0,0,0,0.8); cursor: crosshair; }
+  #track-canvas { background: #08090d; box-shadow: 0 0 25px rgba(0,0,0,0.8); cursor: crosshair; }
+  .legend-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 3px 6px; border-radius: 3px; background: #11131a; cursor: pointer; transition: 0.2s; }
+  .legend-badge:hover { background: #283042; }
+  .dot { width: 8px; height: 8px; border-radius: 2px; }
+
+  /* 提示框 */
   #paste-tip { position: absolute; top: 10px; background: rgba(0,210,255,0.9); color: #000; font-weight: bold; font-size: 12px; padding: 4px 12px; border-radius: 20px; pointer-events: none; display: none; z-index: 50; }
 
-  /* 详细图解弹窗 Modal */
+  /* 详细图例模态弹窗 */
   #modal-mask {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.82); backdrop-filter: blur(4px);
+    position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
     display: none; align-items: center; justify-content: center; z-index: 1000;
   }
   #legend-modal {
-    background: #141722; border: 1px solid #2b3548; border-radius: 8px; width: 92%; max-width: 780px;
-    max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.95);
+    background: #181b26; border: 1px solid #333d52; border-radius: 8px; width: 90%; max-width: 720px;
+    max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.9);
   }
-  .modal-header { padding: 14px 18px; border-bottom: 1px solid #242c3d; display: flex; justify-content: space-between; align-items: center; }
+  .modal-header { padding: 14px 18px; border-bottom: 1px solid #2d3748; display: flex; justify-content: space-between; align-items: center; }
   .modal-header h3 { font-size: 15px; color: #00d2ff; }
   .modal-close { background: transparent; border: none; font-size: 18px; cursor: pointer; color: #aaa; }
   .modal-close:hover { color: #fff; }
-  .modal-body { padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-size: 12px; line-height: 1.6; }
-  .legend-detail-card { background: #1a1e2b; border: 1px solid #262f42; padding: 10px; border-radius: 6px; display: flex; gap: 12px; }
-  .legend-preview-box { width: 85px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0a0c12; border-radius: 4px; padding: 6px; text-align: center; }
+  .modal-body { padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; font-size: 12px; line-height: 1.6; }
+  .legend-detail-card { background: #1f2433; border: 1px solid #2d3748; padding: 10px; border-radius: 6px; display: flex; gap: 12px; }
+  .legend-preview-box { width: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #10131a; border-radius: 4px; padding: 6px; }
   .legend-info { flex: 1; }
-  .legend-cmd { font-family: monospace; font-weight: bold; color: #4facfe; font-size: 13px; margin-bottom: 2px; }
-  .legend-format { font-family: monospace; background: #0c0e14; padding: 2px 6px; border-radius: 3px; color: #f6ad55; font-size: 11px; margin-top: 4px; display: inline-block; }
+  .legend-cmd { font-family: monospace; font-weight: bold; color: #4facfe; font-size: 13px; }
 </style>
 </head>
 <body>
@@ -129,10 +123,10 @@
 
   <div style="width: 1px; height: 20px; background: #4a5568; margin: 0 4px;"></div>
 
-  <!-- 音量调节与本地持久化 -->
-  <span title="音量设定自动实时保存在本地">🔊 音量:</span>
-  <input type="range" id="vol-slider" min="0" max="1" step="0.01" value="0.8" style="width: 75px;">
-  <span id="vol-val" style="width: 34px; font-family: monospace;">80%</span>
+  <!-- 音量调节与实时 Cookie 保存 -->
+  <span title="音量设定自动实时保存在 Cookie 中">🔊 音量:</span>
+  <input type="range" id="vol-slider" min="0" max="1" step="0.01" value="0.8" style="width: 75px;" title="滑动调节音量">
+  <span id="vol-val" style="width: 32px; font-family: monospace;">80%</span>
 
   <div style="margin-left: auto; display: flex; gap: 8px;">
     <button id="btn-open-legend" style="background:#4a5568;">📖 图解与指令说明</button>
@@ -149,7 +143,7 @@
       <div class="section-title">文件载入</div>
       <label>1. 载入 .c2s 谱面文本</label>
       <input type="file" id="c2s-input" accept=".c2s,.txt,.xml">
-      <label style="margin-top:4px;">2. 载入音频 (可选，支持无音频独立播放)</label>
+      <label style="margin-top:4px;">2. 载入音频 (MP3/WAV/OGG)</label>
       <input type="file" id="audio-input" accept="audio/*">
     </div>
 
@@ -179,12 +173,11 @@
         <option value="SLD">🟦 SLD / SLC (普通滑键轨道)</option>
         <option value="SXD">🟨 SXD / SXC (Ex 滑键轨道)</option>
         <option value="ASD">🪂 ASD (空中滑条 Air Slide)</option>
-        <option value="ALD">🌈 ALD (空中引线 / 彩轨 / 挥手轨)</option>
       </select>
 
       <div class="grid-2" style="margin-top:6px;">
         <div><label>默认宽度</label><input type="number" id="def-width" min="1" max="16" value="4"></div>
-        <div><label>长条时长(Tick)</label><input type="number" id="def-dur" min="0" value="48"></div>
+        <div><label>长条时长(Tick)</label><input type="number" id="def-dur" min="1" value="48"></div>
       </div>
     </div>
 
@@ -226,70 +219,37 @@
               <option value="AIR">AIR (空中直上)</option>
               <option value="AUL">AUL (空中左上)</option>
               <option value="AUR">AUR (空中右上)</option>
-              <option value="SLD">SLD (滑键端点)</option>
+              <option value="SLD">SLD (滑键首末端)</option>
               <option value="SLC">SLC (滑键中继点)</option>
               <option value="SXD">SXD (Ex滑键端点)</option>
               <option value="SXC">SXC (Ex滑键中继)</option>
               <option value="ASD">ASD (空中滑条)</option>
               <option value="ASC">ASC (空中滑条中继)</option>
-              <option value="ALD">ALD (空中引线/挥手轨)</option>
+              <option value="ALD">ALD (空中引线)</option>
               <option value="SLP">SLP (变速线)</option>
             </select>
           </div>
           <div><label>小节 (Measure)</label><input type="number" id="ins-measure"></div>
         </div>
         <div class="grid-3" style="margin-top:4px;">
-          <div><label>Tick (Offset)</label><input type="number" id="ins-tick"></div>
-          <div><label>起点轨道 (Cell)</label><input type="number" id="ins-lane" min="0" max="15"></div>
-          <div><label>宽度 (Width)</label><input type="number" id="ins-width" min="1" max="16"></div>
+          <div><label>Tick</label><input type="number" id="ins-tick"></div>
+          <div><label>起点轨道(0-15)</label><input type="number" id="ins-lane" min="0" max="15"></div>
+          <div><label>起点宽度(1-16)</label><input type="number" id="ins-width" min="1" max="16"></div>
         </div>
 
-        <!-- 通用时长输入 -->
+        <!-- 针对 HLD 与 SLD/SLC/SXD/SXC 的时长 -->
         <div id="ins-dur-container" style="margin-top:4px; display:none;">
-          <label>持续时间 (Duration Ticks)</label>
-          <input type="number" id="ins-dur" min="0">
+          <label>时长 (Duration Ticks)</label>
+          <input type="number" id="ins-dur" min="1">
         </div>
 
-        <!-- 仅长轨与 ALD 显示终点轨道与终点宽度 -->
-        <div id="ins-slide-end-container" class="grid-2" style="margin-top:4px; display:none; background:#121520; padding:5px; border-radius:4px;">
-          <div><label>结束轨道 (End Cell)</label><input type="number" id="ins-next-lane" min="0" max="15"></div>
-          <div><label>结束宽度 (End Width)</label><input type="number" id="ins-next-width" min="1" max="16"></div>
+        <!-- 仅 SLD / SLC / SXD / SXC / ASD 显示终点轨道与终点宽度 -->
+        <div id="ins-slide-end-container" class="grid-2" style="margin-top:4px; display:none; background:#161922; padding:5px; border-radius:4px;">
+          <div><label>终点轨道(0-15)</label><input type="number" id="ins-next-lane" min="0" max="15"></div>
+          <div><label>终点宽度(1-16)</label><input type="number" id="ins-next-width" min="1" max="16"></div>
         </div>
 
-        <!-- ALD 专属权威字段 (Interval, Height, Color) -->
-        <div id="ins-ald-container" style="margin-top:4px; display:none; background:#121520; padding:6px; border-radius:4px;">
-          <div class="grid-2">
-            <div>
-              <label title="0: 纯装饰线 | 38400: 仅首端挥手 | >0: 间隔生成挥手键">挥手间隔 (Interval)</label>
-              <input type="number" id="ins-ald-interval" min="0" step="1">
-            </div>
-            <div>
-              <label>彩轨颜色 (Color)</label>
-              <select id="ins-ald-color">
-                <option value="YEL">YEL (黄色)</option>
-                <option value="RED">RED (红色)</option>
-                <option value="ORN">ORN (橙色)</option>
-                <option value="LIM">LIM (青柠绿)</option>
-                <option value="GRN">GRN (绿色)</option>
-                <option value="AQA">AQA (水绿)</option>
-                <option value="CYN">CYN (青色)</option>
-                <option value="BLU">BLU (蓝色)</option>
-                <option value="PPL">PPL (紫色)</option>
-                <option value="VLT">VLT (紫罗兰)</option>
-                <option value="PNK">PNK (粉色)</option>
-                <option value="GRY">GRY (灰色)</option>
-                <option value="BLK">BLK (暗黑)</option>
-                <option value="DEF">DEF (默认紫)</option>
-              </select>
-            </div>
-          </div>
-          <div class="grid-2" style="margin-top:4px;">
-            <div><label>起始高度 (Start Height)</label><input type="text" id="ins-ald-h1" placeholder="1.0"></div>
-            <div><label>结束高度 (Target Height)</label><input type="text" id="ins-ald-h2" placeholder="1.0"></div>
-          </div>
-        </div>
-
-        <!-- 长条尾部追加按键 (默认 FLK) -->
+        <!-- 长条尾部追加按键 (自定义按键类型，默认 FLK) -->
         <div id="ins-tail-append-container" style="margin-top:6px; display:none;">
           <div style="display:flex; gap:4px;">
             <button id="btn-append-tail-note" class="success" style="flex:1;">➕ 在结尾接按键</button>
@@ -306,7 +266,7 @@
 
         <!-- 方向与附着属性 (CHR/AIR等) -->
         <div id="ins-dir-fields" class="grid-2" style="margin-top:4px; display:none;">
-          <div><label>方向/参数</label><input type="text" id="ins-dir" placeholder="UP/DW/CE/L/R"></div>
+          <div><label>方向/参数</label><input type="text" id="ins-dir" placeholder="UP/DW/CE"></div>
           <div><label>附着类型</label><input type="text" id="ins-parent" placeholder="TAP/SLD/CHR/DEF"></div>
         </div>
 
@@ -318,28 +278,23 @@
       </div>
     </div>
 
-    <!-- 图层控制面板 -->
+    <!-- 简明图例面板 (点击打开完整图解) -->
     <div class="section-card">
       <div class="section-title">
-        <span>图层控制 (点击显示/隐藏)</span>
+        <span>快捷图例 (点击看详解)</span>
+        <button id="btn-view-legend-detail" style="font-size:10px; padding:2px 5px;">查看全部</button>
       </div>
-      <div class="btn-group" style="margin-bottom: 6px;">
-        <button id="btn-show-all-layers" style="font-size:10px; padding:3px 5px;">全部显示</button>
-        <button id="btn-hide-all-layers" style="font-size:10px; padding:3px 5px; background:#374151;">全部隐藏</button>
-      </div>
-      <div style="display:flex; flex-wrap:wrap; gap:4px;" id="layer-badges-container">
-        <span class="layer-badge" data-layer="TAP"><span class="dot" style="background:#ff3366;"></span>TAP</span>
-        <span class="layer-badge" data-layer="CHR"><span class="dot" style="background:#ffd700;"></span>CHR(Ex)</span>
-        <span class="layer-badge" data-layer="HLD"><span class="dot" style="background:#ff9900;"></span>HLD</span>
-        <span class="layer-badge" data-layer="HXD"><span class="dot" style="background:#ffea00;"></span>HXD</span>
-        <span class="layer-badge" data-layer="FLK"><span class="dot" style="background:#00d2ff;"></span>FLK</span>
-        <span class="layer-badge" data-layer="AIR"><span class="dot" style="background:#00ff88;"></span>AIR(绿)</span>
-        <span class="layer-badge" data-layer="AUL"><span class="dot" style="background:#f72585;"></span>AUL/AUR</span>
-        <span class="layer-badge" data-layer="SLD"><span class="dot" style="background:#00b4d8;"></span>SLD/SLC</span>
-        <span class="layer-badge" data-layer="SXD"><span class="dot" style="background:#38bdf8;"></span>SXD/SXC</span>
-        <span class="layer-badge" data-layer="ASD"><span class="dot" style="background:#c77dff;"></span>ASD(空滑)</span>
-        <span class="layer-badge" data-layer="ALD"><span class="dot" style="background:#eab308;"></span>ALD(彩轨)</span>
-        <span class="layer-badge" data-layer="SLP"><span class="dot" style="background:#d946ef;"></span>SLP</span>
+      <div style="display:flex; flex-wrap:wrap; gap:4px;">
+        <span class="legend-badge" onclick="openLegendModal('TAP')"><span class="dot" style="background:#ff3366;"></span>TAP</span>
+        <span class="legend-badge" onclick="openLegendModal('CHR')"><span class="dot" style="background:#ffd700;"></span>CHR(Ex)</span>
+        <span class="legend-badge" onclick="openLegendModal('HLD')"><span class="dot" style="background:#ff9900;"></span>HLD</span>
+        <span class="legend-badge" onclick="openLegendModal('HXD')"><span class="dot" style="background:#ffea00;"></span>HXD</span>
+        <span class="legend-badge" onclick="openLegendModal('FLK')"><span class="dot" style="background:#00d2ff;"></span>FLK</span>
+        <span class="legend-badge" onclick="openLegendModal('AIR')"><span class="dot" style="background:#00ff88;"></span>AIR(绿)</span>
+        <span class="legend-badge" onclick="openLegendModal('AUL')"><span class="dot" style="background:#f72585;"></span>AUL/AUR(紫)</span>
+        <span class="legend-badge" onclick="openLegendModal('SLD')"><span class="dot" style="background:#00b4d8;"></span>SLD/SLC</span>
+        <span class="legend-badge" onclick="openLegendModal('ASD')"><span class="dot" style="background:#c77dff;"></span>ASD(空滑)</span>
+        <span class="legend-badge" onclick="openLegendModal('SLP')"><span class="dot" style="background:#d946ef;"></span>SLP</span>
       </div>
     </div>
   </div>
@@ -350,7 +305,7 @@
     <canvas id="track-canvas"></canvas>
   </div>
 
-  <!-- 右侧代码同步面板 -->
+  <!-- 右侧代码同步面板 (Git Diff 风格) -->
   <div id="code-panel">
     <div class="code-header">
       <span>📄 源码 Git Diff 变动对比</span>
@@ -381,19 +336,21 @@
   </select>
 </div>
 
-<!-- 详细图解说明弹窗 -->
+<!-- 详细图解弹窗 Modal -->
 <div id="modal-mask">
   <div id="legend-modal">
     <div class="modal-header">
       <h3>📖 谱面音符与指令全面图解指南</h3>
       <button class="modal-close" id="btn-close-modal">✕</button>
     </div>
-    <div class="modal-body" id="modal-content"></div>
+    <div class="modal-body" id="modal-content">
+      <!-- 动态/静态填充详细说明 -->
+    </div>
   </div>
 </div>
 
 <script>
-// ==================== 本地与 Cookie 存储 ====================
+// ==================== Cookie 与音量持久化存储 ====================
 function setCookie(name, val, days=365) {
   try {
     const d = new Date();
@@ -415,65 +372,18 @@ function getCookie(name) {
   return null;
 }
 
-// 严谨安全数值转换 (杜绝 0 被 || 重置的致命 Bug)
-function safeInt(val, def = 0) {
-  if (val === undefined || val === null || val === "") return def;
-  const parsed = parseInt(val, 10);
-  return isNaN(parsed) ? def : parsed;
-}
-
-function safeFloat(val, def = 0.0) {
-  if (val === undefined || val === null || val === "") return def;
-  const parsed = parseFloat(val);
-  return isNaN(parsed) ? def : parsed;
-}
-
-// ==================== ALD 原生 13 种色彩表 ====================
-const ALD_COLORS = {
-  YEL: '#facc15', RED: '#ef4444', ORN: '#f97316', LIM: '#a3e635',
-  GRN: '#22c55e', AQA: '#2dd4bf', CYN: '#06b6d4', BLU: '#3b82f6',
-  PPL: '#a855f7', VLT: '#8b5cf6', PNK: '#ec4899', GRY: '#94a3b8',
-  BLK: '#334155', DEF: '#c084fc'
-};
-
-// ==================== 图层可见性状态 ====================
-const layerVisibility = {
-  TAP: true, CHR: true, HLD: true, HXD: true, FLK: true,
-  AIR: true, AUL: true, SLD: true, SXD: true, ASD: true,
-  ALD: true, SLP: true
-};
-
-function isNoteVisible(type) {
-  if (type === "TAP") return layerVisibility.TAP;
-  if (type === "CHR") return layerVisibility.CHR;
-  if (type === "HLD") return layerVisibility.HLD;
-  if (type === "HXD") return layerVisibility.HXD;
-  if (type === "FLK" || type === "FLL" || type === "FLR") return layerVisibility.FLK;
-  if (type === "AIR") return layerVisibility.AIR;
-  if (type === "AUL" || type === "AUR") return layerVisibility.AUL;
-  if (type === "SLD" || type === "SLC") return layerVisibility.SLD;
-  if (type === "SXD" || type === "SXC") return layerVisibility.SXD;
-  if (type === "ASD" || type === "ASC") return layerVisibility.ASD;
-  if (type === "ALD") return layerVisibility.ALD;
-  if (type === "SLP") return layerVisibility.SLP;
-  return true;
-}
-
-// ==================== 全局核心数据 ====================
-let rawLineEntries = []; 
+// ==================== 核心全局数据 ====================
 let notes = []; 
 let bpm = 192.0;
 let resolution = 384;
 let audioOffset = 0.0;
-let originalSourceLines = [];
+let headerLines = [];
+let originalSourceLines = []; 
 
-// 独立时钟与音频
 let audio = new Audio();
 let audioGain = 0.8;
 let isPlaying = false;
 let currentTime = 0;
-let playClockLastTime = 0;
-let playbackRate = 1.0;
 let maxMeasures = 140;
 
 // 历史栈 (最多 10 步)
@@ -499,7 +409,7 @@ const ctx = canvas.getContext("2d");
 const LANES = 16;
 let laneWidth = 22;
 let trackWidth = laneWidth * LANES;
-let pixelsPerMeasure = 384;
+let pixelsPerMeasure = 384; // 80 ~ 4800px
 
 // ==================== 历史记录管理 ====================
 function pushHistory() {
@@ -541,134 +451,104 @@ function updateHistoryUI() {
   document.getElementById("btn-redo").innerText = `⮎ 重做 (${redoStack.length})`;
 }
 
-// ==================== 谱面全特性精准解析器 ====================
+// ==================== 谱面全特性解析器 ====================
 function parseC2S(text) {
   pushHistory();
   notes = [];
-  rawLineEntries = [];
+  headerLines = [];
   const lines = text.split(/\r?\n/);
-  originalSourceLines = [...lines];
+  originalSourceLines = lines.map(l => l.trim()).filter(l => l.length > 0);
 
   let idGen = 1;
   for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
     const rawLine = lines[lineIdx];
-    const trimmed = rawLine.trim();
+    const line = rawLine.trim();
+    if (!line) continue;
 
-    if (!trimmed) {
-      rawLineEntries.push({ isNote: false, raw: rawLine, note: null });
-      continue;
-    }
-
-    const parts = trimmed.split(/\s+/);
+    const parts = line.split(/\s+/);
     const cmd = parts[0];
 
     if (cmd === "BPM_DEF" || cmd === "BPM") {
-      if (parts.length >= 4) bpm = safeFloat(parts[3], bpm);
-      else if (parts.length >= 2) bpm = safeFloat(parts[1], bpm);
+      if (parts.length >= 4) bpm = parseFloat(parts[3]) || bpm;
+      else if (parts.length >= 2) bpm = parseFloat(parts[1]) || bpm;
+      headerLines.push(rawLine);
     } else if (cmd === "RESOLUTION") {
-      resolution = safeInt(parts[1], 384);
-    }
-
-    let noteObj = null;
-
-    if (["TAP", "FLK", "FLL", "FLR"].includes(cmd)) {
-      noteObj = {
+      resolution = parseInt(parts[1]) || 384;
+      headerLines.push(rawLine);
+    } else if (["TAP", "FLK"].includes(cmd)) {
+      notes.push({
         id: idGen++, type: cmd,
-        measure: safeInt(parts[1], 0), tick: safeInt(parts[2], 0),
-        lane: safeInt(parts[3], 0), width: safeInt(parts[4], 4),
-        dur: 0, next_lane: 0, next_width: 0,
-        dir: parts[5] || "", parent: "", flag: "",
-        rawLine: rawLine, isModified: false
-      };
+        measure: parseInt(parts[1]) || 0, tick: parseInt(parts[2]) || 0,
+        lane: parseInt(parts[3]) || 0, width: parseInt(parts[4]) || 4,
+        dur: 0, next_lane: 0, next_width: 0, dir: "", parent: "", flag: ""
+      });
     } else if (cmd === "HLD" || cmd === "HXD") {
-      noteObj = {
+      notes.push({
         id: idGen++, type: cmd,
-        measure: safeInt(parts[1], 0), tick: safeInt(parts[2], 0),
-        lane: safeInt(parts[3], 0), width: safeInt(parts[4], 4),
-        dur: safeInt(parts[5], 28),
-        next_lane: safeInt(parts[3], 0), next_width: safeInt(parts[4], 4),
-        dir: parts[6] || (cmd === "HXD" ? "UP" : ""), parent: "", flag: "",
-        rawLine: rawLine, isModified: false
-      };
+        measure: parseInt(parts[1]) || 0, tick: parseInt(parts[2]) || 0,
+        lane: parseInt(parts[3]) || 0, width: parseInt(parts[4]) || 4,
+        dur: parseInt(parts[5]) || 28,
+        next_lane: parseInt(parts[3]) || 0, next_width: parseInt(parts[4]) || 4,
+        dir: parts[6] || (cmd === "HXD" ? "UP" : ""), parent: "", flag: ""
+      });
     } else if (cmd === "CHR") {
-      noteObj = {
+      notes.push({
         id: idGen++, type: cmd,
-        measure: safeInt(parts[1], 0), tick: safeInt(parts[2], 0),
-        lane: safeInt(parts[3], 0), width: safeInt(parts[4], 4),
-        dur: 0, next_lane: 0, next_width: 0,
-        dir: parts[5] || "UP", parent: "", flag: "",
-        rawLine: rawLine, isModified: false
-      };
+        measure: parseInt(parts[1]) || 0, tick: parseInt(parts[2]) || 0,
+        lane: parseInt(parts[3]) || 0, width: parseInt(parts[4]) || 4,
+        dur: 0, next_lane: 0, next_width: 0, dir: parts[5] || "UP", parent: "", flag: ""
+      });
     } else if (["AIR", "AUL", "AUR"].includes(cmd)) {
-      noteObj = {
+      notes.push({
         id: idGen++, type: cmd,
-        measure: safeInt(parts[1], 0), tick: safeInt(parts[2], 0),
-        lane: safeInt(parts[3], 0), width: safeInt(parts[4], 4),
-        dur: 0, next_lane: 0, next_width: 0, dir: "",
-        parent: parts[5] || "DEF", flag: parts[6] || "",
-        rawLine: rawLine, isModified: false
-      };
+        measure: parseInt(parts[1]) || 0, tick: parseInt(parts[2]) || 0,
+        lane: parseInt(parts[3]) || 0, width: parseInt(parts[4]) || 4,
+        dur: 0, next_lane: 0, next_width: 0, dir: "", parent: parts[5] || "DEF", flag: parts[6] || ""
+      });
     } else if (["SLD", "SLC", "SXD", "SXC"].includes(cmd)) {
-      noteObj = {
+      // 曲线滑轨
+      notes.push({
         id: idGen++, type: cmd,
-        measure: safeInt(parts[1], 0), tick: safeInt(parts[2], 0),
-        lane: safeInt(parts[3], 0), width: safeInt(parts[4], 4),
-        dur: safeInt(parts[5], 48),
-        next_lane: parts[6] !== undefined ? safeInt(parts[6], 0) : safeInt(parts[3], 0),
-        next_width: parts[7] !== undefined ? safeInt(parts[7], 4) : safeInt(parts[4], 4),
-        parent: parts[8] || "SLD", dir: parts[9] || "",
-        rawLine: rawLine, isModified: false
-      };
+        measure: parseInt(parts[1]) || 0, tick: parseInt(parts[2]) || 0,
+        lane: parseInt(parts[3]) || 0, width: parseInt(parts[4]) || 4,
+        dur: parseInt(parts[5]) || 48,
+        next_lane: parseInt(parts[6]) !== undefined ? parseInt(parts[6]) : parseInt(parts[3]) || 0,
+        next_width: parseInt(parts[7]) !== undefined ? parseInt(parts[7]) : parseInt(parts[4]) || 4,
+        parent: parts[8] || "SLD", dir: parts[9] || ""
+      });
     } else if (["ASD", "ASC"].includes(cmd)) {
-      // ASD/ASC measure offset cell width parent starting_height duration end_cell end_width target_height flag
-      noteObj = {
+      // 空中滑动 Air Slide
+      // ASD/ASC measure tick lane width parent h1 dur next_lane next_width h2 flag
+      notes.push({
         id: idGen++, type: cmd,
-        measure: safeInt(parts[1], 0), tick: safeInt(parts[2], 0),
-        lane: safeInt(parts[3], 0), width: safeInt(parts[4], 4),
-        parent: parts[5] || "SLD",
-        h1_str: parts[6] !== undefined ? parts[6] : "5.0",
-        dur: safeInt(parts[7], 96),
-        next_lane: parts[8] !== undefined ? safeInt(parts[8], 0) : safeInt(parts[3], 0),
-        next_width: parts[9] !== undefined ? safeInt(parts[9], 4) : safeInt(parts[4], 4),
-        h2_str: parts[10] !== undefined ? parts[10] : "5.0",
-        flag: parts[11] || "DEF",
-        rawLine: rawLine, isModified: false
-      };
+        measure: parseInt(parts[1]) || 0, tick: parseInt(parts[2]) || 0,
+        lane: parseInt(parts[3]) || 0, width: parseInt(parts[4]) || 4,
+        parent: parts[5] || "SLD", h1: parseFloat(parts[6]) || 5.0,
+        dur: parseInt(parts[7]) || 96,
+        next_lane: parseInt(parts[8]) !== undefined ? parseInt(parts[8]) : parseInt(parts[3]) || 0,
+        next_width: parseInt(parts[9]) !== undefined ? parseInt(parts[9]) : parseInt(parts[4]) || 4,
+        h2: parseFloat(parts[10]) || 5.0, flag: parts[11] || "DEF"
+      });
     } else if (cmd === "ALD") {
-      // 🌟 严格按照规范：measure offset cell width interval starting_height duration end_cell end_width target_height color
-      const colorCode = parts[11] ? parts[11].toUpperCase() : "DEF";
-      noteObj = {
+      // ALD measure tick lane width dur h1 step next_lane next_width h2 flag
+      notes.push({
         id: idGen++, type: cmd,
-        measure: safeInt(parts[1], 0),
-        tick: safeInt(parts[2], 0),
-        lane: safeInt(parts[3], 0),
-        width: safeInt(parts[4], 1),
-        interval: safeInt(parts[5], 0), // 间隔时间 (0 = 纯装饰线, 38400 = 仅首端)
-        h1_str: parts[6] !== undefined ? parts[6] : "1.0",
-        dur: safeInt(parts[7], 0),      // 持续时间 (duration in ticks)
-        next_lane: parts[8] !== undefined ? safeInt(parts[8], 0) : safeInt(parts[3], 0),
-        next_width: parts[9] !== undefined ? safeInt(parts[9], 1) : safeInt(parts[4], 1),
-        h2_str: parts[10] !== undefined ? parts[10] : "1.0",
-        color: ALD_COLORS[colorCode] ? colorCode : "DEF",
-        rawLine: rawLine, isModified: false
-      };
+        measure: parseInt(parts[1]) || 0, tick: parseInt(parts[2]) || 0,
+        lane: parseInt(parts[3]) || 0, width: parseInt(parts[4]) || 4,
+        dur: parseInt(parts[5]) || 48, h1: parseFloat(parts[6]) || 5.0,
+        step: parseInt(parts[7]) || 24,
+        next_lane: parseInt(parts[8]) !== undefined ? parseInt(parts[8]) : parseInt(parts[3]) || 0,
+        next_width: parseInt(parts[9]) !== undefined ? parseInt(parts[9]) : parseInt(parts[4]) || 4,
+        h2: parseFloat(parts[10]) || 1.0, flag: parts[11] || "DEF"
+      });
     } else if (cmd === "SLP") {
-      noteObj = {
+      notes.push({
         id: idGen++, type: cmd,
-        measure: safeInt(parts[1], 0), tick: safeInt(parts[2], 0),
-        lane: 0, width: 16,
-        dur: safeInt(parts[3], 0),
-        speed: safeFloat(parts[4], 1.0),
-        flag: parts[5] || "0",
-        rawLine: rawLine, isModified: false
-      };
-    }
-
-    if (noteObj) {
-      notes.push(noteObj);
-      rawLineEntries.push({ isNote: true, raw: rawLine, note: noteObj });
+        measure: parseInt(parts[1]) || 0, tick: parseInt(parts[2]) || 0,
+        lane: 0, width: 16, dur: parseInt(parts[3]) || 0, speed: parseFloat(parts[4]) || 1.0, flag: parts[5] || "0"
+      });
     } else {
-      rawLineEntries.push({ isNote: false, raw: rawLine, note: null });
+      headerLines.push(rawLine);
     }
   }
 
@@ -679,70 +559,47 @@ function parseC2S(text) {
   render();
 }
 
-// ==================== C2S 格式化输出 (精准保持格式) ====================
-function serializeNote(n) {
-  if (!n.isModified && n.rawLine) return n.rawLine;
-
-  if (["TAP", "FLK", "FLL", "FLR"].includes(n.type)) {
-    const extra = n.dir ? `\t${n.dir}` : "";
-    return `${n.type}\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}${extra}`;
-  } else if (n.type === "HLD") {
-    return `HLD\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.dur}`;
-  } else if (n.type === "HXD") {
-    return `HXD\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.dur}\t${n.dir || "UP"}`;
-  } else if (n.type === "CHR") {
-    return `CHR\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.dir || "UP"}`;
-  } else if (["AIR", "AUL", "AUR"].includes(n.type)) {
-    return `${n.type}\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.parent || "TAP"}\t${n.flag || "DEF"}`;
-  } else if (["SLD", "SLC", "SXD", "SXC"].includes(n.type)) {
-    const extra = n.dir ? `\t${n.dir}` : "";
-    const nLane = n.next_lane !== undefined ? n.next_lane : n.lane;
-    const nWidth = n.next_width !== undefined ? n.next_width : n.width;
-    return `${n.type}\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.dur}\t${nLane}\t${nWidth}\t${n.parent || "SLD"}${extra}`;
-  } else if (["ASD", "ASC"].includes(n.type)) {
-    const nLane = n.next_lane !== undefined ? n.next_lane : n.lane;
-    const nWidth = n.next_width !== undefined ? n.next_width : n.width;
-    return `${n.type}\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.parent || "SLD"}\t${n.h1_str || "5.0"}\t${n.dur}\t${nLane}\t${nWidth}\t${n.h2_str || "5.0"}\t${n.flag || "DEF"}`;
-  } else if (n.type === "ALD") {
-    // 🌟 规范输出：ALD measure offset cell width interval starting_height duration end_cell end_width target_height color
-    const nLane = n.next_lane !== undefined ? n.next_lane : n.lane;
-    const nWidth = n.next_width !== undefined ? n.next_width : n.width;
-    return `ALD\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.interval !== undefined ? n.interval : 0}\t${n.h1_str || "1.0"}\t${n.dur !== undefined ? n.dur : 0}\t${nLane}\t${nWidth}\t${n.h2_str || "1.0"}\t${n.color || "DEF"}`;
-  } else if (n.type === "SLP") {
-    const spdStr = typeof n.speed === "number" ? n.speed.toFixed(6) : (n.speed || "1.000000");
-    return `SLP\t${n.measure}\t${n.tick}\t${n.dur}\t${spdStr}\t${n.flag || "0"}`;
-  }
-  return n.rawLine || "";
-}
-
+// ==================== C2S 代码构建输出 ====================
 function generateC2SLines() {
-  if (rawLineEntries.length === 0) {
-    return [
-      "VERSION\t1.13.00\t1.13.00", "MUSIC\t0", `BPM_DEF\t${bpm.toFixed(3)}\t${bpm.toFixed(3)}\t${bpm.toFixed(3)}\t${bpm.toFixed(3)}`,
-      "MET_DEF\t4\t4", `RESOLUTION\t${resolution}`, `CLK_DEF\t${resolution}`, "TUTORIAL\t0",
-      `BPM\t0\t0\t${bpm.toFixed(3)}`, "MET\t0\t0\t4\t4"
-    ];
+  let out = [];
+  if (headerLines.length > 0) {
+    out.push(...headerLines);
+  } else {
+    out.push("VERSION\t1.13.00\t1.13.00");
+    out.push("MUSIC\t0");
+    out.push(`BPM_DEF\t${bpm.toFixed(3)}\t${bpm.toFixed(3)}\t${bpm.toFixed(3)}\t${bpm.toFixed(3)}`);
+    out.push("MET_DEF\t4\t4");
+    out.push(`RESOLUTION\t${resolution}`);
+    out.push(`CLK_DEF\t${resolution}`);
+    out.push("PROGJUDGE_BPM\t240.000");
+    out.push("PROGJUDGE_AER\t  0.999");
+    out.push("TUTORIAL\t0");
+    out.push(`BPM\t0\t0\t${bpm.toFixed(3)}`);
+    out.push("MET\t0\t0\t4\t4");
   }
 
-  const activeNoteSet = new Set(notes);
-  const out = [];
+  const sorted = [...notes].sort((a,b) => (a.measure * resolution + a.tick) - (b.measure * resolution + b.tick));
 
-  rawLineEntries.forEach(entry => {
-    if (!entry.isNote) {
-      out.push(entry.raw);
-    } else {
-      if (activeNoteSet.has(entry.note)) {
-        out.push(serializeNote(entry.note));
-        activeNoteSet.delete(entry.note);
-      }
+  for (const n of sorted) {
+    if (n.type === "TAP") out.push(`TAP\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}`);
+    else if (n.type === "HLD") out.push(`HLD\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.dur}`);
+    else if (n.type === "HXD") out.push(`HXD\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.dur}\t${n.dir || "UP"}`);
+    else if (n.type === "FLK") out.push(`FLK\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}`);
+    else if (n.type === "CHR") out.push(`CHR\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.dir || "UP"}`);
+    else if (["AIR", "AUL", "AUR"].includes(n.type)) out.push(`${n.type}\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.parent || "TAP"}\t${n.flag || "DEF"}`);
+    else if (["SLD", "SLC", "SXD", "SXC"].includes(n.type)) {
+      const extra = n.dir ? `\t${n.dir}` : "";
+      const nLane = n.next_lane !== undefined ? n.next_lane : n.lane;
+      const nWidth = n.next_width !== undefined ? n.next_width : n.width;
+      out.push(`${n.type}\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.dur}\t${nLane}\t${nWidth}\t${n.parent || "SLD"}${extra}`);
+    } else if (["ASD", "ASC"].includes(n.type)) {
+      out.push(`${n.type}\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.parent || "SLD"}\t${n.h1 || "5.0"}\t${n.dur}\t${n.next_lane !== undefined ? n.next_lane : n.lane}\t${n.next_width !== undefined ? n.next_width : n.width}\t${n.h2 || "5.0"}\t${n.flag || "DEF"}`);
+    } else if (n.type === "ALD") {
+      out.push(`ALD\t${n.measure}\t${n.tick}\t${n.lane}\t${n.width}\t${n.dur}\t${n.h1 || "5.0"}\t${n.step || 24}\t${n.next_lane !== undefined ? n.next_lane : n.lane}\t${n.next_width !== undefined ? n.next_width : n.width}\t${n.h2 || "1.0"}\t${n.flag || "DEF"}`);
+    } else if (n.type === "SLP") {
+      out.push(`SLP\t${n.measure}\t${n.tick}\t${n.dur}\t${n.speed ? n.speed.toFixed(6) : "1.000000"}\t${n.flag || "0"}`);
     }
-  });
-
-  if (activeNoteSet.size > 0) {
-    const addedNotes = Array.from(activeNoteSet).sort((a,b) => (a.measure * resolution + a.tick) - (b.measure * resolution + b.tick));
-    addedNotes.forEach(n => out.push(serializeNote(n)));
   }
-
   return out;
 }
 
@@ -848,11 +705,11 @@ function highlightCodeLines() {
 function jumpToCodeLine(lineText) {
   const parts = lineText.trim().split(/\s+/);
   if (parts.length >= 3) {
-    const m = parseInt(parts[1], 10);
-    const t = parseInt(parts[2], 10);
+    const m = parseInt(parts[1]);
+    const t = parseInt(parts[2]);
     if (!isNaN(m) && !isNaN(t)) {
       currentTime = totalTicksToTime(m * resolution + t);
-      if (audio.src && audio.duration) audio.currentTime = currentTime;
+      if (audio.src) audio.currentTime = currentTime;
       const target = notes.find(n => n.measure === m && n.tick === t && n.type === parts[0]);
       if (target) {
         selectedNoteIds.clear();
@@ -887,28 +744,19 @@ function totalTicksToTime(ticks) {
   return (ticks * 240) / (bpm * resolution) + audioOffset;
 }
 
-function getTotalDuration() {
-  if (audio.src && audio.duration && !isNaN(audio.duration) && audio.duration > 0) {
-    return audio.duration;
-  }
-  let maxTick = 0;
-  notes.forEach(n => {
-    const end = n.measure * resolution + n.tick + (n.dur || 0);
-    if (end > maxTick) maxTick = end;
-  });
-  return Math.max(30.0, totalTicksToTime(maxTick + resolution * 4));
-}
-
 function updateTotalMeasures() {
   notes.forEach(n => {
     if (n.measure + 8 > maxMeasures) maxMeasures = n.measure + 8;
   });
 }
 
+// ==================== 滑条链路与头判判定系统 ====================
+// 检测某个 SLD/SXD/SLC 是否是某条滑键的真正起点 (有头判)
 function isSlideChainHead(targetNote) {
-  if (targetNote.type === "SLC" || targetNote.type === "SXC") return false;
+  if (targetNote.type === "SLC" || targetNote.type === "SXC") return false; // 中继点绝无头判
   const targetStart = targetNote.measure * resolution + targetNote.tick;
   
+  // 检查是否有前置节点正好在当前时刻与轨道相接
   const hasPredecessor = notes.some(n => {
     if (!["SLD", "SLC", "SXD", "SXC"].includes(n.type) || n.id === targetNote.id) return false;
     const nEnd = n.measure * resolution + n.tick + (n.dur || 0);
@@ -935,11 +783,11 @@ function render() {
   const currentTicks = timeToTotalTicks(currentTime);
   const currentScrollY = (currentTicks / resolution) * pixelsPerMeasure;
 
-  // 1. 底板背景
+  // 1. 16 轨底板
   ctx.fillStyle = "#0c0e14";
   ctx.fillRect(originX, 0, trackWidth, canvas.height);
 
-  // 2. 16 分轨线
+  // 2. 分轨线 (16 轨)
   for (let i = 0; i <= LANES; i++) {
     const x = originX + i * laneWidth;
     ctx.strokeStyle = (i % 4 === 0) ? "#4a5568" : "#1b202c";
@@ -981,124 +829,29 @@ function render() {
   }
 
   // 4. 变速事件 SLP
-  if (isNoteVisible("SLP")) {
-    for (const n of notes) {
-      if (n.type === "SLP") {
-        const t = n.measure * resolution + n.tick;
-        const y = judgeY - ((t / resolution) * pixelsPerMeasure - currentScrollY);
-        if (y < -30 || y > canvas.height + 30) continue;
-
-        ctx.strokeStyle = "#d946ef";
-        ctx.lineWidth = 2;
-        ctx.setLineDash([4, 4]);
-        ctx.beginPath();
-        ctx.moveTo(originX, y);
-        ctx.lineTo(originX + trackWidth, y);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        ctx.fillStyle = "#d946ef";
-        ctx.font = "10px monospace";
-        ctx.fillText(`⚡ SLP Speed: ${n.speed}x`, originX + 6, y - 4);
-      }
-    }
-  }
-
-  // 5. 绘制 ALD 空中彩轨与紫色挥手按键 (权威规范实现)
-  if (isNoteVisible("ALD")) {
-    for (const n of notes) {
-      if (n.type === "ALD") {
-        const startTicks = n.measure * resolution + n.tick;
-        const startY = judgeY - ((startTicks / resolution) * pixelsPerMeasure - currentScrollY);
-        const startX = originX + n.lane * laneWidth;
-        const startW = n.width * laneWidth;
-        const duration = n.dur !== undefined ? n.dur : 0;
-        const endTicks = startTicks + duration;
-        const endY = judgeY - ((endTicks / resolution) * pixelsPerMeasure - currentScrollY);
-        const endX = originX + (n.next_lane !== undefined ? n.next_lane : n.lane) * laneWidth;
-        const endW = (n.next_width !== undefined ? n.next_width : n.width) * laneWidth;
-
-        const colorHex = ALD_COLORS[n.color] || ALD_COLORS.DEF;
-        ctx.save();
-
-        // 绘制激光带/装饰导轨
-        ctx.fillStyle = colorHex + "28"; // 半透明
-        ctx.strokeStyle = colorHex;
-        ctx.lineWidth = selectedNoteIds.has(n.id) ? 3 : 1.5;
-
-        ctx.beginPath();
-        ctx.moveTo(startX, startY);
-        ctx.lineTo(endX, endY);
-        ctx.lineTo(endX + endW, endY);
-        ctx.lineTo(startX + startW, startY);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-
-        // 激光中心高亮光线
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(startX + startW/2, startY);
-        ctx.lineTo(endX + endW/2, endY);
-        ctx.stroke();
-
-        ctx.restore();
-
-        // 🌟 根据 interval 规范渲染紫色空中挥手音符
-        const interval = n.interval !== undefined ? n.interval : 0;
-        if (interval > 0) {
-          const wavePoints = [];
-          if (interval === 38400) {
-            // 规范：为 38400 时仅在开始时刻生成一个挥手音符
-            wavePoints.push(startTicks);
-          } else {
-            // 规范：按 interval 间隔在 duration 范围内生成挥手音符
-            for (let t = startTicks; t <= endTicks; t += interval) {
-              wavePoints.push(t);
-            }
-          }
-
-          wavePoints.forEach(wt => {
-            const wy = judgeY - ((wt / resolution) * pixelsPerMeasure - currentScrollY);
-            if (wy >= -20 && wy <= canvas.height + 20) {
-              const prog = duration > 0 ? (wt - startTicks) / duration : 0;
-              const curLane = n.lane + ((n.next_lane !== undefined ? n.next_lane : n.lane) - n.lane) * prog;
-              const curWidth = n.width + ((n.next_width !== undefined ? n.next_width : n.width) - n.width) * prog;
-              const wx = originX + curLane * laneWidth;
-              const ww = curWidth * laneWidth;
-
-              // 绘制空中紫色挥手音符 (Air Action Wave Node)
-              ctx.save();
-              ctx.fillStyle = "#a855f7";
-              ctx.strokeStyle = "#f3e8ff";
-              ctx.lineWidth = 1.5;
-              ctx.shadowColor = "#a855f7";
-              ctx.shadowBlur = 6;
-
-              // 胶囊形挥手标记
-              ctx.beginPath();
-              ctx.roundRect(wx + 1, wy - 4, ww - 2, 8, 4);
-              ctx.fill();
-              ctx.stroke();
-
-              // 中心挥手波浪符号 ≋
-              ctx.fillStyle = "#ffffff";
-              ctx.font = "bold 9px sans-serif";
-              ctx.textAlign = "center";
-              ctx.fillText("≋", wx + ww/2, wy + 3);
-              ctx.restore();
-            }
-          });
-        }
-      }
-    }
-  }
-
-  // 6. 绘制滑条轨道身体与长按条 (SXD/SXC 暖蓝色带)
   for (const n of notes) {
-    if (!isNoteVisible(n.type)) continue;
+    if (n.type === "SLP") {
+      const t = n.measure * resolution + n.tick;
+      const y = judgeY - ((t / resolution) * pixelsPerMeasure - currentScrollY);
+      if (y < -30 || y > canvas.height + 30) continue;
 
+      ctx.strokeStyle = "#d946ef";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(originX, y);
+      ctx.lineTo(originX + trackWidth, y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = "#d946ef";
+      ctx.font = "10px monospace";
+      ctx.fillText(`⚡ SLP Speed: ${n.speed}x`, originX + 6, y - 4);
+    }
+  }
+
+  // 5. 绘制滑条轨道身体与长按条 (SLD, SLC, SXD, SXC, HLD, HXD)
+  for (const n of notes) {
     const isSelected = selectedNoteIds.has(n.id);
     const startTicks = n.measure * resolution + n.tick;
     const startY = judgeY - ((startTicks / resolution) * pixelsPerMeasure - currentScrollY);
@@ -1112,10 +865,8 @@ function render() {
       const endW = (n.next_width !== undefined ? n.next_width : n.width) * laneWidth;
 
       const isEx = (n.type === "SXD" || n.type === "SXC");
-
-      // SXD/SXC 采用稍微偏暖的湖蓝/湛蓝色
-      ctx.fillStyle = isEx ? "rgba(35, 125, 245, 0.38)" : "rgba(0, 190, 240, 0.32)";
-      ctx.strokeStyle = isEx ? "#38bdf8" : "#00b4d8";
+      ctx.fillStyle = isEx ? "rgba(255, 215, 0, 0.35)" : "rgba(0, 210, 255, 0.32)";
+      ctx.strokeStyle = isEx ? "#ffd700" : "#00d2ff";
       ctx.lineWidth = isSelected ? 3 : 2;
 
       ctx.beginPath();
@@ -1127,9 +878,9 @@ function render() {
       ctx.fill();
       ctx.stroke();
 
-      // 带 X 的滑条尾部节点连接线为金色，普通为青蓝
+      // 连接节点小短线
       ctx.fillStyle = isEx ? "#ffd700" : "#00d2ff";
-      ctx.fillRect(endX, endY - 1, endW, isEx ? 3 : 2);
+      ctx.fillRect(endX, endY - 1, endW, 2);
 
     } else if (n.type === "HLD" || n.type === "HXD") {
       const durPx = ((n.dur || 28) / resolution) * pixelsPerMeasure;
@@ -1143,50 +894,49 @@ function render() {
       ctx.fillRect(startX + 2, endY, startW - 4, durPx);
       ctx.strokeRect(startX + 2, endY, startW - 4, durPx);
 
+      // 长按尾部收笔线
       ctx.fillStyle = isEx ? "#ffea00" : "#ff9900";
       ctx.fillRect(startX + 2, endY - 1, startW - 4, 3);
     }
   }
 
-  // 7. 绘制空中滑条 ASD / ASC
-  if (isNoteVisible("ASD")) {
-    for (const n of notes) {
-      if (["ASD", "ASC"].includes(n.type)) {
-        const startTicks = n.measure * resolution + n.tick;
-        const startY = judgeY - ((startTicks / resolution) * pixelsPerMeasure - currentScrollY);
-        const startX = originX + n.lane * laneWidth;
-        const startW = n.width * laneWidth;
-        const endTicks = startTicks + (n.dur || 96);
-        const endY = judgeY - ((endTicks / resolution) * pixelsPerMeasure - currentScrollY);
-        const endX = originX + (n.next_lane !== undefined ? n.next_lane : n.lane) * laneWidth;
-        const endW = (n.next_width !== undefined ? n.next_width : n.width) * laneWidth;
+  // 6. 绘制空中滑条 ASD / ASC / ALD
+  for (const n of notes) {
+    if (["ASD", "ASC"].includes(n.type)) {
+      const startTicks = n.measure * resolution + n.tick;
+      const startY = judgeY - ((startTicks / resolution) * pixelsPerMeasure - currentScrollY);
+      const startX = originX + n.lane * laneWidth;
+      const startW = n.width * laneWidth;
+      const endTicks = startTicks + (n.dur || 96);
+      const endY = judgeY - ((endTicks / resolution) * pixelsPerMeasure - currentScrollY);
+      const endX = originX + (n.next_lane !== undefined ? n.next_lane : n.lane) * laneWidth;
+      const endW = (n.next_width !== undefined ? n.next_width : n.width) * laneWidth;
 
-        ctx.save();
-        ctx.fillStyle = "rgba(217, 70, 239, 0.35)";
-        ctx.strokeStyle = "#e879f9";
-        ctx.lineWidth = selectedNoteIds.has(n.id) ? 3 : 2;
-        ctx.setLineDash([6, 3]);
+      // 空中透明紫粉发光带
+      ctx.save();
+      ctx.fillStyle = "rgba(217, 70, 239, 0.35)";
+      ctx.strokeStyle = "#e879f9";
+      ctx.lineWidth = selectedNoteIds.has(n.id) ? 3 : 2;
+      ctx.setLineDash([6, 3]);
 
-        ctx.beginPath();
-        ctx.moveTo(startX, startY);
-        ctx.lineTo(endX, endY);
-        ctx.lineTo(endX + endW, endY);
-        ctx.lineTo(startX + startW, startY);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-        ctx.restore();
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      ctx.lineTo(endX, endY);
+      ctx.lineTo(endX + endW, endY);
+      ctx.lineTo(startX + startW, startY);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
 
-        ctx.fillStyle = "#f0abfc";
-        ctx.fillRect(startX, startY - 2, startW, 4);
-      }
+      // 空中节点标牌
+      ctx.fillStyle = "#f0abfc";
+      ctx.fillRect(startX, startY - 2, startW, 4);
     }
   }
 
-  // 8. 绘制打击头与点状音符 (SXD/SXC 严格渲染金色头)
+  // 7. 绘制打击头与点状音符 (精准区分头判)
   for (const n of notes) {
-    if (!isNoteVisible(n.type)) continue;
-
     const isSelected = selectedNoteIds.has(n.id);
     const startTicks = n.measure * resolution + n.tick;
     const y = judgeY - ((startTicks / resolution) * pixelsPerMeasure - currentScrollY);
@@ -1195,6 +945,7 @@ function render() {
 
     if (y < -80 || y > canvas.height + 80) continue;
 
+    // 选中光晕
     if (isSelected) {
       ctx.strokeStyle = "#ffffff";
       ctx.lineWidth = 3;
@@ -1227,13 +978,14 @@ function render() {
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(x + 3, y - 1.5, w - 6, 3);
     } else if (["SLD", "SXD"].includes(n.type)) {
+      // 关键：仅首节点有头判，中继与续接段不画实心 Tap 头部
       if (isSlideChainHead(n)) {
         ctx.fillStyle = (n.type === "SXD") ? "#ffd700" : "#00d2ff";
         ctx.fillRect(x + 1, y - 5, w - 2, 10);
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(x + 3, y - 1.5, w - 6, 3);
       }
-    } else if (["FLK", "FLL", "FLR"].includes(n.type)) {
+    } else if (n.type === "FLK") {
       ctx.fillStyle = "#00d2ff";
       ctx.fillRect(x + 1, y - 5, w - 2, 10);
       ctx.fillStyle = "#ffffff";
@@ -1243,6 +995,7 @@ function render() {
       ctx.lineTo(x + w / 2 - 6, y - 2);
       ctx.fill();
     } else if (n.type === "AIR") {
+      // 绿色 Air 向上箭头
       ctx.fillStyle = "#00ff88";
       ctx.beginPath();
       ctx.moveTo(x + w / 2, y - 14);
@@ -1271,7 +1024,7 @@ function render() {
     }
   }
 
-  // 9. 粘贴预览
+  // 8. 绘制 Ctrl+V 粘贴预览
   if (isPasting && clipboard.length > 0) {
     ctx.save();
     ctx.globalAlpha = 0.55;
@@ -1295,7 +1048,7 @@ function render() {
     ctx.restore();
   }
 
-  // 10. 多选选框
+  // 9. 多选选框
   if (isSelectingBox) {
     ctx.strokeStyle = "#00d2ff";
     ctx.lineWidth = 1;
@@ -1308,7 +1061,7 @@ function render() {
     ctx.strokeRect(bx, by, bw, bh);
   }
 
-  // 11. 底部判定基准线
+  // 10. 底部基准判定线
   ctx.strokeStyle = "#ff0055";
   ctx.lineWidth = 3;
   ctx.shadowColor = "#ff0055";
@@ -1322,7 +1075,7 @@ function render() {
   document.getElementById("measure-display").innerText = Math.floor(currentTicks / resolution);
 }
 
-// ==================== 缩放控制 ====================
+// ==================== 缩放控制 (80px ~ 4800px) ====================
 function setZoom(val) {
   pixelsPerMeasure = Math.max(80, Math.min(4800, val));
   document.getElementById("zoom-slider").value = pixelsPerMeasure;
@@ -1330,7 +1083,7 @@ function setZoom(val) {
   render();
 }
 
-document.getElementById("zoom-slider").addEventListener("input", (e) => setZoom(parseInt(e.target.value, 10)));
+document.getElementById("zoom-slider").addEventListener("input", (e) => setZoom(parseInt(e.target.value)));
 document.getElementById("btn-zoom-in").addEventListener("click", () => setZoom(pixelsPerMeasure * 1.25));
 document.getElementById("btn-zoom-out").addEventListener("click", () => setZoom(pixelsPerMeasure * 0.8));
 
@@ -1354,16 +1107,12 @@ function copySelectedNotes() {
     relLane: n.lane - minLane,
     width: n.width,
     type: n.type,
-    dur: n.dur !== undefined ? n.dur : 0,
-    interval: n.interval !== undefined ? n.interval : 0,
+    dur: n.dur || 0,
     next_lane_rel: (n.next_lane !== undefined ? n.next_lane : n.lane) - n.lane,
     next_width: n.next_width || n.width,
     dir: n.dir || "",
     parent: n.parent || "",
-    flag: n.flag || "",
-    color: n.color || "DEF",
-    h1_str: n.h1_str || "1.0",
-    h2_str: n.h2_str || "1.0"
+    flag: n.flag || ""
   }));
 }
 
@@ -1398,12 +1147,9 @@ function confirmPaste() {
       type: item.type,
       measure: m, tick: t, lane: l,
       width: item.width, dur: item.dur,
-      interval: item.interval,
       next_lane: Math.min(16 - item.next_width, Math.max(0, l + item.next_lane_rel)),
       next_width: item.next_width,
-      dir: item.dir, parent: item.parent, flag: item.flag, color: item.color,
-      h1_str: item.h1_str, h2_str: item.h2_str,
-      rawLine: "", isModified: true
+      dir: item.dir, parent: item.parent, flag: item.flag
     };
 
     notes.push(newNote);
@@ -1417,14 +1163,13 @@ function confirmPaste() {
   render();
 }
 
-// ==================== 方向键微调 ====================
+// ==================== 音符移动 (方向键微调) ====================
 function moveSelectedNotes(dMeasure, dTick, dLane) {
   if (selectedNoteIds.size === 0) return;
   pushHistory();
 
   notes.forEach(n => {
     if (selectedNoteIds.has(n.id)) {
-      n.isModified = true;
       let total = n.measure * resolution + n.tick + dMeasure * resolution + dTick;
       total = Math.max(0, total);
       n.measure = Math.floor(total / resolution);
@@ -1449,7 +1194,7 @@ function moveSelectedNotes(dMeasure, dTick, dLane) {
 document.getElementById("btn-append-tail-note").addEventListener("click", () => {
   if (selectedNoteIds.size !== 1) return;
   const note = notes.find(n => selectedNoteIds.has(n.id));
-  if (!note || !["HLD", "HXD", "SLD", "SLC", "SXD", "SXC", "ASD", "ASC", "ALD"].includes(note.type)) return;
+  if (!note || !["HLD", "HXD", "SLD", "SLC", "SXD", "SXC", "ASD", "ASC"].includes(note.type)) return;
 
   pushHistory();
   const endTicks = note.measure * resolution + note.tick + (note.dur || 0);
@@ -1467,7 +1212,7 @@ document.getElementById("btn-append-tail-note").addEventListener("click", () => 
     dur: 0, next_lane: endLane, next_width: endWidth,
     dir: appendType === "CHR" ? "UP" : "",
     parent: ["AIR", "AUL", "AUR"].includes(appendType) ? "SLD" : "",
-    flag: "DEF", rawLine: "", isModified: true
+    flag: "DEF"
   };
 
   notes.push(newNote);
@@ -1480,7 +1225,7 @@ document.getElementById("btn-append-tail-note").addEventListener("click", () => 
   render();
 });
 
-// ==================== 画布与鼠标交互 ====================
+// ==================== 交互与按键响应 ====================
 canvas.addEventListener("wheel", (e) => {
   e.preventDefault();
   if (e.ctrlKey) {
@@ -1489,7 +1234,7 @@ canvas.addEventListener("wheel", (e) => {
     const deltaTicks = (e.deltaY / pixelsPerMeasure) * resolution * 0.4;
     const currentTicks = timeToTotalTicks(currentTime);
     currentTime = Math.max(0, totalTicksToTime(currentTicks + deltaTicks));
-    if (audio.src && audio.duration) audio.currentTime = currentTime;
+    if (audio.src) audio.currentTime = currentTime;
     updateProgressUI();
     render();
   }
@@ -1514,8 +1259,6 @@ canvas.addEventListener("mousedown", (e) => {
     let hitNote = null;
     for (let i = notes.length - 1; i >= 0; i--) {
       const n = notes[i];
-      if (!isNoteVisible(n.type)) continue;
-
       const startTicks = n.measure * resolution + n.tick;
       const ny = judgeY - ((startTicks / resolution) * pixelsPerMeasure - currentScrollY);
       const nx = originX + n.lane * laneWidth;
@@ -1552,7 +1295,7 @@ canvas.addEventListener("mousedown", (e) => {
     pushHistory();
     const currentTicks = timeToTotalTicks(currentTime);
     const currentScrollY = (currentTicks / resolution) * pixelsPerMeasure;
-    const snap = parseInt(document.getElementById("grid-snap").value, 10) || 1;
+    const snap = parseInt(document.getElementById("grid-snap").value) || 1;
 
     const rawTicks = Math.round(((judgeY - clickY + currentScrollY) / pixelsPerMeasure) * resolution);
     const snappedTicks = Math.max(0, Math.round(rawTicks / snap) * snap);
@@ -1560,8 +1303,8 @@ canvas.addEventListener("mousedown", (e) => {
     const tick = snappedTicks % resolution;
 
     const lane = Math.max(0, Math.min(15, Math.floor((clickX - originX) / laneWidth)));
-    const defW = parseInt(document.getElementById("def-width").value, 10) || 4;
-    const defDur = parseInt(document.getElementById("def-dur").value, 10) || 48;
+    const defW = parseInt(document.getElementById("def-width").value) || 4;
+    const defDur = parseInt(document.getElementById("def-dur").value) || 48;
 
     const newNote = {
       id: Date.now(),
@@ -1570,14 +1313,11 @@ canvas.addEventListener("mousedown", (e) => {
       lane: Math.min(16 - defW, lane),
       width: defW,
       dur: defDur,
-      interval: 0,
       next_lane: Math.min(16 - defW, lane),
       next_width: defW,
       dir: (toolMode === "CHR" || toolMode === "HXD") ? "UP" : "",
       parent: ["AIR", "AUL", "AUR"].includes(toolMode) ? "TAP" : "",
-      flag: "DEF", color: "YEL",
-      h1_str: "1.0", h2_str: "1.0",
-      rawLine: "", isModified: true
+      flag: "DEF"
     };
 
     notes.push(newNote);
@@ -1601,7 +1341,7 @@ canvas.addEventListener("mousemove", (e) => {
   const currentScrollY = (currentTicks / resolution) * pixelsPerMeasure;
 
   if (isPasting) {
-    const snap = parseInt(document.getElementById("grid-snap").value, 10) || 1;
+    const snap = parseInt(document.getElementById("grid-snap").value) || 1;
     const rawTicks = Math.round(((judgeY - mouseY + currentScrollY) / pixelsPerMeasure) * resolution);
     const snappedTicks = Math.max(0, Math.round(rawTicks / snap) * snap);
 
@@ -1617,7 +1357,6 @@ canvas.addEventListener("mousemove", (e) => {
     const bh = Math.abs(selectBoxEnd.y - selectBoxStart.y);
 
     notes.forEach(n => {
-      if (!isNoteVisible(n.type)) return;
       const startTicks = n.measure * resolution + n.tick;
       const ny = judgeY - ((startTicks / resolution) * pixelsPerMeasure - currentScrollY);
       const nx = originX + n.lane * laneWidth;
@@ -1641,11 +1380,11 @@ window.addEventListener("mouseup", () => {
   }
 });
 
-// 全局按键绑定
+// 全局按键绑定（空格优先控制播放并解除输入框聚焦）
 window.addEventListener("keydown", (e) => {
   if (e.code === "Space") {
     if (isRawCodeEdit && document.activeElement === document.getElementById("raw-code-textarea")) {
-      return;
+      return; // 直编模式下光标在 textarea 内则允许打空格
     }
     e.preventDefault();
     if (document.activeElement && document.activeElement.blur) {
@@ -1674,10 +1413,10 @@ window.addEventListener("keydown", (e) => {
     redo();
   } else if (e.code === "ArrowUp") {
     e.preventDefault();
-    moveSelectedNotes(0, e.shiftKey ? (parseInt(document.getElementById("grid-snap").value, 10) || 24) : 1, 0);
+    moveSelectedNotes(0, e.shiftKey ? (parseInt(document.getElementById("grid-snap").value) || 24) : 1, 0);
   } else if (e.code === "ArrowDown") {
     e.preventDefault();
-    moveSelectedNotes(0, e.shiftKey ? -(parseInt(document.getElementById("grid-snap").value, 10) || 24) : -1, 0);
+    moveSelectedNotes(0, e.shiftKey ? -(parseInt(document.getElementById("grid-snap").value) || 24) : -1, 0);
   } else if (e.code === "ArrowLeft") {
     e.preventDefault();
     moveSelectedNotes(0, 0, e.shiftKey ? -2 : -1);
@@ -1687,7 +1426,7 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
-// ==================== 属性检查器与智能双向绑定 ====================
+// ==================== 属性检查器与智能转换 ====================
 function updateInspector() {
   const selectCount = selectedNoteIds.size;
   const badge = document.getElementById("select-count");
@@ -1716,32 +1455,27 @@ function updateInspector() {
     document.getElementById("ins-lane").value = note.lane;
     document.getElementById("ins-width").value = note.width;
 
-    const isSlide = ["SLD", "SLC", "SXD", "SXC", "ASD", "ASC", "ALD"].includes(note.type);
+    // HLD / HXD / SLD / SLC / ASD 字段显示控制
+    const isSlide = ["SLD", "SLC", "SXD", "SXC", "ASD", "ASC"].includes(note.type);
     const isHold = ["HLD", "HXD"].includes(note.type);
     const hasDur = isSlide || isHold || (note.type === "SLP");
 
     document.getElementById("ins-dur-container").style.display = hasDur ? "block" : "none";
     if (hasDur) {
-      document.getElementById("ins-dur").value = (note.dur !== undefined) ? note.dur : 0;
+      document.getElementById("ins-dur").value = note.dur || 0;
     }
 
+    // 终点轨道和终点宽度仅对 Slide / ASD 显示
     document.getElementById("ins-slide-end-container").style.display = isSlide ? "grid" : "none";
     if (isSlide) {
       document.getElementById("ins-next-lane").value = (note.next_lane !== undefined) ? note.next_lane : note.lane;
       document.getElementById("ins-next-width").value = (note.next_width !== undefined) ? note.next_width : note.width;
     }
 
-    // 🌟 ALD 专属权威字段 (Interval, Height, Color)
-    document.getElementById("ins-ald-container").style.display = (note.type === "ALD") ? "block" : "none";
-    if (note.type === "ALD") {
-      document.getElementById("ins-ald-interval").value = (note.interval !== undefined) ? note.interval : 0;
-      document.getElementById("ins-ald-color").value = note.color || "DEF";
-      document.getElementById("ins-ald-h1").value = note.h1_str || "1.0";
-      document.getElementById("ins-ald-h2").value = note.h2_str || "1.0";
-    }
-
+    // 尾部追加面板
     document.getElementById("ins-tail-append-container").style.display = (isSlide || isHold) ? "block" : "none";
 
+    // 方向与附着字段
     const hasDirOrParent = ["CHR", "AIR", "AUL", "AUR", "HXD"].includes(note.type);
     document.getElementById("ins-dir-fields").style.display = hasDirOrParent ? "grid" : "none";
     if (hasDirOrParent) {
@@ -1757,7 +1491,7 @@ function updateInspector() {
 }
 
 function bindInspectorChange() {
-  const fields = ["type", "measure", "tick", "lane", "width", "dur", "next-lane", "next-width", "dir", "parent", "ald-interval", "ald-color", "ald-h1", "ald-h2"];
+  const fields = ["type", "measure", "tick", "lane", "width", "dur", "next-lane", "next-width", "dir", "parent"];
   fields.forEach(f => {
     const el = document.getElementById(`ins-${f}`);
     el.addEventListener("change", () => {
@@ -1766,45 +1500,34 @@ function bindInspectorChange() {
       if (!note) return;
 
       pushHistory();
-      note.isModified = true;
-
       if (f === "type") {
         const oldType = note.type;
         note.type = el.value;
 
-        if (["SLD", "SLC", "SXD", "SXC", "ASD", "ASC", "ALD"].includes(note.type)) {
+        // 若从 HLD 改为 SLD/SLC，自动用起点轨道与宽度初始化终点
+        if (["SLD", "SLC", "SXD", "SXC", "ASD", "ASC"].includes(note.type)) {
           if (note.next_lane === undefined || oldType === "HLD" || oldType === "HXD") note.next_lane = note.lane;
           if (note.next_width === undefined || oldType === "HLD" || oldType === "HXD") note.next_width = note.width;
-          if (note.dur === undefined) note.dur = 48;
-          if (note.type === "ALD") {
-            if (note.interval === undefined) note.interval = 0;
-            if (!note.color) note.color = "YEL";
-            if (!note.h1_str) note.h1_str = "1.0";
-            if (!note.h2_str) note.h2_str = "1.0";
-          }
+          if (!note.dur) note.dur = 48;
         } else if (note.type === "HLD" || note.type === "HXD") {
-          if (note.dur === undefined) note.dur = 28;
+          if (!note.dur) note.dur = 28;
         }
       }
-      else if (f === "measure") note.measure = safeInt(el.value, 0);
-      else if (f === "tick") note.tick = safeInt(el.value, 0);
+      else if (f === "measure") note.measure = parseInt(el.value) || 0;
+      else if (f === "tick") note.tick = parseInt(el.value) || 0;
       else if (f === "lane") {
-        note.lane = safeInt(el.value, 0);
+        note.lane = parseInt(el.value) || 0;
         if (["HLD", "HXD"].includes(note.type)) note.next_lane = note.lane;
       }
       else if (f === "width") {
-        note.width = safeInt(el.value, 1);
+        note.width = parseInt(el.value) || 1;
         if (["HLD", "HXD"].includes(note.type)) note.next_width = note.width;
       }
-      else if (f === "dur") note.dur = safeInt(el.value, 0);
-      else if (f === "next-lane") note.next_lane = safeInt(el.value, 0);
-      else if (f === "next-width") note.next_width = safeInt(el.value, 1);
+      else if (f === "dur") note.dur = parseInt(el.value) || 0;
+      else if (f === "next-lane") note.next_lane = parseInt(el.value) || 0;
+      else if (f === "next-width") note.next_width = parseInt(el.value) || 1;
       else if (f === "dir") note.dir = el.value;
       else if (f === "parent") note.parent = el.value;
-      else if (f === "ald-interval") note.interval = safeInt(el.value, 0);
-      else if (f === "ald-color") note.color = el.value;
-      else if (f === "ald-h1") note.h1_str = el.value.trim() || "1.0";
-      else if (f === "ald-h2") note.h2_str = el.value.trim() || "1.0";
 
       updateInspector();
       syncCodeView();
@@ -1821,15 +1544,14 @@ document.getElementById("btn-batch-change").addEventListener("click", () => {
   const targetType = document.getElementById("batch-type").value;
   notes.forEach(n => {
     if (selectedNoteIds.has(n.id)) {
-      n.isModified = true;
       const oldType = n.type;
       n.type = targetType;
-      if (["SLD", "SLC", "SXD", "SXC", "ASD", "ASC"].includes(targetType)) {
+      if (["SLD", "SLC", "SXD", "SXC"].includes(targetType)) {
         if (n.next_lane === undefined || oldType === "HLD" || oldType === "HXD") n.next_lane = n.lane;
         if (n.next_width === undefined || oldType === "HLD" || oldType === "HXD") n.next_width = n.width;
-        if (n.dur === undefined) n.dur = 48;
+        if (!n.dur) n.dur = 48;
       } else if (targetType === "HLD") {
-        if (n.dur === undefined) n.dur = 28;
+        if (!n.dur) n.dur = 28;
       }
       if (targetType === "CHR" && !n.dir) n.dir = "UP";
     }
@@ -1852,7 +1574,7 @@ function deleteSelectedNotes() {
 document.getElementById("btn-delete-single").addEventListener("click", deleteSelectedNotes);
 document.getElementById("btn-delete-selected").addEventListener("click", deleteSelectedNotes);
 
-// ==================== 音量控制与本地持久化 ====================
+// ==================== 音量控制与 Cookie 加载 ====================
 const volSlider = document.getElementById("vol-slider");
 const volVal = document.getElementById("vol-val");
 
@@ -1868,6 +1590,7 @@ volSlider.addEventListener("input", (e) => {
   setVolume(parseFloat(e.target.value));
 });
 
+// 初始化加载 Cookie
 const savedVol = getCookie("c2s_vol");
 if (savedVol !== null && !isNaN(parseFloat(savedVol))) {
   setVolume(parseFloat(savedVol));
@@ -1875,68 +1598,18 @@ if (savedVol !== null && !isNaN(parseFloat(savedVol))) {
   setVolume(0.8);
 }
 
-// ==================== 图层设定交互逻辑 ====================
-function updateLayerBadgesUI() {
-  document.querySelectorAll(".layer-badge").forEach(badge => {
-    const layer = badge.dataset.layer;
-    if (layerVisibility[layer]) {
-      badge.classList.remove("disabled");
-    } else {
-      badge.classList.add("disabled");
-    }
-  });
-}
-
-document.querySelectorAll(".layer-badge").forEach(badge => {
-  badge.addEventListener("click", () => {
-    const layer = badge.dataset.layer;
-    layerVisibility[layer] = !layerVisibility[layer];
-    updateLayerBadgesUI();
-    render();
-  });
-});
-
-document.getElementById("btn-show-all-layers").addEventListener("click", () => {
-  Object.keys(layerVisibility).forEach(k => layerVisibility[k] = true);
-  updateLayerBadgesUI();
-  render();
-});
-
-document.getElementById("btn-hide-all-layers").addEventListener("click", () => {
-  Object.keys(layerVisibility).forEach(k => layerVisibility[k] = false);
-  updateLayerBadgesUI();
-  render();
-});
-
-// ==================== 播放循环 (完美支持无音频独立播放) ====================
-function updateLoop(now) {
-  if (!isPlaying) return;
-  
-  const dt = (now - playClockLastTime) / 1000;
-  playClockLastTime = now;
-
-  if (audio.src && !audio.paused && !isNaN(audio.currentTime)) {
-    currentTime = audio.currentTime;
-  } else {
-    currentTime += dt * playbackRate;
-  }
-
-  const totalDur = getTotalDuration();
-  if (currentTime >= totalDur) {
-    currentTime = totalDur;
-    togglePlay();
-  }
-
-  updateProgressUI();
-  render();
-
+// ==================== 播放循环 ====================
+function updateLoop() {
   if (isPlaying) {
+    currentTime = audio.currentTime;
+    updateProgressUI();
+    render();
     requestAnimationFrame(updateLoop);
   }
 }
 
 function updateProgressUI() {
-  const dur = getTotalDuration();
+  const dur = audio.duration || 120;
   document.getElementById("progress-range").value = (currentTime / dur) * 100;
   document.getElementById("time-display").innerText = `${formatTime(currentTime)} / ${formatTime(dur)}`;
 }
@@ -1955,12 +1628,7 @@ function togglePlay() {
   if (isPlaying) {
     btnPlay.innerText = "⏸ 暂停";
     btnPlay.classList.add("active");
-    playClockLastTime = performance.now();
-    if (audio.src) {
-      audio.currentTime = Math.min(currentTime, audio.duration || currentTime);
-      audio.playbackRate = playbackRate;
-      audio.play().catch(e => console.warn("音频不可用，切换到独立时钟播放", e));
-    }
+    if (audio.src) audio.play();
     requestAnimationFrame(updateLoop);
   } else {
     btnPlay.innerText = "▶ 播放";
@@ -1969,21 +1637,16 @@ function togglePlay() {
   }
 }
 
-document.getElementById("play-speed").addEventListener("change", (e) => {
-  playbackRate = parseFloat(e.target.value);
-  if (audio.src) audio.playbackRate = playbackRate;
-});
-
+document.getElementById("play-speed").addEventListener("change", (e) => { audio.playbackRate = parseFloat(e.target.value); });
 document.getElementById("progress-range").addEventListener("input", (e) => {
-  const dur = getTotalDuration();
+  const dur = audio.duration || 120;
   currentTime = (e.target.value / 100) * dur;
-  if (audio.src && audio.duration) audio.currentTime = Math.min(currentTime, audio.duration);
+  if (audio.src) audio.currentTime = currentTime;
   updateProgressUI();
   render();
 });
 
 document.getElementById("tool-mode").addEventListener("change", (e) => { toolMode = e.target.value; });
-
 document.getElementById("c2s-input").addEventListener("change", (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -1991,7 +1654,6 @@ document.getElementById("c2s-input").addEventListener("change", (e) => {
   reader.onload = (evt) => parseC2S(evt.target.result);
   reader.readAsText(file);
 });
-
 document.getElementById("audio-input").addEventListener("change", (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -2002,42 +1664,46 @@ document.getElementById("audio-input").addEventListener("change", (e) => {
 document.getElementById("btn-export").addEventListener("click", exportC2S);
 document.getElementById("btn-undo").addEventListener("click", undo);
 document.getElementById("btn-redo").addEventListener("click", redo);
-document.getElementById("cfg-bpm").addEventListener("change", (e) => { bpm = safeFloat(e.target.value, 192); render(); });
-document.getElementById("cfg-res").addEventListener("change", (e) => { resolution = safeInt(e.target.value, 384); render(); });
-document.getElementById("cfg-offset").addEventListener("change", (e) => { audioOffset = safeFloat(e.target.value, 0); render(); });
+document.getElementById("cfg-bpm").addEventListener("change", (e) => { bpm = parseFloat(e.target.value) || 192; render(); });
+document.getElementById("cfg-res").addEventListener("change", (e) => { resolution = parseInt(e.target.value) || 384; render(); });
+document.getElementById("cfg-offset").addEventListener("change", (e) => { audioOffset = parseFloat(e.target.value) || 0; render(); });
 
-// ==================== 详细图例说明弹窗 ====================
+// ==================== 详细图例弹窗逻辑 ====================
 const modalMask = document.getElementById("modal-mask");
 const modalContent = document.getElementById("modal-content");
 const legendData = [
-  { cmd: "TAP", color: "#ff3366", name: "地面标准打击音符 (Red Tap)", format: "TAP measure tick lane width", desc: "最基础的地面打击红键。判定线到达时按下对应轨道进行判定。" },
-  { cmd: "CHR", color: "#ffd700", name: "地面黄色高分键 (ExTAP)", format: "CHR measure tick lane width [dir/UP]", desc: "高得分权重的关键音符。通常带有 UP/DW/CE 方向标注，也可以作为空中动作 (Air Action) 节点。" },
-  { cmd: "HLD", color: "#ff9900", name: "地面普通长按 (Hold)", format: "HLD measure tick lane width dur", desc: "需持续按住的橙黄色条带。到达终点时松手。格式仅需指定持续时长 dur（无需单独定义终点轨道）。" },
-  { cmd: "HXD", color: "#ffea00", name: "地面 Ex 长按 (ExHold)", format: "HXD measure tick lane width dur [dir/UP]", desc: "带有黄色高光打击头的高得分长按，常伴随空中动作/抬手标识。" },
-  { cmd: "FLK", color: "#00d2ff", name: "拂起音符 (Flick)", format: "FLK measure tick lane width [dir]", desc: "青色拂起音符。到达判定线时需轻弹拂动手指触发，支持附带方向参数（FLL/FLR）。" },
-  { cmd: "SLD / SLC", color: "#00b4d8", name: "滑键轨道 (Slide / Curve Control)", format: "SLD/SLC measure tick lane width dur next_lane next_width type", desc: "冷青蓝色滑键引导条。第一段(SLD)拥有实心打击头判；后续中继点(SLC)无头判，按顺序串联构成优美平滑的折线曲线。" },
-  { cmd: "SXD / SXC", color: "#38bdf8", name: "Ex 滑键轨道 (Ex Slide)", format: "SXD/SXC measure tick lane width dur next_lane next_width type [dir]", desc: "偏暖的湖蓝色高光滑条。首节点带有金色打击头判，结尾带有金色收尾横杠。" },
-  { cmd: "AIR", color: "#00ff88", name: "空中向上 (Air Up)", format: "AIR measure tick lane width parent flag", desc: "附着于地面音符（TAP/CHR/长按结尾）上方的绿色向上箭头。击中音符的同时将手臂抬升至空中感应区。" },
-  { cmd: "AUL / AUR", color: "#f72585", name: "空中斜向拂击 (Air Up Left / Right)", format: "AUL/AUR measure tick lane width parent flag", desc: "紫色向左上或右上倾斜的空中箭头，要求在击打音符的同时手臂斜向挥起。" },
-  { cmd: "ASD / ASC", color: "#c77dff", name: "空中滑条 (Air Slide)", format: "ASD/ASC measure tick lane width parent h1 dur next_lane next_width h2 flag", desc: "悬浮于空中的紫粉色光带。玩家抬手后在空中感应区持续平移跟随光带游走。" },
-  { cmd: "ALD", color: "#eab308", name: "空中引线 / 挥手音符轨 (Air Line)", format: "ALD measure offset cell width interval starting_height duration end_cell end_width target_height color", desc: "官方权威定义：第七项为持续时长 duration；第五项为挥手音符间隔 interval。若 interval 为 0 则作为纯装饰彩色激光线；若 interval > 0 则按间隔生成紫色空中挥手音符(≋)；若为 38400 则仅在首端生成一个挥手音符。" },
-  { cmd: "SLP", color: "#d946ef", name: "谱面变速 / 镜头事件", format: "SLP measure tick dur speed flag", desc: "紫色虚线标线。定义谱面滚动速度倍率或镜头视线缩放比率的特殊事件。" }
+  { cmd: "TAP", color: "#ff3366", name: "地面标准打击音符 (Red Tap)", desc: "最基础的地面打击红键。当音符落入红判定线时按下对应轨道进行判定。" },
+  { cmd: "CHR", color: "#ffd700", name: "地面黄色音符 / ExTAP", desc: "高得分权重的关键音符（暴击音符）。在谱面中常带有 UP/DW/CE 方向标注，亦可作为空中动作 (Air Action) 节点。" },
+  { cmd: "HLD", color: "#ff9900", name: "地面普通长按 (Hold)", desc: "需持续按住的橙色条带，带有起止时间。在终点到达时松开手。C2S 仅需指定时长 dur。" },
+  { cmd: "HXD", color: "#ffea00", name: "地面 Ex 长按 (ExHold)", desc: "带有黄色打击头的高亮长按条带，具备更高的判定与特效权重，常带有空中向上等触发标识。" },
+  { cmd: "FLK", color: "#00d2ff", name: "拂起音符 (Flick)", desc: "青色音符带白色拂起标。到达判定线时不仅需要接触，还需要左右划动手指完成触发。" },
+  { cmd: "SLD / SLC", color: "#00b4d8", name: "滑键轨道 (Slide / Curve Control)", desc: "青色半透明滑键引导带。首节点(SLD)带有实心头判；中间曲线中继点(SLC)无头判，按顺序串联构成优美平滑的多边形折线曲线。" },
+  { cmd: "SXD / SXC", color: "#ffd700", name: "Ex 滑键轨道 (Ex Slide)", desc: "金色高亮滑条。首节点带有 ExTAP 级金色打击头，支持多段 SLC/SXC 自由曲率弯曲。" },
+  { cmd: "AIR", color: "#00ff88", name: "空中向上 (Air Up)", desc: "附着于地面音符（TAP/CHR/长按结尾）上方的绿色向上箭头。击中音符的同时将手臂抬升至传感器区域。" },
+  { cmd: "AUL / AUR", color: "#f72585", name: "空中斜向拂击 (Air Up Left / Right)", desc: "紫色向左上或右上倾斜的空中箭头，要求在击打音符的同时手臂斜向挥起。" },
+  { cmd: "ASD / ASC", color: "#c77dff", name: "空中滑条 (Air Slide)", desc: "悬浮于空中的紫粉色引导光带。玩家抬手后在空中感应区持续平移跟随光带游走。" },
+  { cmd: "ALD", color: "#a855f7", name: "空中引线 / 动作引导 (Air Down Line)", desc: "由空中延伸向地面的下落或动作手势引导虚线。" },
+  { cmd: "SLP", color: "#d946ef", name: "谱面变速 / 镜头事件", desc: "紫色虚线标线。定义谱面滚动速度或视线缩放比率的特殊指令。" },
+  { cmd: "BPM / MET", color: "#60a5fa", name: "歌曲节拍与拍号定义", desc: "定义全局与局部速度(BPM)以及各小节拍号(MET)。全谱采用每小节 384 Ticks 精准对齐时间轴。" }
 ];
 
-function openLegendModal() {
+function openLegendModal(highlightCmd = null) {
   modalContent.innerHTML = "";
   legendData.forEach(item => {
     const card = document.createElement("div");
     card.className = "legend-detail-card";
+    if (highlightCmd && item.cmd.includes(highlightCmd)) {
+      card.style.borderColor = "#00d2ff";
+      card.style.background = "#232b3d";
+    }
     card.innerHTML = `
       <div class="legend-preview-box">
-        <span class="dot" style="background:${item.color}; width:20px; height:12px; margin-bottom:4px; border-radius:2px;"></span>
+        <span class="dot" style="background:${item.color}; width:20px; height:12px; margin-bottom:4px;"></span>
         <span style="font-size:10px; color:#aaa; font-weight:bold;">${item.cmd.split('/')[0]}</span>
       </div>
       <div class="legend-info">
-        <div class="legend-cmd">${item.name}</div>
-        <div style="color:#cbd5e0; font-size:11.5px;">${item.desc}</div>
-        <div class="legend-format">${item.format}</div>
+        <div class="legend-cmd">${item.name} (${item.cmd})</div>
+        <div style="color:#cbd5e0; margin-top:2px;">${item.desc}</div>
       </div>
     `;
     modalContent.appendChild(card);
@@ -2045,15 +1711,14 @@ function openLegendModal() {
   modalMask.style.display = "flex";
 }
 
-document.getElementById("btn-open-legend").addEventListener("click", openLegendModal);
+document.getElementById("btn-open-legend").addEventListener("click", () => openLegendModal());
+document.getElementById("btn-view-legend-detail").addEventListener("click", () => openLegendModal());
 document.getElementById("btn-close-modal").addEventListener("click", () => { modalMask.style.display = "none"; });
 modalMask.addEventListener("click", (e) => { if (e.target === modalMask) modalMask.style.display = "none"; });
 
 // 初始化
 resizeCanvas();
 updateHistoryUI();
-updateLayerBadgesUI();
-updateProgressUI();
 </script>
 </body>
 </html>
